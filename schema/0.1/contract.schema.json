@@ -1,0 +1,540 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/otfabric/openmodbus-spec/main/schema/0.1/contract.schema.json",
+  "title": "OpenModbus Device Contract 0.1 (DRAFT)",
+  "description": "Structural (level 1) validation of an OpenModbus device contract. Cross-field rules (address overlap, reference resolution, cycles, ...) are defined in spec/openmodbus-0.1-draft.md section 8 and are NOT expressible here.",
+  "type": "object",
+  "required": ["openmodbus", "info", "device"],
+  "properties": {
+    "openmodbus": {
+      "description": "Specification version this document conforms to.",
+      "type": "string",
+      "pattern": "^0\\.1\\.\\d+$"
+    },
+    "info": { "$ref": "#/$defs/info" },
+    "device": { "$ref": "#/$defs/device" },
+    "profiles": {
+      "description": "Optional profiles this contract also conforms to, e.g. 'sunspec@1'. Profiles add x-<profile>-* keys and further semantic rules.",
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*@\\d+$" },
+      "uniqueItems": true
+    },
+    "defaults": { "$ref": "#/$defs/defaults" },
+    "constraints": { "$ref": "#/$defs/constraints" },
+    "variants": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/variant" }
+    },
+    "components": { "$ref": "#/$defs/components" },
+    "groups": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/group" }
+    },
+    "points": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/point" }
+    }
+  },
+  "patternProperties": { "^x-": {} },
+  "additionalProperties": false,
+
+  "$defs": {
+    "identifier": {
+      "description": "Stable machine identifier: lowercase snake_case. Renaming an identifier is a breaking change of the contract.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(_[a-z0-9]+)*$",
+      "maxLength": 64
+    },
+    "pointRef": {
+      "description": "Reference to a point by dotted path, resolved lexically from the referring point's enclosing group outward.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(_[a-z0-9]+)*(\\.[a-z][a-z0-9]*(_[a-z0-9]+)*)*$"
+    },
+    "address": {
+      "description": "Zero-based Modbus PDU address.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 65535
+    },
+    "table": {
+      "type": "string",
+      "enum": ["coil", "discrete_input", "input_register", "holding_register"]
+    },
+    "dataType": {
+      "type": "string",
+      "enum": ["bool", "u16", "i16", "u32", "i32", "u64", "i64", "f32", "f64", "string", "bytes"]
+    },
+    "order": {
+      "type": "string",
+      "enum": ["big", "little"]
+    },
+    "ref": {
+      "type": "string",
+      "pattern": "^(\\S+)?#/components/(enums|flagSets|groups)/[a-z][a-z0-9]*(_[a-z0-9]+)*$"
+    },
+    "refObject": {
+      "type": "object",
+      "required": ["$ref"],
+      "properties": { "$ref": { "$ref": "#/$defs/ref" } },
+      "additionalProperties": false
+    },
+    "link": {
+      "type": "object",
+      "required": ["title", "url"],
+      "properties": {
+        "title": { "type": "string" },
+        "url": { "type": "string", "format": "uri" },
+        "revision": { "type": "string" }
+      },
+      "patternProperties": { "^x-": {} },
+      "additionalProperties": false
+    },
+
+    "info": {
+      "type": "object",
+      "required": ["id", "title", "version"],
+      "properties": {
+        "id": {
+          "description": "Stable catalog identifier, e.g. 'acme/pm100'.",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]*(/[a-z0-9][a-z0-9._-]*)*$"
+        },
+        "title": { "type": "string", "minLength": 1 },
+        "version": {
+          "description": "Revision of THIS contract (semver). Independent of device firmware.",
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$"
+        },
+        "description": { "type": "string" },
+        "license": { "description": "SPDX identifier of the license of this contract.", "type": "string" },
+        "attribution": { "description": "Credit for the vendor documentation this contract was derived from.", "type": "string" },
+        "updated": { "type": "string", "format": "date" },
+        "source": {
+          "description": "Who authored the contract. Informative; not a certification.",
+          "type": "string",
+          "enum": ["vendor", "integrator", "community", "generated"]
+        },
+        "verification": {
+          "type": "string",
+          "enum": ["unverified", "documented", "simulated", "device_tested"]
+        },
+        "testedWith": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["firmware"],
+            "properties": {
+              "firmware": { "type": "string" },
+              "hardware": { "type": "string" },
+              "date": { "type": "string", "format": "date" },
+              "notes": { "type": "string" }
+            },
+            "patternProperties": { "^x-": {} },
+            "additionalProperties": false
+          }
+        },
+        "maintainers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": { "name": { "type": "string" }, "contact": { "type": "string" } },
+            "patternProperties": { "^x-": {} },
+            "additionalProperties": false
+          }
+        }
+      },
+      "patternProperties": { "^x-": {} },
+      "additionalProperties": false
+    },
+
+    "device": {
+      "type": "object",
+      "required": ["manufacturer", "model"],
+      "properties": {
+        "manufacturer": { "type": "string", "minLength": 1 },
+        "brand": { "type": "string" },
+        "family": { "type": "string" },
+        "model": { "type": "string", "minLength": 1 },
+        "classes": {
+          "description": "Open set of device classes; a device may have several.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/identifier" },
+          "uniqueItems": true
+        },
+        "hardware": { "type": "array", "items": { "type": "string" } },
+        "documentation": { "type": "array", "items": { "$ref": "#/$defs/link" } },
+        "transports": {
+          "description": "Transports the DEVICE supports. Which one an installation uses is deployment configuration and out of scope.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type"],
+            "properties": {
+              "type": { "type": "string", "enum": ["tcp", "rtu", "rtu_over_tcp", "ascii", "tls", "udp"] },
+              "notes": { "type": "string" }
+            },
+            "patternProperties": { "^x-": {} },
+            "additionalProperties": false
+          }
+        },
+        "unitId": {
+          "type": "object",
+          "properties": {
+            "mode": { "type": "string", "enum": ["fixed", "configurable", "ignored"] },
+            "default": { "type": "integer", "minimum": 0, "maximum": 255 },
+            "notes": { "type": "string" }
+          },
+          "patternProperties": { "^x-": {} },
+          "additionalProperties": false
+        },
+        "identification": {
+          "description": "Expected Read Device Identification (FC 43/14) objects. Values are exact strings or '*' globs.",
+          "type": "object",
+          "properties": {
+            "readDeviceId": {
+              "type": "object",
+              "properties": {
+                "vendorName": { "type": "string" },
+                "productCode": { "type": "string" },
+                "majorMinorRevision": { "type": "string" },
+                "vendorUrl": { "type": "string" },
+                "productName": { "type": "string" },
+                "modelName": { "type": "string" },
+                "userApplicationName": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "patternProperties": { "^x-": {} },
+          "additionalProperties": false
+        }
+      },
+      "patternProperties": { "^x-": {} },
+      "additionalProperties": false
+    },
+
+    "defaults": {
+      "type": "object",
+      "properties": {
+        "table": { "$ref": "#/$defs/table" },
+        "wordOrder": { "$ref": "#/$defs/order" },
+        "byteOrder": { "$ref": "#/$defs/order" },
+        "access": { "type": "string", "enum": ["r", "w", "rw"] }
+      },
+      "patternProperties": { "^x-": {} },
+      "additionalProperties": false
+    },
+
+    "constraints": {
+      "description": "Facts about the device that any client/planner MUST respect. Not a polling schedule.",
+      "type": "object",
+      "properties": {
+        "maxReadRegisters": { "type": "integer", "minimum": 1, "maximum": 125 },
+        "maxWriteRegisters": { "type": "integer", "minimum": 1, "maximum": 123 },
+        "maxReadBits": { "type": "integer", "minimum": 1, "maximum": 2000 },
+        "maxWriteBits": { "type": "integer", "minimum": 1, "maximum": 1968 },
+        "gaps": {
+          "description": "Whether a merged read may span addresses that no point defines. Default 'forbid' (safe).",
+          "type": "string",
+          "enum": ["allow", "forbid"]
+        },
+        "minRequestIntervalMs": { "type": "integer", "minimum": 0 },
+        "ranges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["table", "start", "count", "policy"],
+            "properties": {
+              "table": { "$ref": "#/$defs/table" },
+              "start": { "$ref": "#/$defs/address" },
+              "count": { "type": "integer", "minimum": 1, "maximum": 65536 },
+              "policy": {
+                "type": "string",
+                "enum": ["forbidden", "isolated", "side_effects", "safe_gap"]
+              },
+              "reason": { "type": "string" }
+            },
+            "patternProperties": { "^x-": {} },
+            "additionalProperties": false
+          }
+        },
+        "blocks": {
+          "description": "Named ranges known to be safe to read in one request.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "table", "start", "count"],
+            "properties": {
+              "id": { "$ref": "#/$defs/identifier" },
+              "table": { "$ref": "#/$defs/table" },
+              "start": { "$ref": "#/$defs/address" },
+              "count": { "type": "integer", "minimum": 1, "maximum": 65536 },
+              "coherent": {
+                "description": "True only if the vendor guarantees the block is sampled atomically.",
+                "type": "boolean"
+              },
+              "description": { "type": "string" }
+            },
+            "patternProperties": { "^x-": {} },
+            "additionalProperties": false
+          }
+        }
+      },
+      "patternProperties": { "^x-": {} },
+      "additionalProperties": false
+    },
+
+    "variant": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "label": { "type": "string" },
+        "description": { "type": "string" },
+        "match": {
+          "type": "object",
+          "properties": {
+            "firmware": { "description": "Version range, e.g. '>=2.0.0 <3.0.0'.", "type": "string" },
+            "hardware": { "type": "array", "items": { "type": "string" } }
+          },
+          "additionalProperties": false
+        }
+      },
+      "patternProperties": { "^x-": {} },
+      "additionalProperties": false
+    },
+
+    "components": {
+      "type": "object",
+      "properties": {
+        "enums": { "type": "object", "propertyNames": { "$ref": "#/$defs/identifier" }, "additionalProperties": { "$ref": "#/$defs/enumDef" } },
+        "flagSets": { "type": "object", "propertyNames": { "$ref": "#/$defs/identifier" }, "additionalProperties": { "$ref": "#/$defs/flagSetDef" } },
+        "groups": { "type": "object", "propertyNames": { "$ref": "#/$defs/identifier" }, "additionalProperties": { "$ref": "#/$defs/groupBody" } }
+      },
+      "patternProperties": { "^x-": {} },
+      "additionalProperties": false
+    },
+
+    "enumDef": {
+      "type": "object",
+      "required": ["values"],
+      "properties": {
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["value", "name"],
+            "properties": {
+              "value": { "type": "integer" },
+              "name": { "$ref": "#/$defs/identifier" },
+              "label": { "type": "string" },
+              "description": { "type": "string" },
+              "deprecated": { "type": "boolean" }
+            },
+            "patternProperties": { "^x-": {} },
+            "additionalProperties": false
+          }
+        }
+      },
+      "patternProperties": { "^x-": {} },
+      "additionalProperties": false
+    },
+
+    "flagSetDef": {
+      "type": "object",
+      "required": ["flags"],
+      "properties": {
+        "flags": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["bit", "name"],
+            "properties": {
+              "bit": { "type": "integer", "minimum": 0, "maximum": 63 },
+              "name": { "$ref": "#/$defs/identifier" },
+              "label": { "type": "string" },
+              "description": { "type": "string" }
+            },
+            "patternProperties": { "^x-": {} },
+            "additionalProperties": false
+          }
+        }
+      },
+      "patternProperties": { "^x-": {} },
+      "additionalProperties": false
+    },
+
+    "conversion": {
+      "description": "engineering = raw x multiplier x 10^exponent10 + offset, evaluated in exact decimal arithmetic.",
+      "type": "object",
+      "minProperties": 1,
+      "properties": {
+        "multiplier": { "type": "number", "not": { "const": 0 } },
+        "exponent10": {
+          "oneOf": [
+            { "type": "integer", "minimum": -30, "maximum": 30 },
+            {
+              "type": "object",
+              "required": ["point"],
+              "properties": { "point": { "$ref": "#/$defs/pointRef" } },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "offset": { "type": "number" }
+      },
+      "patternProperties": { "^x-": {} },
+      "additionalProperties": false
+    },
+
+    "limits": {
+      "description": "Valid engineering-value range for writes (and plausibility range for reads).",
+      "type": "object",
+      "minProperties": 1,
+      "properties": {
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "step": { "type": "number", "exclusiveMinimum": 0 },
+        "allowed": { "type": "array", "minItems": 1, "items": { "type": "number" }, "uniqueItems": true }
+      },
+      "patternProperties": { "^x-": {} },
+      "additionalProperties": false
+    },
+
+    "write": {
+      "type": "object",
+      "properties": {
+        "functions": {
+          "description": "Permitted write function codes in preference order. Defaults derive from table and width.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "integer", "enum": [5, 6, 15, 16, 22] }
+        },
+        "safety": {
+          "description": "'parameter' = configuration value; 'control' = changes physical behaviour of the device or process. Generated clients MUST make control writes explicit.",
+          "type": "string",
+          "enum": ["parameter", "control"]
+        },
+        "verifyWith": { "description": "Point to read back to confirm the write took effect.", "$ref": "#/$defs/pointRef" },
+        "idempotent": { "type": "boolean" },
+        "effect": { "type": "string" }
+      },
+      "patternProperties": { "^x-": {} },
+      "additionalProperties": false
+    },
+
+    "point": {
+      "type": "object",
+      "required": ["id", "type"],
+      "oneOf": [
+        { "required": ["address"] },
+        { "required": ["offset"] }
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "label": { "type": "string" },
+        "description": { "type": "string" },
+        "aliases": { "description": "Vendor names for this point.", "type": "array", "items": { "type": "string" } },
+        "tags": { "type": "array", "items": { "$ref": "#/$defs/identifier" }, "uniqueItems": true },
+
+        "table": { "$ref": "#/$defs/table" },
+        "address": { "$ref": "#/$defs/address" },
+        "offset": { "description": "Address relative to the enclosing group's base address.", "type": "integer", "minimum": 0, "maximum": 65535 },
+
+        "type": { "$ref": "#/$defs/dataType" },
+        "count": { "description": "Number of consecutive elements (array). Default 1.", "type": "integer", "minimum": 1 },
+        "registers": { "description": "Register span; required for string and bytes, forbidden otherwise.", "type": "integer", "minimum": 1 },
+        "mask": { "description": "Contiguous bit mask selecting a slice of an integer register value; the result is shifted down.", "type": "integer", "minimum": 1, "maximum": 4294967295 },
+        "wordOrder": { "$ref": "#/$defs/order" },
+        "byteOrder": { "$ref": "#/$defs/order" },
+
+        "access": { "type": "string", "enum": ["r", "w", "rw"] },
+        "write": { "$ref": "#/$defs/write" },
+
+        "conversion": { "$ref": "#/$defs/conversion" },
+        "unit": { "description": "UCUM code, e.g. 'V', 'W', 'Cel', '%', 'Hz', 'W.h'.", "type": "string" },
+        "enum": { "oneOf": [{ "$ref": "#/$defs/refObject" }, { "$ref": "#/$defs/enumDef" }] },
+        "flags": { "oneOf": [{ "$ref": "#/$defs/refObject" }, { "$ref": "#/$defs/flagSetDef" }] },
+        "invalid": {
+          "description": "Raw values (after mask, before conversion, in the point's integer type) meaning 'not available / not implemented'.",
+          "type": "array",
+          "items": { "type": "integer" },
+          "uniqueItems": true
+        },
+        "limits": { "$ref": "#/$defs/limits" },
+
+        "stability": {
+          "description": "How often the value can change. Lets runtimes cache scale factors safely. Default 'dynamic'.",
+          "type": "string",
+          "enum": ["constant", "session", "dynamic"]
+        },
+        "minReadIntervalMs": { "type": "integer", "minimum": 0 },
+        "variants": { "type": "array", "items": { "$ref": "#/$defs/identifier" }, "uniqueItems": true, "minItems": 1 },
+        "semantics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["scheme", "id"],
+            "properties": { "scheme": { "type": "string" }, "id": { "type": "string" } },
+            "additionalProperties": false
+          }
+        },
+        "source": {
+          "description": "Where this came from in the vendor documentation (the vendor's own address notation is kept here, never in 'address').",
+          "type": "object",
+          "properties": {
+            "address": { "type": "string" },
+            "reference": { "type": "string" },
+            "page": { "type": "integer", "minimum": 1 }
+          },
+          "additionalProperties": false
+        },
+        "deprecated": { "type": "boolean" }
+      },
+      "if": { "properties": { "type": { "enum": ["string", "bytes"] } }, "required": ["type"] },
+      "then": { "required": ["registers"] },
+      "else": { "not": { "required": ["registers"] } },
+      "patternProperties": { "^x-": {} },
+      "additionalProperties": false
+    },
+
+    "groupBody": {
+      "type": "object",
+      "properties": {
+        "$ref": { "$ref": "#/$defs/ref" },
+        "id": { "$ref": "#/$defs/identifier" },
+        "label": { "type": "string" },
+        "description": { "type": "string" },
+        "table": { "$ref": "#/$defs/table" },
+        "address": { "description": "Base address; child points may use 'offset' relative to it.", "$ref": "#/$defs/address" },
+        "repeat": {
+          "type": "object",
+          "required": ["count", "stride"],
+          "properties": {
+            "count": { "type": "integer", "minimum": 1 },
+            "stride": { "description": "Address distance between consecutive instances.", "type": "integer", "minimum": 1 },
+            "indexBase": { "description": "Index of the first instance (0 or 1). Default 0.", "type": "integer", "enum": [0, 1] }
+          },
+          "additionalProperties": false
+        },
+        "tags": { "type": "array", "items": { "$ref": "#/$defs/identifier" }, "uniqueItems": true },
+        "variants": { "type": "array", "items": { "$ref": "#/$defs/identifier" }, "uniqueItems": true, "minItems": 1 },
+        "points": { "type": "array", "items": { "$ref": "#/$defs/point" } },
+        "groups": { "type": "array", "items": { "$ref": "#/$defs/group" } }
+      },
+      "patternProperties": { "^x-": {} },
+      "additionalProperties": false
+    },
+
+    "group": {
+      "allOf": [
+        { "$ref": "#/$defs/groupBody" },
+        { "required": ["id"] }
+      ]
+    }
+  }
+}

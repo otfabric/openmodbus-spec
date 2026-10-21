@@ -1,0 +1,150 @@
+# Example 2 of 3: a vendor inverter in the SunSpec style.
+# Demonstrates: scale factors in other registers (referenced conversions),
+# stability classes, enum + flags components, firmware variants, repeating
+# string inputs, control writes with read-back, read constraints
+# (side-effect range, explicitly safe gap).
+# "Acme Solar" is a FICTIONAL vendor; the register map is invented.
+openmodbus: 0.1.0
+
+info:
+  id: acme/sx5000
+  title: Acme SX-5000 string inverter
+  version: 0.1.0
+  license: CC0-1.0
+  source: community
+  verification: unverified
+  attribution: Fictional device, no vendor documentation involved.
+
+device:
+  manufacturer: Acme Solar
+  family: SX
+  model: SX-5000
+  classes: [inverter, solar_inverter]
+  transports:
+    - type: tcp
+      notes: Single concurrent client only.
+  unitId:
+    mode: fixed
+    default: 1
+
+defaults:
+  table: holding_register
+  wordOrder: big
+  byteOrder: big
+
+variants:
+  - id: fw1
+    label: Firmware 1.x
+    match: { firmware: "<2.0.0" }
+  - id: fw2
+    label: Firmware 2.x
+    match: { firmware: ">=2.0.0 <3.0.0" }
+
+constraints:
+  maxReadRegisters: 120
+  maxWriteRegisters: 16
+  minRequestIntervalMs: 50
+  gaps: forbid
+  ranges:
+    - table: holding_register
+      start: 123
+      count: 77
+      policy: safe_gap
+      reason: Reserved, reads return zero.
+    - table: holding_register
+      start: 400
+      count: 10
+      policy: side_effects
+      reason: Event log window; every read pops the oldest event.
+
+components:
+  enums:
+    operating_state:
+      values:
+        - { value: 0, name: "off" }   # quoted: YAML 1.1 parsers read bare off/on/yes/no as booleans
+        - { value: 1, name: sleeping }
+        - { value: 2, name: starting }
+        - { value: 3, name: running }
+        - { value: 4, name: throttled }
+        - { value: 5, name: fault }
+    limit_mode:
+      values:
+        - { value: 0, name: disabled }
+        - { value: 1, name: enabled }
+  flagSets:
+    alarms:
+      flags:
+        - { bit: 0, name: grid_overvoltage }
+        - { bit: 1, name: grid_undervoltage }
+        - { bit: 2, name: overtemperature }
+        - { bit: 3, name: dc_insulation }
+        - { bit: 16, name: fan_failure }
+
+points:
+  - { id: model_name, address: 0, type: string, registers: 16, stability: constant, label: Model name }
+
+  # --- AC measurements: value register + scale-factor register ------------------
+  - { id: w_sf,  address: 100, type: i16, stability: constant, label: Power scale factor,   description: "Exponent of 10 applied to ac_power." }
+  - id: ac_power
+    address: 101
+    type: i16
+    conversion: { exponent10: { point: w_sf } }
+    unit: W
+    invalid: [-32768]
+    semantics: [{ scheme: sunspec, id: W }]
+    label: AC power
+  - { id: v_sf, address: 102, type: i16, stability: constant, label: Voltage scale factor }
+  - id: ac_voltage
+    address: 103
+    type: u16
+    conversion: { exponent10: { point: v_sf } }
+    unit: V
+    invalid: [65535]
+    label: AC voltage
+  - id: energy_total
+    address: 110
+    type: u32
+    unit: W.h
+    label: Lifetime energy
+  - { id: state,  address: 120, type: u16, enum: { $ref: "#/components/enums/operating_state" }, label: Operating state }
+  - { id: alarms, address: 121, type: u32, flags: { $ref: "#/components/flagSets/alarms" },      label: Active alarms }
+
+  # --- firmware-dependent points ----------------------------------------------------
+  - { id: cabinet_temp,  address: 125, type: i16, conversion: { multiplier: 0.1 }, unit: Cel, variants: [fw2], label: Cabinet temperature }
+  - { id: legacy_status, address: 126, type: u16, variants: [fw1], deprecated: true, label: Legacy status word }
+
+  # --- controls --------------------------------------------------------------------
+  - id: power_limit_enable
+    address: 301
+    type: u16
+    access: rw
+    enum: { $ref: "#/components/enums/limit_mode" }
+    write: { functions: [6], safety: control, idempotent: true, verifyWith: power_limit_enable }
+    label: Active power limit enable
+  - id: power_limit
+    address: 300
+    type: u16
+    access: rw
+    conversion: { multiplier: 0.1 }
+    unit: "%"
+    limits: { min: 0, max: 100, step: 0.1 }
+    stability: dynamic
+    write:
+      functions: [6, 16]
+      safety: control
+      idempotent: true
+      verifyWith: power_limit_applied
+      effect: Reduces inverter output. Takes effect only while power_limit_enable is enabled.
+    label: Active power limit
+  - { id: power_limit_applied, address: 302, type: u16, conversion: { multiplier: 0.1 }, unit: "%", label: Power limit currently applied }
+
+groups:
+  # Four DC inputs, 4 registers each, starting at 200.
+  - id: dc_input
+    label: DC (MPPT) inputs
+    address: 200
+    repeat: { count: 4, stride: 4, indexBase: 1 }
+    points:
+      - { id: voltage, offset: 0, type: u16, conversion: { multiplier: 0.1 },  unit: V, invalid: [65535], label: DC voltage }
+      - { id: current, offset: 1, type: i16, conversion: { multiplier: 0.01 }, unit: A, invalid: [-32768], label: DC current }
+      - { id: power,   offset: 2, type: u32, unit: W, label: DC power }

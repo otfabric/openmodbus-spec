@@ -1,0 +1,121 @@
+# OpenModbus 0.1 conformance vectors: decode (and, unless "encode: false", encode).
+#
+# A conforming implementation, given the point fragment and the register words
+# (or coil/discrete bits), MUST produce exactly `expect`; when encoding is
+# enabled it MUST also produce exactly `words` from `expect.value`.
+#
+# Conventions
+#   * Unless stated, wordOrder and byteOrder are "big" (the Modbus default; word 0 holds
+#     the most significant bytes, high byte first).
+#   * `words` are unsigned 16-bit register contents as sent on the wire (hex for readability).
+#   * Numbers in `expect.value` are decimal literals; implementations compare as the nearest
+#     binary64 (or exactly, for strings holding 64-bit integers).
+#   * 64-bit integers outside +/-2^53 are written as strings; so must interchange formats do.
+#   * `deps` supplies already-decoded values of points referenced by `conversion.exponent10.point`.
+#   * `quality: invalid` means: value is absent (null) and consumers MUST NOT treat it as a measurement.
+openmodbusConformance: 0.1.0
+
+vectors:
+  # ---- 16-bit integers ---------------------------------------------------------------
+  - { id: u16-max,      point: { type: u16 }, words: [0xFFFF], expect: { value: 65535 } }
+  - { id: i16-minus-1,  point: { type: i16 }, words: [0xFFFF], expect: { value: -1 } }
+  - { id: i16-min,      point: { type: i16 }, words: [0x8000], expect: { value: -32768 } }
+  - { id: u16-bytes-swapped, point: { type: u16, byteOrder: little }, words: [0x3412], expect: { value: 0x1234 } }
+
+  # ---- 32-bit: the four classic orderings of 0x12345678 (A=0x12 B=0x34 C=0x56 D=0x78) ----
+  - { id: u32-abcd, point: { type: u32 },                                words: [0x1234, 0x5678], expect: { value: 305419896 } }
+  - { id: u32-cdab, point: { type: u32, wordOrder: little },             words: [0x5678, 0x1234], expect: { value: 305419896 } }
+  - { id: u32-badc, point: { type: u32, byteOrder: little },             words: [0x3412, 0x7856], expect: { value: 305419896 } }
+  - { id: u32-dcba, point: { type: u32, wordOrder: little, byteOrder: little }, words: [0x7856, 0x3412], expect: { value: 305419896 } }
+  - { id: i32-minus-2, point: { type: i32 }, words: [0xFFFF, 0xFFFE], expect: { value: -2 } }
+
+  # ---- 64-bit ------------------------------------------------------------------------
+  - { id: u64-abcdefgh, point: { type: u64 },                       words: [0x0102, 0x0304, 0x0506, 0x0708], expect: { value: "72623859790382856" } }
+  - { id: u64-hgfedcba-words, point: { type: u64, wordOrder: little }, words: [0x0708, 0x0506, 0x0304, 0x0102], expect: { value: "72623859790382856" } }
+  - { id: u64-bytes-swapped, point: { type: u64, byteOrder: little }, words: [0x0201, 0x0403, 0x0605, 0x0807], expect: { value: "72623859790382856" } }
+  - { id: u64-max, point: { type: u64 }, words: [0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF], expect: { value: "18446744073709551615" } }
+  - { id: i64-min, point: { type: i64 }, words: [0x8000, 0x0000, 0x0000, 0x0000], expect: { value: "-9223372036854775808" } }
+
+  # ---- floating point ------------------------------------------------------------------
+  - { id: f32-abcd, point: { type: f32 },                    words: [0x4372, 0x8000], expect: { value: 242.5 } }
+  - { id: f32-cdab, point: { type: f32, wordOrder: little }, words: [0x8000, 0x4372], expect: { value: 242.5 } }
+  # 0.1f is not 0.1: the decoded value is the exact float32 widened to binary64, never rounded to a short decimal.
+  - { id: f32-widening, point: { type: f32 }, words: [0x3DCC, 0xCCCD], expect: { value: 0.10000000149011612 } }
+  - { id: f32-nan,      point: { type: f32 }, words: [0x7FC0, 0x0000], expect: { quality: invalid }, encode: false }
+  - { id: f32-inf,      point: { type: f32 }, words: [0x7F80, 0x0000], expect: { quality: invalid }, encode: false }
+  - { id: f64-one,      point: { type: f64 }, words: [0x3FF0, 0x0000, 0x0000, 0x0000], expect: { value: 1.0 } }
+  - { id: f64-minus-2-5, point: { type: f64 }, words: [0xC004, 0x0000, 0x0000, 0x0000], expect: { value: -2.5 } }
+
+  # ---- masks (slice of a register, shifted down) ------------------------------------------
+  - { id: mask-high-nibble-of-byte, point: { type: u16, mask: 0x0F00 }, words: [0x0A00], expect: { value: 10 } }
+  - { id: mask-middle,              point: { type: u16, mask: 0x00F0 }, words: [0x1234], expect: { value: 3 }, encode: false }
+  - { id: mask-top-bit,             point: { type: u16, mask: 0x8000 }, words: [0x8000], expect: { value: 1 } }
+
+  # ---- conversion: exact decimal arithmetic, rounded once to binary64 -------------------------
+  - { id: conv-multiplier,      point: { type: u16, conversion: { multiplier: 0.1 } },   words: [2375], expect: { value: 237.5 } }
+  - { id: conv-multiplier-neg,  point: { type: i16, conversion: { multiplier: 0.001 } }, words: [0xFFFB], expect: { value: -0.005 } }
+  - { id: conv-offset,          point: { type: u16, conversion: { multiplier: 0.1, offset: -40 } }, words: [650], expect: { value: 25 } }
+  - { id: conv-exponent-literal, point: { type: u16, conversion: { exponent10: 3 } },   words: [12], expect: { value: 12000 } }
+  - id: conv-scale-factor-negative
+    point: { type: u16, conversion: { exponent10: { point: w_sf } } }
+    deps: { w_sf: -1 }
+    words: [2375]
+    expect: { value: 237.5 }
+  - id: conv-scale-factor-positive
+    point: { type: i16, conversion: { exponent10: { point: w_sf } } }
+    deps: { w_sf: 2 }
+    words: [5]
+    expect: { value: 500 }
+  - id: conv-scale-factor-zero
+    point: { type: u16, conversion: { exponent10: { point: w_sf } } }
+    deps: { w_sf: 0 }
+    words: [7]
+    expect: { value: 7 }
+  # A failed or invalid dependency makes the dependent value invalid; it is never guessed.
+  - id: conv-scale-factor-dependency-invalid
+    point: { type: u16, conversion: { exponent10: { point: w_sf } } }
+    deps: { w_sf: { quality: invalid } }
+    words: [2375]
+    expect: { quality: invalid }
+    encode: false
+
+  # ---- invalid / not-available markers ---------------------------------------------------
+  - { id: invalid-i16-sunspec, point: { type: i16, invalid: [-32768] }, words: [0x8000], expect: { quality: invalid }, encode: false }
+  - { id: invalid-u16,         point: { type: u16, invalid: [65535] },  words: [0xFFFF], expect: { quality: invalid }, encode: false }
+  - { id: invalid-not-matching, point: { type: i16, invalid: [-32768] }, words: [0x8001], expect: { value: -32767 } }
+  # `invalid` is compared to the raw value BEFORE conversion.
+  - { id: invalid-before-conversion, point: { type: u16, invalid: [65535], conversion: { multiplier: 0.1 } }, words: [0xFFFF], expect: { quality: invalid }, encode: false }
+
+  # ---- strings -----------------------------------------------------------------------------
+  - { id: string-ascii,       point: { type: string, registers: 3 }, words: [0x4143, 0x4D45, 0x0000], expect: { value: "ACME" }, encode: false }
+  - { id: string-byte-swapped, point: { type: string, registers: 3, byteOrder: little }, words: [0x4341, 0x454D, 0x0000], expect: { value: "ACME" }, encode: false }
+  - { id: string-space-padded, point: { type: string, registers: 2 }, words: [0x4142, 0x2020], expect: { value: "AB" }, encode: false }
+  - { id: string-stops-at-nul, point: { type: string, registers: 3 }, words: [0x4142, 0x0043, 0x4400], expect: { value: "AB" }, encode: false }
+
+  # ---- bits (coils / discrete inputs) -------------------------------------------------------
+  - { id: coil-on,  point: { type: bool, table: coil }, bits: [1], expect: { value: true } }
+  - { id: coil-off, point: { type: bool, table: coil }, bits: [0], expect: { value: false } }
+
+  # ---- arrays ---------------------------------------------------------------------------------
+  - { id: array-u16, point: { type: u16, count: 3 }, words: [1, 2, 3], expect: { value: [1, 2, 3] } }
+
+  # ---- enums and flags ---------------------------------------------------------------------------
+  - id: enum-known
+    point: { type: u16, enum: { values: [{ value: 2, name: starting }, { value: 3, name: running }] } }
+    words: [3]
+    expect: { value: 3, enum: running }
+  # Unknown enum values are NOT an error: value is kept, no name is produced.
+  - id: enum-unknown
+    point: { type: u16, enum: { values: [{ value: 2, name: starting }, { value: 3, name: running }] } }
+    words: [9]
+    expect: { value: 9, enum: null }
+  - id: flags-set
+    point: { type: u16, flags: { flags: [{ bit: 0, name: a }, { bit: 1, name: b }, { bit: 2, name: c }] } }
+    words: [0x0005]
+    expect: { value: 5, flags: [a, c] }
+  # Bits without a defined flag stay in `value` and are not named.
+  - id: flags-undefined-bit
+    point: { type: u16, flags: { flags: [{ bit: 0, name: a }] } }
+    words: [0x0081]
+    expect: { value: 129, flags: [a] }
+    encode: false

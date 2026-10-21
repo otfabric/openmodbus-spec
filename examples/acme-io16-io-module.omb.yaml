@@ -1,0 +1,102 @@
+# Example 3 of 3: a non-energy industrial device, a PLC-style I/O module.
+# Demonstrates: all four tables in one device, bit-level points (coils and
+# discrete inputs), repeating groups on different tables, multiplier-based
+# scaling of ADC counts, FC 5/15 writes, a safety-relevant parameter.
+# "Acme Controls" is a FICTIONAL vendor; the register map is invented.
+openmodbus: 0.1.0
+
+info:
+  id: acme/io16
+  title: Acme IO-16 remote I/O module
+  version: 0.1.0
+  license: CC0-1.0
+  source: community
+  verification: unverified
+  attribution: Fictional device, no vendor documentation involved.
+
+device:
+  manufacturer: Acme Controls
+  family: IO
+  model: IO-16
+  classes: [io_module]
+  transports:
+    - type: tcp
+    - type: rtu
+  unitId:
+    mode: configurable
+    default: 1
+
+defaults:
+  wordOrder: big
+  byteOrder: big
+
+constraints:
+  maxReadBits: 16
+  gaps: forbid
+
+components:
+  flagSets:
+    fault_flags:
+      flags:
+        - { bit: 0, name: output_short_circuit }
+        - { bit: 1, name: supply_undervoltage }
+        - { bit: 2, name: watchdog_expired }
+
+groups:
+  - id: digital_out
+    label: Digital outputs
+    table: coil
+    address: 0
+    repeat: { count: 16, stride: 1, indexBase: 1 }
+    points:
+      - id: state
+        offset: 0
+        type: bool
+        access: rw
+        write: { functions: [5, 15], safety: control, idempotent: true }
+        label: Output state
+
+  - id: digital_in
+    label: Digital inputs
+    table: discrete_input
+    address: 0
+    repeat: { count: 16, stride: 1, indexBase: 1 }
+    points:
+      - { id: state, offset: 0, type: bool, label: Input state }
+
+  # 0..4000 counts = 0..10 V
+  - id: analog_in
+    label: Analog inputs 0-10 V
+    table: input_register
+    address: 0
+    repeat: { count: 8, stride: 1, indexBase: 1 }
+    points:
+      - id: voltage
+        offset: 0
+        type: u16
+        conversion: { multiplier: 0.0025 }
+        unit: V
+        invalid: [65535]
+        label: Input voltage
+
+points:
+  - id: fault_flags
+    table: input_register
+    address: 100
+    type: u16
+    flags: { $ref: "#/components/flagSets/fault_flags" }
+    label: Module faults
+  - id: watchdog_timeout
+    table: holding_register
+    address: 0
+    type: u16
+    access: rw
+    unit: ms
+    limits: { min: 0, max: 60000, step: 100 }
+    write:
+      functions: [6, 16]
+      safety: control
+      idempotent: true
+      effect: Outputs fall back to the safe state when no Modbus request arrives within this time. 0 disables the watchdog.
+    stability: session
+    label: Communication watchdog timeout

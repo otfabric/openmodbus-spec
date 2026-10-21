@@ -1,0 +1,123 @@
+# Example 1 of 3: a straightforward three-phase power meter.
+# Demonstrates: document defaults (CDAB floats), repeating group with relative
+# offsets, 64-bit counters, flags, enum-less status, string, invalid values,
+# a forbidden range, one writable parameter.
+# "Acme Metering" is a FICTIONAL vendor; the register map is invented.
+openmodbus: 0.1.0
+
+info:
+  id: acme/pm100
+  title: Acme PM-100 three-phase power meter
+  version: 0.1.0
+  description: Example contract used to exercise the OpenModbus 0.1 draft.
+  license: CC0-1.0
+  source: community
+  verification: unverified
+  attribution: Fictional device, no vendor documentation involved.
+
+device:
+  manufacturer: Acme Metering
+  family: PM
+  model: PM-100
+  classes: [meter, energy_meter]
+  transports:
+    - type: tcp
+    - type: rtu
+  unitId:
+    mode: configurable
+    default: 1
+  identification:
+    readDeviceId:
+      vendorName: Acme Metering
+      productCode: PM100*
+
+# The whole device uses CDAB for 32/64-bit values (low word first, bytes big-endian).
+defaults:
+  table: input_register
+  wordOrder: little
+  byteOrder: big
+
+constraints:
+  maxReadRegisters: 100
+  minRequestIntervalMs: 20
+  gaps: forbid
+  ranges:
+    - table: input_register
+      start: 60
+      count: 20
+      policy: forbidden
+      reason: Factory calibration area, reads return exception 2.
+
+components:
+  flagSets:
+    meter_status:
+      flags:
+        - { bit: 0, name: phase_sequence_error, label: Phase sequence error }
+        - { bit: 1, name: overrange,            label: Input overrange }
+        - { bit: 2, name: clock_not_set,        label: Real-time clock not set }
+        - { bit: 8, name: tamper,               label: Terminal cover opened }
+
+groups:
+  # Three instances of the same 6-register block at 0, 6, 12.
+  - id: phase
+    label: Per-phase measurements
+    address: 0
+    repeat: { count: 3, stride: 6, indexBase: 1 }   # phase_1 .. phase_3 (L1..L3)
+    points:
+      - { id: voltage,      offset: 0, type: f32, unit: V, label: Phase voltage }
+      - { id: current,      offset: 2, type: f32, unit: A, label: Phase current }
+      - { id: active_power, offset: 4, type: f32, unit: W, label: Active power }
+
+  - id: energy
+    label: Energy counters
+    points:
+      - id: import_total
+        address: 22
+        type: u64
+        unit: W.h
+        label: Active energy import, total
+        stability: dynamic
+        minReadIntervalMs: 1000
+        source: { address: "30023", reference: Table 6 }
+      - id: export_total
+        address: 26
+        type: u64
+        unit: W.h
+        label: Active energy export, total
+
+points:
+  - { id: active_power_total, address: 18, type: f32, unit: W,  label: Total active power }
+  - { id: frequency,          address: 20, type: f32, unit: Hz, label: Line frequency }
+  - id: power_factor
+    address: 30
+    type: i16
+    conversion: { multiplier: 0.001 }
+    invalid: [-32768]
+    limits: { min: -1, max: 1 }
+    label: Total power factor
+  - id: status
+    address: 31
+    type: u16
+    flags: { $ref: "#/components/flagSets/meter_status" }
+    label: Meter status
+  - id: serial_number
+    address: 32
+    type: string
+    registers: 8
+    stability: constant
+    label: Serial number
+
+  # --- configuration, holding registers -------------------------------------
+  - id: demand_period
+    table: holding_register
+    address: 0
+    type: u16
+    access: rw
+    unit: min
+    limits: { min: 1, max: 60, step: 1 }
+    write:
+      functions: [6, 16]
+      safety: parameter
+      idempotent: true
+    stability: session
+    label: Demand integration period
