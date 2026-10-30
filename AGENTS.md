@@ -25,7 +25,7 @@ This repository follows **otfabric/engineering policy 1.0**, profile **informati
 3. The specification, schema, examples and vectors change together.
 4. Examples stay fictional devices.
 5. No tooling beyond these checks: it belongs in the repositories `docs/PROPOSAL.md` names.
-6. Do not add a LICENSE: the choice is D15, the maintainer's.
+6. The licence is MIT (D15, the maintainer's decision); do not change it.
 
 ## Commands
 
