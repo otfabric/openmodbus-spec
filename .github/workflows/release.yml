@@ -1,0 +1,35 @@
+name: Release
+run-name: "Release ${{ inputs.version }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version with a section in RELEASE.md, for example v0.1.0"
+        required: true
+
+permissions:
+  contents: write   # create the tag and the GitHub release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: make check
+        env:
+          PYTHON: python
+      - name: Notes from RELEASE.md
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          awk -v h="## ${VERSION}" '$0 == h {on=1; next} on && /^---$/ {exit} on' RELEASE.md > notes.md
+          [ -s notes.md ] || { echo "::error::RELEASE.md has no section ${VERSION}"; exit 1; }
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+        run: gh release create "${VERSION}" --title "${VERSION}" --notes-file notes.md --target "${GITHUB_SHA}"
