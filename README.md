@@ -38,4 +38,4 @@ Tooling lives in separate repositories (see the proposal, §4): `go-openmodbus` 
 
 ## Licence
 
-Proposed: Apache-2.0 for specification, schema, vectors and tools (decision D15). No `LICENSE` file has been added yet.
+MIT for the specification, schema, vectors and tools (decision D15, maintainer, 2026-10-30): see [LICENSE](LICENSE).
