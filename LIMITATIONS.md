@@ -2,7 +2,7 @@
 
 ## Status
 
-- **Pre-0.1 draft, not agreed.** Sections marked **[proposed]** need sign-off, and the decisions in [docs/PROPOSAL.md](docs/PROPOSAL.md) are open, except the licence (D15). Nothing has been released and the repository has no tags: expect breaking changes.
+- **v0.1.0 is a draft, not agreed.** Sections marked **[proposed]** need sign-off, and the decisions in [docs/PROPOSAL.md](docs/PROPOSAL.md) are open, except the licence (D15). v0.1.0 is a draft snapshot to pin against: expect breaking changes.
 - **Nothing is certified**, and no conformance claim is made. The conformance classes in section 1 of the specification are definitions, not results.
 
 ## What has not been verified

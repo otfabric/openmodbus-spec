@@ -3,7 +3,7 @@
 An open, vendor-neutral, machine-readable **device contract** for Modbus: what a device exposes, how values are encoded and
 scaled, what they mean, what may be written, and which constraints a client must respect. Think OpenAPI, but for Modbus devices.
 
-> **Status: pre-0.1 draft, not yet agreed.** Start with [`docs/PROPOSAL.md`](docs/PROPOSAL.md).
+> **Status: v0.1.0 draft, not yet agreed.** Start with [`docs/PROPOSAL.md`](docs/PROPOSAL.md).
 
 | Path | What |
 |---|---|
