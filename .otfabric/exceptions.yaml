@@ -1,0 +1,13 @@
+# Recorded exceptions to otfabric/engineering rules (docs/exceptions/ there).
+exceptions:
+  - rule: GO-007
+    scope: Makefile
+    justification: >-
+      This repository is a specification: JSON Schema, YAML examples and text.
+      It generates no file, so generate and generate-check would be empty, and
+      it has no code to measure, so coverage would report nothing. `make check`
+      already validates every example against the schema.
+    owner: bartvanbos
+    reviewed: "2026-10-31"
+    reconsider: "when the repository gains generated files or executable code"
+    ref: Makefile
