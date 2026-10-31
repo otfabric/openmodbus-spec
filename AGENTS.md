@@ -6,7 +6,7 @@ A pre-0.1 draft of an open, machine-readable device contract for Modbus: specifi
 
 ## Organisation standards
 
-This repository follows **otfabric/engineering policy 1.1**, profile **information-model** (`.otfabric/policy.yaml`). Where this file and the organisation standards disagree, this file wins for this repository; say so in your report.
+This repository follows **otfabric/engineering policy 1.2**, profile **information-model** (`.otfabric/policy.yaml`). Where this file and the organisation standards disagree, this file wins for this repository; say so in your report.
 
 ## Where the truth lives
 
