@@ -2,7 +2,7 @@
 
 ## What this is
 
-A pre-0.1 draft of an open, machine-readable device contract for Modbus: specification, JSON Schema, three examples for fictional devices and language-neutral decode/encode vectors. Nothing is agreed yet, and nothing is implemented here. Profile: information-model.
+A draft (v0.1.0) of an open, machine-readable device contract for Modbus: specification, JSON Schema, three examples for fictional devices and language-neutral decode/encode vectors. Nothing is agreed yet, and nothing is implemented here. Profile: information-model.
 
 ## Organisation standards
 

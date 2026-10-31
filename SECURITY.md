@@ -1,6 +1,6 @@
 # Security Policy
 
-This repository holds a draft specification, a JSON Schema, example documents and test vectors. It has no network runtime, and no supported release: nothing has been released.
+This repository holds a draft specification, a JSON Schema, example documents and test vectors. It has no network runtime, and no supported release: v0.1.0 is a draft snapshot.
 
 ## Reporting
 
