@@ -1,0 +1,114 @@
+openmodbus: 0.1.0
+info:
+  id: moxa/iologik-e1210/io
+  title: Moxa ioLogik E1210 digital inputs and counters
+  version: 0.1.0
+  description: 'Read-only subset of the Appendix A default Modbus/TCP map for the
+    16-input ioLogik E1210 and E1210-T: input states, 32-bit counters (high word first),
+    counter flags and identification registers. Writable rows are read-only in this
+    contract.
+
+    '
+  attribution: Derived from Moxa's ioLogik E1200 Series User's Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: moxa-iologik-e1200-manual
+device:
+  manufacturer: Moxa
+  family: ioLogik E1200
+  model: ioLogik E1210
+  classes:
+  - remote_io
+  transports:
+  - type: tcp
+  unitId:
+    default: 1
+  documentation:
+  - title: ioLogik E1200 Series User's Manual
+    url: https://www.moxa.com/Moxa/media/PDIM/S100000327/moxa-iologik-e1200-series-manual-v15.2.pdf
+    revision: Edition 15.2, February 2018
+defaults:
+  access: r
+points:
+- id: di_status
+  aliases:
+  - DI_status
+  table: discrete_input
+  address: 0
+  type: bool
+  count: 16
+  source:
+    address: '10001'
+    page: 97
+    reference: Appendix A, ioLogik E1210 Modbus address and register map
+- id: di_counter_value
+  aliases:
+  - DI_counterValue
+  table: input_register
+  address: 16
+  type: u32
+  wordOrder: big
+  count: 16
+  source:
+    address: '30017'
+    page: 97
+    reference: Appendix A, ioLogik E1210 Modbus address and register map
+- id: di_counter_overflow_flag
+  aliases:
+  - DI_counterOverflowFlag
+  table: discrete_input
+  address: 1000
+  type: bool
+  count: 16
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '11001'
+    page: 97
+    reference: Appendix A, ioLogik E1210 Modbus address and register map
+- id: di_counter_status
+  aliases:
+  - DI_counterStatus
+  table: coil
+  address: 256
+  type: bool
+  count: 16
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '00257'
+    page: 97
+    reference: Appendix A, ioLogik E1210 Modbus address and register map
+- id: model_name
+  aliases:
+  - modelName
+  table: input_register
+  address: 5000
+  type: string
+  registers: 10
+  stability: constant
+  source:
+    address: '35001'
+    page: 98
+    reference: Appendix A, ioLogik E1210 Modbus address and register map
+- id: device_name
+  aliases:
+  - deviceName
+  table: input_register
+  address: 5040
+  type: string
+  registers: 30
+  source:
+    address: '305041'
+    page: 97
+    reference: Appendix A, ioLogik E1210 Modbus address and register map
+- id: firmware_version
+  aliases:
+  - firmwareVersion
+  table: input_register
+  address: 5029
+  type: bytes
+  registers: 2
+  stability: constant
+  source:
+    address: '35030'
+    page: 97
+    reference: Appendix A, ioLogik E1210 Modbus address and register map

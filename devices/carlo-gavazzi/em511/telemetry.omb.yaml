@@ -1,0 +1,258 @@
+openmodbus: 0.1.0
+info:
+  id: carlo-gavazzi/em511/telemetry
+  title: Carlo Gavazzi EM511 telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the EM511 Modbus RTU map. Function codes 03 and
+    04 return the same values; the points use the input-register (function 04) table.
+    32-bit values are least significant word first. The firmware version and identification
+    code registers must be read one word at a time.
+
+    '
+  attribution: Derived from Carlo Gavazzi's EM511 Communication Protocol.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: carlo-gavazzi-em511-protocol
+device:
+  manufacturer: Carlo Gavazzi
+  model: EM511
+  classes:
+  - energy_meter
+  transports:
+  - type: rtu
+  documentation:
+  - title: EM511 Communication Protocol
+    url: https://www.gavazziautomation.com/fileadmin/images/PIM/OTHERSTUFF/COMPRO/EM511%20CP%20Rev1.8.pdf
+    revision: rev. 1.8 (2023-05-23)
+defaults:
+  table: input_register
+  access: r
+constraints:
+  ranges:
+  - table: input_register
+    start: 11
+    count: 1
+    policy: isolated
+    reason: 'Vendor: read only with function 03 or 04, limited to a word at a time.'
+  - table: input_register
+    start: 770
+    count: 1
+    policy: isolated
+    reason: 'Vendor: read only with function 03 or 04, limited to a word at a time.'
+points:
+- id: voltage
+  address: 0
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  invalid:
+  - 2147483647
+  aliases:
+  - V L-N
+  source:
+    address: 0000h
+    page: 13
+    reference: Instantaneous variables and meters (grouped by variable type); 300001
+- id: current
+  address: 2
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  unit: A
+  invalid:
+  - 2147483647
+  aliases:
+  - A
+  source:
+    address: 0002h
+    page: 13
+    reference: Instantaneous variables and meters (grouped by variable type); 300003
+- id: active_power
+  address: 4
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: W
+  invalid:
+  - 2147483647
+  aliases:
+  - W
+  source:
+    address: 0004h
+    page: 13
+    reference: Instantaneous variables and meters (grouped by variable type); 300005
+- id: apparent_power
+  address: 6
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V.A
+  invalid:
+  - 2147483647
+  aliases:
+  - VA
+  source:
+    address: 0006h
+    page: 13
+    reference: Instantaneous variables and meters (grouped by variable type); 300007
+- id: reactive_power
+  address: 8
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  description: 'Vendor unit: var'
+  invalid:
+  - 2147483647
+  aliases:
+  - Var
+  source:
+    address: 0008h
+    page: 13
+    reference: Instantaneous variables and meters (grouped by variable type); 300009
+- id: identification_code
+  address: 11
+  type: u16
+  enum:
+    values:
+    - value: 1792
+      name: em511dinav81xs1x
+      label: EM511DINAV81XS1X
+    - value: 1793
+      name: em511dinav81xs1pfa
+      label: EM511DINAV81XS1PFA
+    - value: 1794
+      name: em511dinav81xs1pfb
+      label: EM511DINAV81XS1PFB
+  stability: constant
+  aliases:
+  - Carlo Gavazzi Controls identification code
+  source:
+    address: 000Bh
+    page: 16
+    reference: Carlo Gavazzi Controls identification code; 300012
+- id: power_factor
+  address: 14
+  type: i16
+  conversion:
+    exponent10: -3
+  invalid:
+  - 32767
+  aliases:
+  - PF (IEC convention – see Note)
+  source:
+    address: 000Eh
+    page: 13
+    reference: Instantaneous variables and meters (grouped by variable type); 300015
+- id: frequency
+  address: 15
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: Hz
+  invalid:
+  - 32767
+  aliases:
+  - Hz
+  source:
+    address: 000Fh
+    page: 13
+    reference: Instantaneous variables and meters (grouped by variable type); 300016
+- id: import_active_energy
+  address: 16
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: kW.h
+  aliases:
+  - kWh (+) TOT
+  source:
+    address: 0010h
+    page: 13
+    reference: Instantaneous variables and meters (grouped by variable type); 300017
+- id: export_active_energy
+  address: 32
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: kW.h
+  aliases:
+  - kWh (-) TOT
+  source:
+    address: 0020h
+    page: 13
+    reference: Instantaneous variables and meters (grouped by variable type); 300033
+- id: load_type
+  address: 113
+  type: i16
+  enum:
+    values:
+    - value: 1
+      name: inductive
+      label: L
+    - value: -1
+      name: capacitive
+      label: C
+  aliases:
+  - Inductive/Capacitive Load
+  source:
+    address: 0071h
+    page: 13
+    reference: Instantaneous variables and meters (grouped by variable type); 300114
+- id: firmware_major
+  address: 770
+  type: u16
+  mask: 61440
+  stability: constant
+  aliases:
+  - Major, Minor and Revision
+  source:
+    address: 0302h
+    page: 16
+    reference: Firmware version and revision code; 300771
+- id: firmware_minor
+  address: 770
+  type: u16
+  mask: 3840
+  stability: constant
+  aliases:
+  - Major, Minor and Revision
+  source:
+    address: 0302h
+    page: 16
+    reference: Firmware version and revision code; 300771
+- id: firmware_revision
+  address: 770
+  type: u16
+  mask: 255
+  stability: constant
+  aliases:
+  - Major, Minor and Revision
+  source:
+    address: 0302h
+    page: 16
+    reference: Firmware version and revision code; 300771
+- id: device_state
+  address: 20498
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: run
+      label: RUN
+    - value: 1
+      name: fault
+      label: FAULT
+  aliases:
+  - Device state
+  source:
+    address: 5012h
+    page: 22
+    reference: Device state; 320499

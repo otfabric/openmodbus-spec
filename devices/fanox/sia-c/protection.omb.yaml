@@ -1,0 +1,230 @@
+openmodbus: 0.1.0
+info:
+  id: fanox/sia-c/protection
+  title: Fanox SIA-C protection relay states
+  version: 0.1.0
+  description: 'Read-only state words of the SIA-C, read as two registers with function
+    03. Words marked (*) depend on the model. Measurements are not included.
+
+    '
+  attribution: Derived from Fanox's SIA C Modbus RTU Protocol Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: fanox-sia-c-modbus
+device:
+  manufacturer: Fanox
+  model: SIA-C
+  classes:
+  - protection_relay
+  transports:
+  - type: rtu
+  documentation:
+  - title: SIA C Self Power O/C & E/F Protection Relay Modbus RTU Protocol Manual
+    url: https://www.fanox.com/wp-content/uploads/documents/EN_FANOX_MODBUS_SIAC_MANUAL_Protocol_R003.pdf
+    revision: Rev. 03
+defaults:
+  table: holding_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+points:
+- id: model_and_version
+  address: 100
+  type: string
+  registers: 44
+  aliases:
+  - Read of Model and Version
+  description: 'ASCII88: character string ended by a NUL character.'
+  source:
+    address: '100'
+    page: 7
+    reference: General Memory Map
+- id: general
+  address: 500
+  type: u32
+  flags:
+    flags:
+    - bit: 0
+      name: trip
+      label: Trip
+    - bit: 1
+      name: external_trip
+      label: External Trip
+    - bit: 6
+      name: ready
+      label: Ready
+    - bit: 11
+      name: eeprom_error
+      label: EEPROM Error
+    - bit: 16
+      name: pickup
+      label: Pickup
+    - bit: 17
+      name: phase_a_pickup
+      label: Phase A Pickup
+    - bit: 18
+      name: phase_b_pickup
+      label: Phase B Pickup
+    - bit: 19
+      name: phase_c_pickup
+      label: Phase C Pickup
+    - bit: 20
+      name: ground_pickup
+      label: Ground Pickup
+    - bit: 21
+      name: phase_a_trip
+      label: Phase A Trip
+    - bit: 22
+      name: phase_b_trip
+      label: Phase B Trip
+    - bit: 23
+      name: phase_c_trip
+      label: Phase C Trip
+    - bit: 24
+      name: ground_trip
+      label: Ground Trip
+    - bit: 28
+      name: aux_power
+      label: Aux. Power
+    - bit: 29
+      name: self_power
+      label: Self-Power
+  aliases:
+  - General
+  source:
+    address: '500'
+    page: 8
+    reference: States Map, General
+- id: overcurrent_50_1
+  address: 504
+  type: u32
+  flags:
+    flags:
+    - bit: 3
+      name: pickup
+      label: 50-1 Pickup
+    - bit: 11
+      name: trip
+      label: 50-1 Trip
+  aliases:
+  - 50-1
+  source:
+    address: '504'
+    page: 9
+    reference: States Map, 50-1
+- id: overcurrent_50_51
+  address: 506
+  type: u32
+  flags:
+    flags:
+    - bit: 3
+      name: pickup
+      label: 50/51 Pickup
+    - bit: 11
+      name: trip
+      label: 50/51 Trip
+  aliases:
+  - 50/51
+  source:
+    address: '506'
+    page: 10
+    reference: States Map, 50/51
+- id: earth_overcurrent_50g_1
+  address: 508
+  type: u32
+  flags:
+    flags:
+    - bit: 4
+      name: pickup
+      label: 50N/G Pickup
+    - bit: 12
+      name: trip
+      label: 50N/G Trip
+  aliases:
+  - 50G-1
+  source:
+    address: '508'
+    page: 10
+    reference: States Map, 50G-1
+- id: earth_overcurrent_50_51g
+  address: 510
+  type: u32
+  flags:
+    flags:
+    - bit: 4
+      name: pickup
+      label: 50/51G Pickup
+    - bit: 12
+      name: trip
+      label: 50/51G Trip
+  aliases:
+  - 50/51G
+  source:
+    address: '510'
+    page: 10
+    reference: States Map, 50/51G
+- id: outputs
+  address: 514
+  type: u32
+  flags:
+    flags:
+    - bit: 3
+      name: trip_output
+      label: Trip Output
+  aliases:
+  - Outputs
+  source:
+    address: '514'
+    page: 10
+    reference: States Map, Outputs
+- id: cb_error
+  address: 520
+  type: u32
+  mask: 2
+  aliases:
+  - 52 Error
+  description: 'Marked (*) in the states map: depending on model.'
+  source:
+    address: 520 bit 01
+    page: 12
+    reference: States Map, 52 (*)
+- id: cb_open
+  address: 520
+  type: u32
+  mask: 4
+  aliases:
+  - 52 Open
+  description: 'Marked (*) in the states map: depending on model.'
+  source:
+    address: 520 bit 02
+    page: 12
+    reference: States Map, 52 (*)
+- id: cb_closed
+  address: 520
+  type: u32
+  mask: 32
+  aliases:
+  - 52 Close
+  description: 'Marked (*) in the states map: depending on model.'
+  source:
+    address: 520 bit 05
+    page: 12
+    reference: States Map, 52 (*)
+- id: thermal_49
+  address: 522
+  type: u32
+  flags:
+    flags:
+    - bit: 4
+      name: alarm
+      label: 49 Alarm
+    - bit: 12
+      name: trip
+      label: 49 Trip
+  aliases:
+  - 49 (*)
+  description: 'Marked (*) in the states map: depending on model.'
+  source:
+    address: '522'
+    page: 13
+    reference: States Map, 49 (*)

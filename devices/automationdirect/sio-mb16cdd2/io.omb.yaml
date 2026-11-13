@@ -1,0 +1,248 @@
+openmodbus: 0.1.0
+info:
+  id: automationdirect/sio-mb16cdd2/io
+  title: AutomationDirect Stride SIO-MB16CDD2 discrete I/O
+  version: 0.1.0
+  description: 'Read-only input and output states from the coil table, system flags
+    and firmware registers. The guide writes references as 0xxxx and 4xxxx without
+    stating the base; the bit diagrams that mirror coils into registers only fit 1-based
+    references, which the extractor checks. The input frequency registers are left
+    out to keep the subset within 20 points. Writable coils and registers are read-only
+    in this contract.
+
+    '
+  attribution: Derived from AutomationDirect's Stride Field I/O SIO-MB16CDD2 User
+    Guide.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: automationdirect-sio-mb16cdd2
+device:
+  manufacturer: AutomationDirect
+  family: Stride Field I/O
+  model: SIO-MB16CDD2
+  classes:
+  - remote_io
+  transports:
+  - type: tcp
+  documentation:
+  - title: Stride Field I/O SIO-MB16CDD2 User Guide
+    url: https://cdn.automationdirect.com/static/manuals/stridefio/siomb16cdd2ug.pdf
+    revision: 1st Edition, Rev. B
+defaults:
+  access: r
+points:
+- id: di_0
+  aliases:
+  - 'Input #0'
+  table: coil
+  address: 504
+  type: bool
+  source:
+    address: 00505 (0x01F9)
+    page: 2
+    reference: Coil addresses
+- id: di_1
+  aliases:
+  - 'Input #1'
+  table: coil
+  address: 505
+  type: bool
+  source:
+    address: 00506 (0x01FA)
+    page: 2
+    reference: Coil addresses
+- id: di_2
+  aliases:
+  - 'Input #2'
+  table: coil
+  address: 506
+  type: bool
+  source:
+    address: 00507 (0x01FB)
+    page: 2
+    reference: Coil addresses
+- id: di_3
+  aliases:
+  - 'Input #3'
+  table: coil
+  address: 507
+  type: bool
+  source:
+    address: 00508 (0x01FC)
+    page: 2
+    reference: Coil addresses
+- id: di_4
+  aliases:
+  - 'Input #4'
+  table: coil
+  address: 508
+  type: bool
+  source:
+    address: 00509 (0x01FD)
+    page: 2
+    reference: Coil addresses
+- id: di_5
+  aliases:
+  - 'Input #5'
+  table: coil
+  address: 509
+  type: bool
+  source:
+    address: 00510 (0x01FE)
+    page: 2
+    reference: Coil addresses
+- id: di_6
+  aliases:
+  - 'Input #6'
+  table: coil
+  address: 510
+  type: bool
+  source:
+    address: 00511 (0x01FF)
+    page: 2
+    reference: Coil addresses
+- id: di_7
+  aliases:
+  - 'Input #7'
+  table: coil
+  address: 511
+  type: bool
+  source:
+    address: 00512 (0x0200)
+    page: 2
+    reference: Coil addresses
+- id: do_0
+  aliases:
+  - 'Output #0'
+  table: coil
+  address: 488
+  type: bool
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: 00489 (0x01E9)
+    page: 2
+    reference: Coil addresses
+- id: do_1
+  aliases:
+  - 'Output #1'
+  table: coil
+  address: 489
+  type: bool
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: 00490 (0x01EA)
+    page: 2
+    reference: Coil addresses
+- id: do_2
+  aliases:
+  - 'Output #2'
+  table: coil
+  address: 490
+  type: bool
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: 00491 (0x01EB)
+    page: 2
+    reference: Coil addresses
+- id: do_3
+  aliases:
+  - 'Output #3'
+  table: coil
+  address: 491
+  type: bool
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: 00492 (0x01EC)
+    page: 2
+    reference: Coil addresses
+- id: do_4
+  aliases:
+  - 'Output #4'
+  table: coil
+  address: 492
+  type: bool
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: 00493 (0x01ED)
+    page: 2
+    reference: Coil addresses
+- id: do_5
+  aliases:
+  - 'Output #5'
+  table: coil
+  address: 493
+  type: bool
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: 00494 (0x01EE)
+    page: 2
+    reference: Coil addresses
+- id: do_6
+  aliases:
+  - 'Output #6'
+  table: coil
+  address: 494
+  type: bool
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: 00495 (0x01EF)
+    page: 2
+    reference: Coil addresses
+- id: do_7
+  aliases:
+  - 'Output #7'
+  table: coil
+  address: 495
+  type: bool
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: 00496 (0x01F0)
+    page: 2
+    reference: Coil addresses
+- id: system_flags
+  aliases:
+  - System Flags
+  table: holding_register
+  address: 10
+  type: u16
+  flags:
+    flags:
+    - bit: 8
+      name: watchdog_enable
+      label: Watchdog Enable
+    - bit: 9
+      name: watchdog_event
+      label: Watchdog Event
+    - bit: 10
+      name: power_up_event
+      label: Power Up Event
+    - bit: 12
+      name: short_circuit_alarm
+      label: Short Circuit Alarm
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '40011'
+    page: 2
+    reference: Register addresses
+- id: firmware_0
+  aliases:
+  - Firmware [0]
+  table: holding_register
+  address: 1
+  type: u16
+  stability: constant
+  source:
+    address: '40002'
+    page: 2
+    reference: Register addresses
+- id: firmware_1
+  aliases:
+  - Firmware [1]
+  table: holding_register
+  address: 2
+  type: u16
+  stability: constant
+  source:
+    address: '40003'
+    page: 2
+    reference: Register addresses

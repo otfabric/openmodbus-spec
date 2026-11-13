@@ -1,0 +1,333 @@
+openmodbus: 0.1.0
+info:
+  id: smartgen/hgm9510/telemetry
+  title: SmartGen HGM9510 generator, alarm and status registers
+  version: 0.1.0
+  description: 'Read-only subset of Table 2 (alarm and status bits) and Table 6 (value
+    data field) of the HGM9510 Genset Controller Communication Protocol version 1.1,
+    read with function code 03H. Rows with a blank Ratio cell are left out because
+    the document gives no scale for them; among them are the generator frequency,
+    the active power values, engine speed, battery voltage and the accumulated start
+    counter.
+
+    '
+  attribution: Derived from SmartGen's HGM9510 Genset Controller Communication Protocol.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: smartgen-hgm9510
+device:
+  manufacturer: SmartGen
+  model: HGM9510
+  classes:
+  - genset_controller
+  transports:
+  - type: rtu
+    notes: Two RS485 ports with the same protocol.
+  unitId:
+    mode: configurable
+    default: 1
+    notes: Communication address 1 to 254.
+  documentation:
+  - title: HGM9510 Genset Controller Communication Protocol
+    url: https://www.smartgen.cn/yun/data/download/HGM9510_Protocol_en.pdf
+    revision: 1.1 (2021-10-21)
+defaults:
+  table: holding_register
+  access: r
+constraints:
+  maxReadRegisters: 120
+points:
+- id: common_status
+  label: Common alarm and mode bits
+  address: 0
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: common_alarm
+      label: Common Alarm
+    - bit: 1
+      name: common_shutdown_alarm
+      label: Common Shutdown Alarm
+    - bit: 2
+      name: common_warning_alarm
+      label: Common Warning Alarm
+    - bit: 3
+      name: common_trip_and_stop_alarm
+      label: Common Trip and Stop Alarm
+    - bit: 4
+      name: common_trip_alarm
+      label: Common Trip Alarm
+    - bit: 5
+      name: common_safety_trip_and_stop_alarm
+      label: Common Safety Trip and Stop Alarm
+    - bit: 6
+      name: common_safety_trip_alarm
+      label: Common Safety Trip Alarm
+    - bit: 7
+      name: common_block_alarm
+      label: Common Block Alarm
+    - bit: 9
+      name: in_auto_mode
+      label: In Auto Mode
+    - bit: 10
+      name: in_manual_mode
+      label: In Manual Mode
+    - bit: 11
+      name: in_stop_mode
+      label: In Stop Mode
+  description: Bit numbers are the document's (bit 0 is marked LSB); reserved bits
+    are left out.
+  source:
+    address: 0000.0-0000.15
+    page: 6
+    reference: Table 2 Alarm, Status Coil Data Field
+- id: shutdown_alarms_1
+  label: Shutdown alarms 1
+  address: 1
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: emergency_stop_alarm
+      label: Emergency Stop Alarm
+    - bit: 1
+      name: overspeed_alarm_shut
+      label: Overspeed Alarm Shut
+    - bit: 2
+      name: underspeed_alarm_shut
+      label: Underspeed Alarm Shut
+    - bit: 3
+      name: loss_of_speed_signal_alarm
+      label: Loss of Speed Signal Alarm
+    - bit: 4
+      name: gen_overfrequency_alarm_shut
+      label: Gen Overfrequency Alarm Shut
+    - bit: 5
+      name: gen_undrfrequency_shut
+      label: Gen Undrfrequency Shut
+    - bit: 6
+      name: gen_overvoltage_shut
+      label: Gen Overvoltage Shut
+    - bit: 7
+      name: gen_undervoltage_shut
+      label: Gen Undervoltage Shut
+    - bit: 8
+      name: start_failure_alarm
+      label: Start Failure Alarm
+    - bit: 9
+      name: gen_overcurrent_shut
+      label: Gen Overcurrent Shut
+    - bit: 10
+      name: maintenance_due_alarm_shut
+      label: Maintenance Due Alarm Shut.
+    - bit: 11
+      name: ecu_alarm_shut
+      label: ECU Alarm Shut
+    - bit: 12
+      name: reverse_power_alarm_shut
+      label: Reverse Power Alarm Shut
+    - bit: 13
+      name: over_power_alarm_shut
+      label: Over Power Alarm Shut
+    - bit: 14
+      name: high_temp_alarm_shut
+      label: High Temp Alarm Shut
+    - bit: 15
+      name: low_oil_pressure_alarm_shut
+      label: Low Oil Pressure Alarm Shut
+  description: Bit numbers are the document's (bit 0 is marked LSB); reserved bits
+    are left out.
+  source:
+    address: 0001.0-0001.15
+    page: 6
+    reference: Table 2 Alarm, Status Coil Data Field
+- id: mains_frequency
+  aliases:
+  - Mains Freq
+  address: 64
+  type: i16
+  conversion:
+    exponent10: -2
+  unit: Hz
+  source:
+    address: '0064'
+    page: 27
+    reference: Table 6 Value Data Field, Mains Freq
+- id: generator_voltage_ab
+  aliases:
+  - Gen UAB
+  address: 75
+  type: i16
+  unit: V
+  source:
+    address: '0075'
+    page: 28
+    reference: Table 6 Value Data Field, Gen UAB
+- id: generator_voltage_a
+  aliases:
+  - Gen UA
+  address: 78
+  type: i16
+  unit: V
+  source:
+    address: '0078'
+    page: 28
+    reference: Table 6 Value Data Field, Gen UA
+- id: generator_voltage_b
+  aliases:
+  - Gen UB
+  address: 79
+  type: i16
+  unit: V
+  source:
+    address: '0079'
+    page: 28
+    reference: Table 6 Value Data Field, Gen UB
+- id: generator_voltage_c
+  aliases:
+  - Gen UC
+  address: 80
+  type: i16
+  unit: V
+  source:
+    address: '0080'
+    page: 28
+    reference: Table 6 Value Data Field, Gen UC
+- id: generator_current_a
+  aliases:
+  - A Phase Current
+  address: 95
+  type: u16
+  unit: A
+  source:
+    address: '0095'
+    page: 28
+    reference: Table 6 Value Data Field, A Phase Current
+- id: generator_current_b
+  aliases:
+  - B Phase Current
+  address: 96
+  type: u16
+  unit: A
+  source:
+    address: '0096'
+    page: 28
+    reference: Table 6 Value Data Field, B Phase Current
+- id: generator_current_c
+  aliases:
+  - C Phase Current
+  address: 97
+  type: u16
+  unit: A
+  source:
+    address: '0097'
+    page: 28
+    reference: Table 6 Value Data Field, C Phase Current
+- id: generator_status
+  aliases:
+  - Gen Working Status
+  address: 189
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: standby
+      label: Standby
+    - value: 1
+      name: preheat
+      label: Preheat
+    - value: 2
+      name: fuel_output
+      label: Fuel Output
+    - value: 3
+      name: cranking
+      label: Cranking
+    - value: 4
+      name: crank_rest
+      label: Crank Rest
+    - value: 5
+      name: safety_delay
+      label: Safety Delay
+    - value: 6
+      name: start_idle
+      label: Start Idle
+    - value: 7
+      name: high_speed_warming_up
+      label: High-speed Warming Up
+    - value: 8
+      name: wait_for_load
+      label: Wait for Load
+    - value: 9
+      name: normal_running
+      label: Normal Running
+    - value: 10
+      name: high_speed_cooling
+      label: High-speed Cooling
+    - value: 11
+      name: stop_idle
+      label: Stop Idle
+    - value: 12
+      name: ets
+      label: ETS
+    - value: 13
+      name: wait_for_stop
+      label: Wait for Stop
+    - value: 14
+      name: stop_failure
+      label: Stop Failure
+    - value: 15
+      name: after_stop
+      label: After Stop
+  source:
+    address: '0189'
+    page: 32
+    reference: Table 6 Value Data Field, Gen Working Status; Generator Status Table
+- id: mains_status
+  aliases:
+  - Mains Status
+  address: 195
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: mains_normal
+      label: Mains Normal
+    - value: 1
+      name: mains_normal_delay
+      label: Mains Normal Delay
+    - value: 2
+      name: mains_abnormal
+      label: Mains Abnormal
+    - value: 3
+      name: mains_abnormal_delay
+      label: Mains Abnormal Delay
+  source:
+    address: '0195'
+    page: 32
+    reference: Table 6 Value Data Field, Mains Status; Mains Status Table
+- id: running_hours
+  aliases:
+  - Accum. Running Hours
+  address: 199
+  type: u16
+  unit: h
+  description: The document gives the range 0~23 for this register; the minutes and
+    seconds of the accumulated running time follow in the next two registers.
+  source:
+    address: '0199'
+    page: 32
+    reference: Table 6 Value Data Field, Accum. Running Hours
+- id: energy_counter_a
+  aliases:
+  - A Gen Power kWh
+  address: 274
+  type: i32
+  wordOrder: little
+  unit: kW.h
+  description: The document lists A and B counter sets (running time, starts, energy)
+    without explaining them.
+  source:
+    address: 0274-0275
+    page: 35
+    reference: Table 6 Value Data Field, A Gen Power kWh

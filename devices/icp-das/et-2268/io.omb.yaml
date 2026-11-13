@@ -1,0 +1,212 @@
+openmodbus: 0.1.0
+info:
+  id: icp-das/et-2268/io
+  title: ICP DAS ET-2268 relay outputs and status
+  version: 0.1.0
+  description: 'Read-only subset of the section 6.3 DIO tables for the 8-channel ET-2268:
+    output states read back, output settings and module status. Configuration coils
+    and registers are read-only in this contract.
+
+    '
+  attribution: Derived from ICP DAS's ET-2200 Series Ethernet I/O Modules User Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: icp-das-et-2200-manual
+device:
+  manufacturer: ICP DAS
+  family: ET-2200
+  model: ET-2268
+  classes:
+  - remote_io
+  transports:
+  - type: tcp
+  - type: udp
+  unitId:
+    default: 1
+  documentation:
+  - title: ET-2200 Series Ethernet I/O Modules User Manual
+    url: https://www.icpdas.com/web/product/download/io_and_unit/ethernet/et2200/document/manual/ET-2200_user_manual_en.pdf
+    revision: Ver. 2.0, Apr. 2026
+defaults:
+  access: r
+points:
+- id: do_status
+  aliases:
+  - Digital Output Channels
+  table: coil
+  address: 0
+  type: bool
+  count: 8
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: 0 (0x00)
+    page: 178
+    reference: Section 6.3, 0xxxx DO address table
+- id: do_pwm_enable
+  aliases:
+  - Enables the PWM for all DO Channels
+  table: coil
+  address: 100
+  type: bool
+  count: 8
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: 100 (0x64)
+    page: 178
+    reference: Section 6.3, 0xxxx DO address table
+- id: do_power_on_value
+  aliases:
+  - Sets the Power-on value for all DO Channels
+  table: coil
+  address: 235
+  type: bool
+  count: 8
+  description: Vendor access R/W/F; read-only in this contract.
+  source:
+    address: 235 (0xEB)
+    page: 179
+    reference: Section 6.3, 0xxxx DO address table
+- id: do_safe_value
+  aliases:
+  - Sets the Safe value for all DO Channels
+  table: coil
+  address: 267
+  type: bool
+  count: 8
+  description: Vendor access R/W/F; read-only in this contract.
+  source:
+    address: 267 (0x10B)
+    page: 179
+    reference: Section 6.3, 0xxxx DO address table
+- id: do_channel_count
+  aliases:
+  - Number of DO Channels
+  table: input_register
+  address: 110
+  type: u16
+  source:
+    address: 110 (0x6E)
+    page: 180
+    reference: Section 6.3, 3xxxx AI address table
+- id: do_min_switching_time
+  aliases:
+  - The Min-Switching Time for all DO Channels
+  table: holding_register
+  address: 268
+  type: u16
+  count: 8
+  unit: s
+  description: Vendor access R/W/F; read-only in this contract.
+  source:
+    address: 268 (0x10C)
+    page: 181
+    reference: Section 6.3, 4xxxx AO address table
+- id: do_auto_off_time
+  aliases:
+  - The Auto-off Time for all DO Channels
+  table: holding_register
+  address: 284
+  type: u16
+  count: 8
+  unit: s
+  description: Vendor access R/W/F; read-only in this contract.
+  source:
+    address: 284 (0x11C)
+    page: 181
+    reference: Section 6.3, 4xxxx AO address table
+- id: firmware_version
+  aliases:
+  - Firmware Version
+  table: input_register
+  address: 151
+  type: u16
+  description: 'Decimal digits of the firmware version: 123 means 1.2.3.'
+  stability: constant
+  source:
+    address: 151 (0x97)
+    page: 176
+    reference: Section 6.3, 3xxxx AI address table
+- id: modbus_communication_status
+  aliases:
+  - Modbus Communication Status
+  table: input_register
+  address: 158
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: no_error
+      label: No Error
+    - value: 1
+      name: timeout
+      label: Timeout
+  source:
+    address: 158 (0x9E)
+    page: 176
+    reference: Section 6.3, 3xxxx AI address table
+- id: pair_connection_status
+  aliases:
+  - Pair-Connection Status
+  table: input_register
+  address: 160
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: normal
+      label: Normal
+    - value: 1
+      name: timeout
+      label: Timeout
+    - value: 2
+      name: disconnected
+      label: Disconnected
+  source:
+    address: 160 (0xA0)
+    page: 176
+    reference: Section 6.3, 3xxxx AI address table
+- id: cpu_reset_status
+  aliases:
+  - CPU Reset Status
+  table: holding_register
+  address: 255
+  type: u16
+  enum:
+    values:
+    - value: 1
+      name: power_on
+      label: Reset at Power-on
+    - value: 2
+      name: watchdog
+      label: Reset by the WDT
+    - value: 3
+      name: reset_command
+      label: Reset using the reset command
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: 255 (0xFF)
+    page: 177
+    reference: Section 6.3, 4xxxx AO address table
+- id: host_wdt_events
+  aliases:
+  - Host WDT Events
+  table: holding_register
+  address: 258
+  type: u16
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: 258 (0x102)
+    page: 177
+    reference: Section 6.3, 4xxxx AO address table
+- id: module_name
+  aliases:
+  - Module Name
+  table: holding_register
+  address: 259
+  type: u16
+  description: 16-bit module name value; the manual does not document its encoding.
+  stability: constant
+  source:
+    address: 259 (0x103)
+    page: 177
+    reference: Section 6.3, 4xxxx AO address table

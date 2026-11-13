@@ -1,0 +1,302 @@
+openmodbus: 0.1.0
+info:
+  id: carlo-gavazzi/em540/telemetry
+  title: Carlo Gavazzi EM540 telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the EM530/EM540 Modbus RTU map (table grouped
+    by phase). Function codes 03 and 04 return the same values; the points use the
+    input-register (function 04) table. 32-bit values are least significant word first.
+    The firmware version and identification code registers must be read one word at
+    a time. The document marks overflow by an MSW of 7FFFh, which no `invalid` list
+    here expresses.
+
+    '
+  attribution: Derived from Carlo Gavazzi's EM530/EM540 Modbus Communication Protocol.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: carlo-gavazzi-em530-em540-protocol
+device:
+  manufacturer: Carlo Gavazzi
+  model: EM540
+  classes:
+  - energy_meter
+  transports:
+  - type: rtu
+  documentation:
+  - title: EM530/EM540 Modbus Communication Protocol
+    url: https://www.gavazziautomation.com/fileadmin/images/PIM/OTHERSTUFF/COMPRO/EM500_CPP_Mod_V1.3_13022024.pdf
+    revision: Version 1.3 (2024-02-13)
+defaults:
+  table: input_register
+  access: r
+constraints:
+  ranges:
+  - table: input_register
+    start: 11
+    count: 1
+    policy: isolated
+    reason: 'Vendor: read only with function 03 or 04, limited to a word at a time.'
+  - table: input_register
+    start: 770
+    count: 1
+    policy: isolated
+    reason: 'Vendor: read only with function 03 or 04, limited to a word at a time.'
+points:
+- id: identification_code
+  address: 11
+  type: u16
+  enum:
+    values:
+    - value: 1760
+      name: em540dinav23xs1x
+      label: EM540DINAV23XS1X
+    - value: 1761
+      name: em540dinav23xs1pfa
+      label: EM540DINAV23XS1PFA
+    - value: 1762
+      name: em540dinav23xs1pfb
+      label: EM540DINAV23XS1PFB
+    - value: 1763
+      name: em540dinav23xs1pfc
+      label: EM540DINAV23XS1PFC
+  stability: constant
+  aliases:
+  - Carlo Gavazzi Controls identification code
+  source:
+    address: 000Bh
+    page: 18
+    reference: Carlo Gavazzi Controls identification code; 300012
+- id: active_power_total
+  address: 262
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: W
+  aliases:
+  - W sys
+  source:
+    address: 0106h
+    page: 14
+    reference: Instantaneous variables and meters (grouped by phase); 300263
+- id: apparent_power_total
+  address: 264
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V.A
+  aliases:
+  - VA sys
+  source:
+    address: 0108h
+    page: 14
+    reference: Instantaneous variables and meters (grouped by phase); 300265
+- id: reactive_power_total
+  address: 266
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  description: 'Vendor unit: var'
+  aliases:
+  - var sys
+  source:
+    address: 010Ah
+    page: 14
+    reference: Instantaneous variables and meters (grouped by phase); 300267
+- id: power_factor_total
+  address: 268
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  aliases:
+  - PF sys
+  source:
+    address: 010Ch
+    page: 14
+    reference: Instantaneous variables and meters (grouped by phase); 300269
+- id: frequency
+  address: 272
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: Hz
+  aliases:
+  - Hz
+  source:
+    address: 0110h
+    page: 14
+    reference: Instantaneous variables and meters (grouped by phase); 300273
+- id: import_active_energy
+  address: 274
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: kW.h
+  aliases:
+  - kWh (+) TOT
+  source:
+    address: 0112h
+    page: 15
+    reference: Instantaneous variables and meters (grouped by phase); 300275
+- id: export_active_energy
+  address: 278
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: kW.h
+  aliases:
+  - kWh (-) TOT
+  source:
+    address: 0116h
+    page: 15
+    reference: Instantaneous variables and meters (grouped by phase); 300279
+- id: voltage_l1_l2
+  address: 286
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  aliases:
+  - V L1-L2
+  source:
+    address: 011Eh
+    page: 15
+    reference: Instantaneous variables and meters (grouped by phase); 300287
+- id: voltage_l1_n
+  address: 288
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  aliases:
+  - V L1-N
+  source:
+    address: 0120h
+    page: 15
+    reference: Instantaneous variables and meters (grouped by phase); 300289
+- id: current_l1
+  address: 290
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  unit: A
+  aliases:
+  - A L1
+  source:
+    address: 0122h
+    page: 15
+    reference: Instantaneous variables and meters (grouped by phase); 300291
+- id: voltage_l2_n
+  address: 302
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  aliases:
+  - V L2-N
+  source:
+    address: 012Eh
+    page: 15
+    reference: Instantaneous variables and meters (grouped by phase); 300303
+- id: current_l2
+  address: 304
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  unit: A
+  aliases:
+  - A L2
+  source:
+    address: 0130h
+    page: 15
+    reference: Instantaneous variables and meters (grouped by phase); 300305
+- id: voltage_l3_n
+  address: 316
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  aliases:
+  - V L3-N
+  source:
+    address: 013Ch
+    page: 15
+    reference: Instantaneous variables and meters (grouped by phase); 300317
+- id: current_l3
+  address: 318
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  unit: A
+  aliases:
+  - A L3
+  source:
+    address: 013Eh
+    page: 15
+    reference: Instantaneous variables and meters (grouped by phase); 300319
+- id: firmware_major
+  address: 770
+  type: u16
+  mask: 61440
+  stability: constant
+  aliases:
+  - Major, Minor and Revision
+  source:
+    address: 0302h
+    page: 17
+    reference: Firmware version and revision code; 300771
+- id: firmware_minor
+  address: 770
+  type: u16
+  mask: 3840
+  stability: constant
+  aliases:
+  - Major, Minor and Revision
+  source:
+    address: 0302h
+    page: 17
+    reference: Firmware version and revision code; 300771
+- id: firmware_revision
+  address: 770
+  type: u16
+  mask: 255
+  stability: constant
+  aliases:
+  - Major, Minor and Revision
+  source:
+    address: 0302h
+    page: 17
+    reference: Firmware version and revision code; 300771
+- id: device_state
+  address: 20498
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: run
+      label: RUN
+    - value: 1
+      name: fault
+      label: FAULT
+    - value: 2
+      name: configuration_error
+      label: CONFIGURATION ERROR
+  aliases:
+  - Device state
+  source:
+    address: 5012h
+    page: 31
+    reference: Device state; 320499

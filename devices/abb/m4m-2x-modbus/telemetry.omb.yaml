@@ -1,0 +1,281 @@
+openmodbus: 0.1.0
+info:
+  id: abb/m4m-2x-modbus/telemetry
+  title: ABB M4M 2X Modbus telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the M4M Modbus map for product type 15, which
+    the map''s Details sheet names "M4M 2X RTU". Read with FC 3; 32- and 64-bit values
+    put the most significant word first; unavailable quantities read all ones (unsigned)
+    or the largest positive value (signed). These conventions are stated in ABB''s
+    Modbus manual for M4M network analyzers, 2CSG445050D0201 v1.05, which defines
+    the map''s columns. The PQ, RTS and Rogowski variants of the M4M 2X have their
+    own product type IDs and are not covered.
+
+    '
+  attribution: Derived from ABB's Modbus protocol map for M4M network analyzers.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: abb-m4m-modbus-map
+device:
+  manufacturer: ABB
+  family: M4M
+  model: M4M 2X Modbus
+  classes:
+  - power_meter
+  transports:
+  - type: rtu
+  documentation:
+  - title: Modbus protocol map for M4M network analyzers
+    url: https://search.abb.com/library/Download.aspx?DocumentID=9AKK107492A7627&LanguageCode=en&DocumentPartId=&Action=Launch
+    revision: 9AKK107492A7627 rev. F, map v1.3O
+  - title: Modbus manual, M4M network analyzers
+    url: https://search.abb.com/library/Download.aspx?DocumentID=2CSG445050D0201&LanguageCode=en&DocumentPartId=&Action=Launch
+    revision: 2CSG445050D0201 v1.05
+defaults:
+  table: holding_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+points:
+- id: active_energy_import
+  address: 20480
+  type: u64
+  conversion:
+    exponent10: -2
+  unit: kW.h
+  invalid:
+  - 18446744073709551615
+  aliases:
+  - Active energy - import
+  source:
+    address: '0x5000'
+    reference: '''Mapping Table''!G3'
+- id: active_energy_export
+  address: 20484
+  type: u64
+  conversion:
+    exponent10: -2
+  unit: kW.h
+  invalid:
+  - 18446744073709551615
+  aliases:
+  - Active energy - export
+  source:
+    address: '0x5004'
+    reference: '''Mapping Table''!G4'
+- id: active_energy_net
+  address: 20488
+  type: i64
+  conversion:
+    exponent10: -2
+  unit: kW.h
+  invalid:
+  - 9223372036854775807
+  aliases:
+  - Active energy - net
+  source:
+    address: '0x5008'
+    reference: '''Mapping Table''!G5'
+- id: reactive_energy_import
+  address: 20492
+  type: u64
+  conversion:
+    exponent10: -2
+  description: 'Vendor unit: kvarh.'
+  invalid:
+  - 18446744073709551615
+  aliases:
+  - Reactive energy - import
+  source:
+    address: '0x500C'
+    reference: '''Mapping Table''!G6'
+- id: voltage_l1_n
+  address: 23298
+  type: u32
+  conversion:
+    exponent10: -1
+  unit: V
+  invalid:
+  - 4294967295
+  aliases:
+  - Phase voltage L1
+  source:
+    address: '0x5B02'
+    reference: '''Mapping Table''!G28'
+- id: voltage_l2_n
+  address: 23300
+  type: u32
+  conversion:
+    exponent10: -1
+  unit: V
+  invalid:
+  - 4294967295
+  aliases:
+  - Phase voltage L2
+  source:
+    address: '0x5B04'
+    reference: '''Mapping Table''!G29'
+- id: voltage_l3_n
+  address: 23302
+  type: u32
+  conversion:
+    exponent10: -1
+  unit: V
+  invalid:
+  - 4294967295
+  aliases:
+  - Phase voltage L3
+  source:
+    address: '0x5B06'
+    reference: '''Mapping Table''!G30'
+- id: voltage_l1_l2
+  address: 23304
+  type: u32
+  conversion:
+    exponent10: -1
+  unit: V
+  invalid:
+  - 4294967295
+  aliases:
+  - Line voltage L1-L2
+  source:
+    address: '0x5B08'
+    reference: '''Mapping Table''!G31'
+- id: current_l1
+  address: 23312
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: A
+  invalid:
+  - 4294967295
+  aliases:
+  - Current L1
+  source:
+    address: '0x5B10'
+    reference: '''Mapping Table''!G35'
+- id: current_l2
+  address: 23314
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: A
+  invalid:
+  - 4294967295
+  aliases:
+  - Current L2
+  source:
+    address: '0x5B12'
+    reference: '''Mapping Table''!G36'
+- id: current_l3
+  address: 23316
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: A
+  invalid:
+  - 4294967295
+  aliases:
+  - Current L3
+  source:
+    address: '0x5B14'
+    reference: '''Mapping Table''!G37'
+- id: active_power_total
+  address: 23322
+  type: i32
+  conversion:
+    exponent10: -2
+  unit: W
+  invalid:
+  - 2147483647
+  aliases:
+  - Active power Total
+  source:
+    address: '0x5B1A'
+    reference: '''Mapping Table''!G39'
+- id: reactive_power_total
+  address: 23330
+  type: i32
+  conversion:
+    exponent10: -2
+  description: 'Vendor unit: var.'
+  invalid:
+  - 2147483647
+  aliases:
+  - Reactive power Total
+  source:
+    address: '0x5B22'
+    reference: '''Mapping Table''!G43'
+- id: apparent_power_total
+  address: 23338
+  type: i32
+  conversion:
+    exponent10: -2
+  unit: V.A
+  invalid:
+  - 2147483647
+  aliases:
+  - Apparent power Total
+  source:
+    address: '0x5B2A'
+    reference: '''Mapping Table''!G47'
+- id: frequency
+  address: 23346
+  type: u16
+  conversion:
+    exponent10: -2
+  unit: Hz
+  invalid:
+  - 65535
+  aliases:
+  - Frequency
+  source:
+    address: '0x5B32'
+    reference: '''Mapping Table''!G51'
+- id: power_factor_total
+  address: 23360
+  type: i16
+  conversion:
+    exponent10: -3
+  invalid:
+  - 32767
+  aliases:
+  - Power factors Total
+  source:
+    address: '0x5B40'
+    reference: '''Mapping Table''!G55'
+- id: voltage_thd_l1
+  address: 23808
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: '%'
+  invalid:
+  - 65535
+  aliases:
+  - Voltage THD harmonics L1 (THD)
+  source:
+    address: '0x5D00'
+    reference: '''Mapping Table''!G174'
+- id: current_thd_l1
+  address: 24576
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: '%'
+  invalid:
+  - 65535
+  aliases:
+  - Current harmonics L1 (THD)
+  source:
+    address: '0x6000'
+    reference: '''Mapping Table''!G192'
+- id: serial_number
+  address: 35072
+  type: string
+  registers: 5
+  aliases:
+  - Serial number(s)
+  source:
+    address: '0x8900'
+    reference: '''Mapping Table''!G297'

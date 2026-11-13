@@ -1,0 +1,286 @@
+openmodbus: 0.1.0
+info:
+  id: schneider-electric/sepam-s20/protection
+  title: Schneider Electric Sepam S20 status and measurements
+  version: 0.1.0
+  description: 'Read-only status and measurement zones of the Sepam series 20 substation
+    application S20. Only the remote annunciation bits (TS) and measurements marked
+    for S20 are listed; measurements that do not apply read zero.
+
+    '
+  attribution: Derived from Schneider Electric's Sepam series 20 User's manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: schneider-electric-sepam-series20-manual
+device:
+  manufacturer: Schneider Electric
+  family: Sepam series 20
+  model: Sepam S20
+  classes:
+  - protection_relay
+  transports:
+  - type: rtu
+  documentation:
+  - title: Sepam series 20 User's manual
+    url: https://download.se.com/files?p_Doc_Ref=PCRED301005EN&p_enDocType=User+guide&p_File_Name=PCRED301005EN_14.pdf
+    revision: PCRED301005EN/14, 06/2025
+defaults:
+  table: holding_register
+  access: r
+points:
+- id: check_word
+  address: 256
+  type: u16
+  flags:
+    flags:
+    - bit: 4
+      name: tripping_by_protection
+      label: remote indication of tripping by protection function
+    - bit: 6
+      name: setting_group_b
+      label: setting group B in service
+    - bit: 7
+      name: setting_group_a
+      label: setting group A in service
+    - bit: 8
+      name: partial_fault
+      label: partial fault in Sepam
+    - bit: 9
+      name: major_fault
+      label: major fault in Sepam
+    - bit: 10
+      name: local_setting_mode
+      label: Sepam in local setting mode
+    - bit: 11
+      name: slan_monitoring_active
+      label: S-LAN communication monitoring active
+    - bit: 12
+      name: time_not_correct
+      label: Sepam time not correct
+    - bit: 13
+      name: not_synchronous
+      label: Sepam not synchronous
+    - bit: 14
+      name: data_loss
+      label: Sepam in “data loss” status
+    - bit: 15
+      name: event_present
+      label: event present
+  aliases:
+  - Sepam check-word
+  description: Format X. Bits 3-0 carry the mapping number and the other bits are
+    reserved (undetermined values). Changes of bits 6, 7, 8, 10, 12, 13 and 14 are
+    time-tagged events.
+  source:
+    address: '0100'
+    page: 111
+    reference: 'Format X: Sepam check-word'
+- id: annunciation_ts1_ts16
+  address: 257
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: protection_50_51_relay_1_group_a
+      label: TS1 Protection 50/51 relay 1 group A
+    - bit: 1
+      name: protection_50_51_relay_2_group_a
+      label: TS2 Protection 50/51 relay 2 group A
+    - bit: 2
+      name: protection_50_51_relay_1_group_b
+      label: TS3 Protection 50/51 relay 1 group B
+    - bit: 3
+      name: protection_50_51_relay_2_group_b
+      label: TS4 Protection 50/51 relay 2 group B
+    - bit: 4
+      name: protection_50n_51n_relay_1_group_a
+      label: TS5 Protection 50N/51N relay 1 group A
+    - bit: 5
+      name: protection_50n_51n_relay_2_group_a
+      label: TS6 Protection 50N/51N relay 2 group A
+    - bit: 6
+      name: protection_50n_51n_relay_1_group_b
+      label: TS7 Protection 50N/51N relay 1 group B
+    - bit: 7
+      name: protection_50n_51n_relay_2_group_b
+      label: TS8 Protection 50N/51N relay 2 group B
+    - bit: 11
+      name: protection_46
+      label: TS12 Protection 46
+  aliases:
+  - TS1-TS16
+  description: Remote annunciation bits pre-assigned to protection and control functions;
+    only the TS marked for S20 are listed. Each TS transition is time-tagged in the
+    event stack.
+  source:
+    address: '0101'
+    page: 116
+    reference: 'Address word 0101: TS1 to TS16'
+- id: annunciation_ts33_ts48
+  address: 259
+  type: u16
+  flags:
+    flags:
+    - bit: 1
+      name: recloser_in_service
+      label: TS34 Recloser in service
+    - bit: 2
+      name: recloser_in_progress
+      label: TS35 Recloser in progress
+    - bit: 3
+      name: recloser_permanent_trip
+      label: TS36 Recloser permanent trip
+    - bit: 4
+      name: recloser_successful_trip
+      label: TS37 Recloser successful trip
+    - bit: 5
+      name: send_blocking_input
+      label: TS38 Send blocking input
+    - bit: 6
+      name: remote_setting_inhibited
+      label: TS39 Remote setting inhibited
+    - bit: 7
+      name: remote_control_inhibited
+      label: TS40 Remote control inhibited
+    - bit: 8
+      name: sepam_not_reset_after_fault
+      label: TS41 Sepam not reset after fault
+    - bit: 9
+      name: remote_control_position_discrepancy
+      label: TS42 Remote control/position discrepancy
+    - bit: 10
+      name: matching_fault_or_trip_circuit_supervision
+      label: TS43 Matching fault or Trip Circuit Supervision
+    - bit: 11
+      name: disturbance_recording_memorized
+      label: TS44 Disturbance recording memorized
+    - bit: 12
+      name: control_fault
+      label: TS45 Control fault
+    - bit: 13
+      name: disturbance_recording_inhibited
+      label: TS46 Disturbance recording inhibited
+  aliases:
+  - TS33-TS48
+  description: Remote annunciation bits pre-assigned to protection and control functions;
+    only the TS marked for S20 are listed. Each TS transition is time-tagged in the
+    event stack.
+  source:
+    address: '0103'
+    page: 117
+    reference: 'Address word 0103: TS33 to TS48'
+- id: current_a
+  address: 262
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: A
+  aliases:
+  - I1 phase current (gain x 1)
+  source:
+    address: '106'
+    page: 113
+    reference: Measurement zone
+- id: current_b
+  address: 263
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: A
+  aliases:
+  - I2 phase current (gain x 1)
+  source:
+    address: '107'
+    page: 113
+    reference: Measurement zone
+- id: current_c
+  address: 264
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: A
+  aliases:
+  - I3 phase current (gain x 1)
+  source:
+    address: '108'
+    page: 113
+    reference: Measurement zone
+- id: residual_current
+  address: 265
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: A
+  aliases:
+  - I0 residual current (gain x 1)
+  source:
+    address: '109'
+    page: 113
+    reference: Measurement zone
+- id: trip_current_1
+  address: 280
+  type: u16
+  conversion:
+    exponent10: 1
+  unit: A
+  aliases:
+  - Itrip1 tripping current
+  source:
+    address: '118'
+    page: 113
+    reference: Measurement zone
+- id: trip_current_2
+  address: 281
+  type: u16
+  conversion:
+    exponent10: 1
+  unit: A
+  aliases:
+  - Itrip2 tripping current
+  source:
+    address: '119'
+    page: 113
+    reference: Measurement zone
+- id: trip_current_3
+  address: 282
+  type: u16
+  conversion:
+    exponent10: 1
+  unit: A
+  aliases:
+  - Itrip3 tripping current
+  source:
+    address: 11A
+    page: 113
+    reference: Measurement zone
+- id: trip_current_0
+  address: 283
+  type: u16
+  unit: A
+  aliases:
+  - Itrip0 tripping current
+  source:
+    address: 11B
+    page: 113
+    reference: Measurement zone
+- id: cumulative_breaking_current
+  address: 284
+  type: u16
+  unit: kA2
+  aliases:
+  - Cumulative breaking current
+  source:
+    address: 11C
+    page: 113
+    reference: Measurement zone
+- id: number_of_operations
+  address: 285
+  type: u16
+  aliases:
+  - Number of operations
+  description: 'The selection table marks this value v: according to parameter setting
+    and the input/output module options.'
+  source:
+    address: 11D
+    page: 113
+    reference: Measurement zone

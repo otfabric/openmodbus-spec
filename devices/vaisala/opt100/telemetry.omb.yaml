@@ -1,0 +1,387 @@
+openmodbus: 0.1.0
+info:
+  id: vaisala/opt100/telemetry
+  title: Vaisala OPT100 DGA monitor telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the OPT100 Modbus registers (Appendix A): status
+    bits, gas caution and alarm bit fields, 32-bit float gas, moisture, temperature
+    and pressure values, and one 16-bit integer gas value. 32-bit values are least
+    significant word first; the user guide''s own A.6 example contradicts that order,
+    so read test_value_u32 (expected 1234567890) to confirm the order on a real device.
+    The 64-bit measurement timestamp and the scaled 16-bit values are left out.
+
+    '
+  attribution: Derived from Vaisala's Optimus DGA Monitor for power transformers OPT100
+    User Guide.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: vaisala-opt100
+device:
+  manufacturer: Vaisala
+  family: Optimus DGA Monitor
+  model: OPT100
+  classes:
+  - transformer_monitor
+  transports:
+  - type: tcp
+    notes: Modbus TCP over the ETH0 interface, server port 502.
+  - type: rtu
+    notes: RS-485; default 19200 baud, 8 data bits, even parity, 1 stop bit.
+  unitId:
+    mode: configurable
+    default: 240
+    notes: Default Modbus RTU slave address 240 (Table 8).
+  documentation:
+  - title: Optimus DGA Monitor for power transformers OPT100 User Guide
+    url: https://docs.vaisala.com/r/M211858EN-AC/en-US/GUID-E824E3DB-16EE-4BB4-80A0-57E39B595A65
+    revision: M211858EN-AC
+defaults:
+  table: holding_register
+  access: r
+points:
+- id: device_stopped
+  address: 0
+  type: u16
+  mask: 1
+  enum:
+    values:
+    - value: 0
+      name: measuring_normally
+      label: Device measuring normally
+    - value: 1
+      name: stopped
+      label: Device stopped (either automatically or by administrator), being initialized,
+        or being uninstalled
+  description: Only the first bit of the register is used.
+  aliases:
+  - Device stopped
+  source:
+    address: '1'
+    page: 139
+    reference: Table 35 Status registers
+- id: measurement_reliable
+  address: 2
+  type: u16
+  mask: 1
+  enum:
+    values:
+    - value: 0
+      name: unreliable
+      label: Measurement is unreliable because of high ambient temperature
+    - value: 1
+      name: reliable
+      label: Measurement is reliable
+  description: Only the first bit of the register is used.
+  aliases:
+  - Measurement reliability
+  source:
+    address: '3'
+    page: 139
+    reference: Table 35 Status registers
+- id: combined_cautions
+  address: 4
+  type: u16
+  mask: 1
+  enum:
+    values:
+    - value: 0
+      name: none
+      label: No cautions are active
+    - value: 1
+      name: active
+      label: At least one caution is active
+  description: Only the first bit of the register is used.
+  aliases:
+  - Combined cautions
+  source:
+    address: '5'
+    page: 139
+    reference: Table 35 Status registers
+- id: combined_alarms
+  address: 5
+  type: u16
+  mask: 1
+  enum:
+    values:
+    - value: 0
+      name: none
+      label: No alarms are active
+    - value: 1
+      name: active
+      label: At least one alarm is active
+  description: Only the first bit of the register is used.
+  aliases:
+  - Combined alarms
+  source:
+    address: '6'
+    page: 139
+    reference: Table 35 Status registers
+- id: gas_caution_alerts_present
+  address: 10
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: methane
+      label: Methane
+    - bit: 1
+      name: acetylene
+      label: Acetylene
+    - bit: 2
+      name: ethylene
+      label: Ethylene
+    - bit: 3
+      name: ethane
+      label: Ethane
+    - bit: 4
+      name: carbon_monoxide
+      label: Carbon monoxide
+    - bit: 5
+      name: carbon_dioxide
+      label: Carbon dioxide
+    - bit: 6
+      name: tdcg
+      label: TDCG
+    - bit: 7
+      name: hydrogen
+      label: Hydrogen
+    - bit: 8
+      name: moisture_in_oil
+      label: Moisture in oil
+    - bit: 9
+      name: relative_moisture_in_oil
+      label: Relative moisture in oil
+    - bit: 11
+      name: tgp_above_maximum
+      label: TGP above maximum limit
+    - bit: 12
+      name: tgp_below_minimum
+      label: TGP below minimum limit
+    - bit: 15
+      name: any_active
+      label: Any caution alert active in this register
+  description: A bit is 0 when the alert is inactive, turned off or muted.
+  aliases:
+  - Gas level caution alerts for present values
+  source:
+    address: '11'
+    page: 133
+    reference: Table 34 Alert registers
+- id: gas_alarms_present
+  address: 14
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: methane
+      label: Methane
+    - bit: 1
+      name: acetylene
+      label: Acetylene
+    - bit: 2
+      name: ethylene
+      label: Ethylene
+    - bit: 3
+      name: ethane
+      label: Ethane
+    - bit: 4
+      name: carbon_monoxide
+      label: Carbon monoxide
+    - bit: 5
+      name: carbon_dioxide
+      label: Carbon dioxide
+    - bit: 6
+      name: tdcg
+      label: TDCG
+    - bit: 7
+      name: hydrogen
+      label: Hydrogen
+    - bit: 8
+      name: moisture_in_oil
+      label: Moisture in oil
+    - bit: 9
+      name: relative_moisture_in_oil
+      label: Relative moisture in oil
+    - bit: 11
+      name: tgp_above_maximum
+      label: TGP above maximum limit
+    - bit: 12
+      name: tgp_below_minimum
+      label: TGP below minimum limit
+    - bit: 15
+      name: any_active
+      label: Any alarm active in this register
+  description: A bit is 0 when the alert is inactive, turned off or muted.
+  aliases:
+  - Gas level alarms for present values
+  source:
+    address: '15'
+    page: 136
+    reference: Table 34 Alert registers
+- id: methane
+  address: 20
+  type: f32
+  wordOrder: little
+  unit: '[ppm]'
+  description: 'Unit in the guide: ppmv.'
+  aliases:
+  - Methane
+  source:
+    address: '21'
+    page: 125
+    reference: Table 33 Measurement data registers, Present values
+- id: acetylene
+  address: 22
+  type: f32
+  wordOrder: little
+  unit: '[ppm]'
+  description: 'Unit in the guide: ppmv.'
+  aliases:
+  - Acetylene
+  source:
+    address: '23'
+    page: 125
+    reference: Table 33 Measurement data registers, Present values
+- id: ethylene
+  address: 24
+  type: f32
+  wordOrder: little
+  unit: '[ppm]'
+  description: 'Unit in the guide: ppmv.'
+  aliases:
+  - Ethylene
+  source:
+    address: '25'
+    page: 125
+    reference: Table 33 Measurement data registers, Present values
+- id: ethane
+  address: 26
+  type: f32
+  wordOrder: little
+  unit: '[ppm]'
+  description: 'Unit in the guide: ppmv.'
+  aliases:
+  - Ethane
+  source:
+    address: '27'
+    page: 126
+    reference: Table 33 Measurement data registers, Present values
+- id: carbon_monoxide
+  address: 28
+  type: f32
+  wordOrder: little
+  unit: '[ppm]'
+  description: 'Unit in the guide: ppmv.'
+  aliases:
+  - Carbon monoxide
+  source:
+    address: '29'
+    page: 126
+    reference: Table 33 Measurement data registers, Present values
+- id: carbon_dioxide
+  address: 30
+  type: f32
+  wordOrder: little
+  unit: '[ppm]'
+  description: 'Unit in the guide: ppmv.'
+  aliases:
+  - Carbon dioxide
+  source:
+    address: '31'
+    page: 126
+    reference: Table 33 Measurement data registers, Present values
+- id: tdcg
+  address: 32
+  type: f32
+  wordOrder: little
+  unit: '[ppm]'
+  description: 'Unit in the guide: ppmv.'
+  aliases:
+  - Total dissolved combustible gases (TDCG)
+  source:
+    address: '33'
+    page: 126
+    reference: Table 33 Measurement data registers, Present values
+- id: hydrogen
+  address: 34
+  type: f32
+  wordOrder: little
+  unit: '[ppm]'
+  description: 'Unit in the guide: ppmv.'
+  aliases:
+  - Hydrogen
+  source:
+    address: '35'
+    page: 126
+    reference: Table 33 Measurement data registers, Present values
+- id: moisture_in_oil
+  address: 36
+  type: f32
+  wordOrder: little
+  unit: '[ppm]'
+  description: 'Unit in the guide: ppmw.'
+  aliases:
+  - Moisture in oil
+  source:
+    address: '37'
+    page: 126
+    reference: Table 33 Measurement data registers, Present values
+- id: chamber_temperature
+  address: 38
+  type: f32
+  wordOrder: little
+  unit: Cel
+  aliases:
+  - Temperature of in-oil measurement chamber
+  source:
+    address: '39'
+    page: 126
+    reference: Table 33 Measurement data registers, Present values
+- id: relative_moisture_in_oil
+  address: 40
+  type: f32
+  wordOrder: little
+  unit: '%'
+  aliases:
+  - Relative moisture in oil
+  source:
+    address: '41'
+    page: 126
+    reference: Table 33 Measurement data registers, Present values
+- id: total_gas_pressure
+  address: 42
+  type: f32
+  wordOrder: little
+  unit: hPa
+  aliases:
+  - Total gas pressure (TGP)
+  source:
+    address: '43'
+    page: 126
+    reference: Table 33 Measurement data registers, Present values
+- id: test_value_u32
+  address: 201
+  type: u32
+  wordOrder: little
+  description: Constant test value 1234567890; use it to confirm the word order on
+    a device.
+  aliases:
+  - Test value register (32-bit unsigned integer)
+  source:
+    address: '202'
+    page: 139
+    reference: Table 36 Test value registers
+- id: methane_int
+  address: 220
+  type: i16
+  unit: '[ppm]'
+  invalid:
+  - -32768
+  description: 'Unit in the guide: ppmv.'
+  aliases:
+  - Methane
+  source:
+    address: '221'
+    page: 131
+    reference: Table 33 Measurement data registers, Present values as 16-bit signed
+      integer

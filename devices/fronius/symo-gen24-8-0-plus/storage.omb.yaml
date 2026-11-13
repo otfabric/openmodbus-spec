@@ -1,0 +1,304 @@
+openmodbus: 0.1.0
+info:
+  id: fronius/symo-gen24-8-0-plus/storage
+  title: Fronius Symo GEN24 8.0 Plus battery and AC telemetry (int+SF, battery configured)
+  version: 0.1.0
+  description: 'Read-only subset of the SunSpec map that the inverter serves when
+    the Modbus setting "SunSpec Model Type" is int+SF and a battery is configured
+    (ROW map from the bundle 1.2.7-2 for GEN24 software 1.36.x). The operating instructions
+    state that register addresses depend on the composition of the SunSpec model chain:
+    check the model ID registers (register numbers 40003, 40070, 40254 and 40344 hold
+    1, the inverter model ID 101 or 103, 160 and 124) before relying on these addresses.
+    The map lists 1-based register numbers; the operating instructions state that
+    the address is the register number minus 1 and list the values returned for unavailable
+    data. MPPT modules 3 and 4 are the battery charge and discharge ports; from inverter
+    software 1.31 module 3 reports the battery port voltage continuously. Scale factors
+    can change at runtime. 32-bit values are left out because the documents do not
+    state their register order.
+
+    '
+  attribution: Derived from Fronius's GEN24 Plus Modbus SunSpec Maps.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: fronius-gen24-modbus
+device:
+  manufacturer: Fronius
+  family: GEN24 Plus
+  model: Symo GEN24 8.0 Plus
+  classes:
+  - energy_storage
+  - battery_inverter
+  transports:
+  - type: tcp
+  - type: rtu
+  unitId:
+    mode: configurable
+    notes: Over Modbus TCP the inverter unit ID is always 1. Over Modbus RTU the slave
+      ID is set in the inverter web interface.
+  documentation:
+  - title: GEN24 Plus Modbus SunSpec Maps
+    url: https://www.fronius.com/de/~/downloads/Solar%20Energy/Operating%20Instructions/gen24-modbus-api-external-docs.zip
+    revision: 1.2.7-2
+  - title: Fronius GEN24 - Modbus TCP and RTU Operating instructions
+    url: https://manuals.fronius.com/html/4204102649/en-US.html
+    revision: 034-28092026
+defaults:
+  table: holding_register
+  access: r
+points:
+- id: model
+  address: 40020
+  type: string
+  registers: 16
+  description: Device
+  aliases:
+  - Md
+  source:
+    address: '40021'
+    reference: Complete Map!A10 (common (1))
+- id: ac_power
+  address: 40083
+  type: i16
+  unit: W
+  conversion:
+    exponent10:
+      point: w_sf
+  invalid:
+  - -32768
+  description: AC Power
+  aliases:
+  - W
+  source:
+    address: '40084'
+    reference: Complete Map!A31 (inverter (10x))
+- id: w_sf
+  address: 40084
+  type: i16
+  invalid:
+  - -32768
+  description: auto-scaled on W
+  aliases:
+  - W_SF
+  source:
+    address: '40085'
+    reference: Complete Map!A32 (inverter (10x))
+- id: cabinet_temperature
+  address: 40102
+  type: i16
+  unit: Cel
+  conversion:
+    exponent10:
+      point: tmp_sf
+  invalid:
+  - -32768
+  description: Cabinet Temperature
+  aliases:
+  - TmpCab
+  source:
+    address: '40103'
+    reference: Complete Map!A49 (inverter (10x))
+- id: tmp_sf
+  address: 40106
+  type: i16
+  invalid:
+  - -32768
+  aliases:
+  - Tmp_SF
+  source:
+    address: '40107'
+    reference: Complete Map!A53 (inverter (10x))
+- id: dca_sf
+  address: 40255
+  type: i16
+  invalid:
+  - -32768
+  description: Current Scale Factor. auto-scaled on DCA 1-N
+  aliases:
+  - DCA_SF
+  source:
+    address: '40256'
+    reference: Complete Map!A182 (mppt (160))
+- id: dcv_sf
+  address: 40256
+  type: i16
+  invalid:
+  - -32768
+  description: Voltage Scale Factor. auto-scaled on DCV 1-N
+  aliases:
+  - DCV_SF
+  source:
+    address: '40257'
+    reference: Complete Map!A183 (mppt (160))
+- id: dcw_sf
+  address: 40257
+  type: i16
+  invalid:
+  - -32768
+  description: Power Scale Factor. auto-scaled on DCW 1-N
+  aliases:
+  - DCW_SF
+  source:
+    address: '40258'
+    reference: Complete Map!A184 (mppt (160))
+- id: battery_charge_current
+  address: 40312
+  type: u16
+  unit: A
+  conversion:
+    exponent10:
+      point: dca_sf
+  invalid:
+  - 65535
+  description: DC Current. When the battery is discharged the data-points of the charge
+    input are set to 0
+  aliases:
+  - module/3/DCA
+  source:
+    address: '40313'
+    reference: Complete Map!A211 (mppt (160))
+- id: battery_voltage
+  address: 40313
+  type: u16
+  unit: V
+  conversion:
+    exponent10:
+      point: dcv_sf
+  invalid:
+  - 65535
+  description: 'DC Voltage. up to software version 1.30: When the battery is discharged
+    the data-points of the charge input are set to 0 since software version 1.31:
+    Voltage of the inverter''s battery port (regardless if the battery is currently
+    charging or discharging)'
+  aliases:
+  - module/3/DCV
+  source:
+    address: '40314'
+    reference: Complete Map!A212 (mppt (160))
+- id: battery_charge_power
+  address: 40314
+  type: u16
+  unit: W
+  conversion:
+    exponent10:
+      point: dcw_sf
+  invalid:
+  - 65535
+  description: DC Power. When the battery is discharged the data-points of the charge
+    input are set to 0
+  aliases:
+  - module/3/DCW
+  source:
+    address: '40315'
+    reference: Complete Map!A213 (mppt (160))
+- id: battery_discharge_current
+  address: 40332
+  type: u16
+  unit: A
+  conversion:
+    exponent10:
+      point: dca_sf
+  invalid:
+  - 65535
+  description: DC Current. When the battery is charged the data-points of the discharge
+    input are set to 0
+  aliases:
+  - module/4/DCA
+  source:
+    address: '40333'
+    reference: Complete Map!A221 (mppt (160))
+- id: battery_discharge_power
+  address: 40334
+  type: u16
+  unit: W
+  conversion:
+    exponent10:
+      point: dcw_sf
+  invalid:
+  - 65535
+  description: DC Power. When the battery is charged the data-points of the discharge
+    input are set to 0
+  aliases:
+  - module/4/DCW
+  source:
+    address: '40335'
+    reference: Complete Map!A223 (mppt (160))
+- id: charge_discharge_power_reference
+  address: 40345
+  type: u16
+  unit: W
+  conversion:
+    exponent10:
+      point: w_cha_max_sf
+  invalid:
+  - 65535
+  description: Setpoint for maximum charge. Reference Value for maximum Charge and
+    Discharge.
+  aliases:
+  - WChaMax
+  source:
+    address: '40346'
+    reference: Complete Map!A233 (storage (124))
+- id: battery_state_of_charge
+  address: 40351
+  type: u16
+  unit: '%'
+  conversion:
+    exponent10:
+      point: cha_state_sf
+  invalid:
+  - 65535
+  description: Currently available energy as a percent of the capacity rating.
+  aliases:
+  - ChaState
+  source:
+    address: '40352'
+    reference: Complete Map!A239 (storage (124))
+- id: battery_charge_status
+  address: 40354
+  type: u16
+  enum:
+    values:
+    - value: 1
+      name: 'off'
+    - value: 2
+      name: empty
+    - value: 3
+      name: discharging
+    - value: 4
+      name: charging
+    - value: 5
+      name: full
+    - value: 6
+      name: holding
+    - value: 7
+      name: testing
+  invalid:
+  - 65535
+  description: Charge status of storage device.
+  aliases:
+  - ChaSt
+  source:
+    address: '40355'
+    reference: Complete Map!A242 (storage (124))
+- id: w_cha_max_sf
+  address: 40361
+  type: i16
+  invalid:
+  - -32768
+  description: Scale factor for maximum charge.
+  aliases:
+  - WChaMax_SF
+  source:
+    address: '40362'
+    reference: Complete Map!A249 (storage (124))
+- id: cha_state_sf
+  address: 40365
+  type: i16
+  invalid:
+  - -32768
+  description: Scale factor for available energy percent.
+  aliases:
+  - ChaState_SF
+  source:
+    address: '40366'
+    reference: Complete Map!A253 (storage (124))

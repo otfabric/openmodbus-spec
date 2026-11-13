@@ -1,0 +1,345 @@
+openmodbus: 0.1.0
+info:
+  id: smartgen/hgm9530n/telemetry
+  title: SmartGen HGM9530N generator, engine and status registers
+  version: 0.1.0
+  description: 'Read-only subset of the function code 03H map data field of the HGM9530N
+    Genset Controller Communication Protocol version 1.0. The document has no unit
+    column, so units are given only where the item text names one. The (*10), (*100)
+    and (*1000) marks are read as register = value x N, and rows not marked Signed
+    as unsigned. The alarm areas that refer to the alarm data form are not mapped;
+    the common alarm register 0000 is.
+
+    '
+  attribution: Derived from SmartGen's HGM9530N Genset Controller Communication Protocol.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: smartgen-hgm9530n
+device:
+  manufacturer: SmartGen
+  model: HGM9530N
+  classes:
+  - genset_controller
+  transports:
+  - type: rtu
+    notes: Serial Modbus with CRC-16 framing; the document does not name the port.
+  unitId:
+    mode: configurable
+    notes: Slave address 1 to 255; the document states no default.
+  documentation:
+  - title: HGM9530N Genset Controller Communication Protocol
+    url: https://www.smartgen.cn/yun/data/download/HGM9530N_Protocol_en.pdf
+    revision: 1.0 (2018-12-21)
+defaults:
+  table: holding_register
+  access: r
+constraints:
+  maxReadRegisters: 125
+points:
+- id: common_status
+  label: Common alarm and mode bits
+  aliases:
+  - Common Alarm
+  address: 0
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: common_alarm
+      label: Common Alarm
+    - bit: 1
+      name: common_shutdown_alarm
+      label: Common Shutdown Alarm
+    - bit: 2
+      name: common_warning_alarm
+      label: Common Warning Alarm
+    - bit: 3
+      name: common_trip_and_stop_alarm
+      label: Common Trip and Stop Alarm
+    - bit: 4
+      name: common_trip_alarm
+      label: Common Trip Alarm
+    - bit: 5
+      name: common_safe_trip_and_stop_alarm
+      label: Common Safe Trip and Stop Alarm
+    - bit: 6
+      name: common_safe_trip_alarm
+      label: Common Safe Trip Alarm
+    - bit: 7
+      name: common_lock_alarm
+      label: Common Lock Alarm
+    - bit: 9
+      name: system_in_auto_mode
+      label: System In Auto Mode
+    - bit: 10
+      name: system_in_manual_mode
+      label: System In Manual Mode
+    - bit: 11
+      name: system_in_stop_mode
+      label: System In Stop Mode
+  description: Bit 0 is the row the document marks LSB; reserved bits are left out.
+  source:
+    address: '0000'
+    page: 12
+    reference: 5.1 map data field, 0000
+- id: generator_voltage_ab
+  aliases:
+  - Gen UAB
+  address: 140
+  type: u32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  description: The document states no unit for this register.
+  source:
+    address: 0140-0141
+    page: 14
+    reference: 5.1 map data field, Gen UAB
+- id: generator_voltage_a
+  aliases:
+  - Gen UA
+  address: 146
+  type: u32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  description: The document states no unit for this register.
+  source:
+    address: 0146-0147
+    page: 14
+    reference: 5.1 map data field, Gen UA
+- id: generator_voltage_b
+  aliases:
+  - Gen UB
+  address: 148
+  type: u32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  description: The document states no unit for this register.
+  source:
+    address: 0148-0149
+    page: 14
+    reference: 5.1 map data field, Gen UB
+- id: generator_voltage_c
+  aliases:
+  - Gen UC
+  address: 150
+  type: u32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  description: The document states no unit for this register.
+  source:
+    address: 0150-0151
+    page: 14
+    reference: 5.1 map data field, Gen UC
+- id: generator_frequency
+  aliases:
+  - Gen Frequency
+  address: 155
+  type: u16
+  conversion:
+    exponent10: -2
+  description: The document states no unit for this register.
+  source:
+    address: '0155'
+    page: 14
+    reference: 5.1 map data field, Gen Frequency
+- id: generator_current_a
+  aliases:
+  - A-Phase Current
+  address: 166
+  type: u16
+  conversion:
+    exponent10: -1
+  description: The document states no unit for this register.
+  source:
+    address: '0166'
+    page: 14
+    reference: 5.1 map data field, A-Phase Current
+- id: generator_current_b
+  aliases:
+  - B-Phase Current
+  address: 167
+  type: u16
+  conversion:
+    exponent10: -1
+  description: The document states no unit for this register.
+  source:
+    address: '0167'
+    page: 14
+    reference: 5.1 map data field, B-Phase Current
+- id: generator_current_c
+  aliases:
+  - C-Phase Current
+  address: 168
+  type: u16
+  conversion:
+    exponent10: -1
+  description: The document states no unit for this register.
+  source:
+    address: '0168'
+    page: 14
+    reference: 5.1 map data field, C-Phase Current
+- id: active_power_total
+  aliases:
+  - Total Active Power
+  address: 180
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  description: The document states no unit for this register.
+  source:
+    address: 0180-0181
+    page: 15
+    reference: 5.1 map data field, Total Active Power
+- id: power_factor_average
+  aliases:
+  - Average Power Factor
+  address: 201
+  type: i16
+  conversion:
+    exponent10: -3
+  source:
+    address: '0201'
+    page: 15
+    reference: 5.1 map data field, Average Power Factor
+- id: engine_speed
+  aliases:
+  - Engine Speed
+  address: 212
+  type: u16
+  description: The document states no unit for this register.
+  source:
+    address: '0212'
+    page: 16
+    reference: 5.1 map data field, Engine Speed
+- id: battery_voltage
+  aliases:
+  - Battery Voltage
+  address: 213
+  type: u16
+  conversion:
+    exponent10: -1
+  description: The document states no unit for this register.
+  source:
+    address: '0213'
+    page: 16
+    reference: 5.1 map data field, Battery Voltage
+- id: generator_status
+  aliases:
+  - Gen Status
+  address: 260
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: standby
+      label: Standby
+    - value: 1
+      name: preheat
+      label: Preheat
+    - value: 2
+      name: fuel_output
+      label: Fuel Output
+    - value: 3
+      name: crank
+      label: Crank
+    - value: 4
+      name: crank_rest
+      label: Crank Rest
+    - value: 5
+      name: safe_delay
+      label: Safe Delay
+    - value: 6
+      name: start_idle
+      label: Start Idle
+    - value: 7
+      name: hi_speed_warming_up
+      label: Hi-speed Warming Up
+    - value: 8
+      name: waiting_for_load
+      label: Waiting for Load
+    - value: 9
+      name: normal_running
+      label: Normal Running
+    - value: 10
+      name: hi_speed_cooling
+      label: Hi-speed Cooling
+    - value: 11
+      name: stop_idle
+      label: Stop Idle
+    - value: 12
+      name: energize_to_stop
+      label: Energize to Stop
+    - value: 13
+      name: wait_for_stop
+      label: Wait for Stop
+    - value: 14
+      name: after_stop
+      label: After Stop
+    - value: 15
+      name: fail_to_stop
+      label: Fail to Stop
+  source:
+    address: '0260'
+    page: 17
+    reference: 5.1 map data field, Gen Status; Generator Status Form (page 26)
+- id: generator_breaker_status
+  aliases:
+  - Gen Breaker Status
+  address: 264
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: synchronizing
+      label: Synchronizing
+    - value: 1
+      name: close_delay
+      label: Close Delay
+    - value: 2
+      name: waiting_for_close_input
+      label: Waiting for Close Input
+    - value: 3
+      name: closed
+      label: Closed
+    - value: 4
+      name: unloading
+      label: Unloading
+    - value: 5
+      name: open_delay
+      label: Open Delay
+    - value: 6
+      name: waiting_for_open_input
+      label: Waiting for Open Input
+    - value: 7
+      name: opened
+      label: Opened
+  source:
+    address: '0264'
+    page: 17
+    reference: 5.1 map data field, Gen Breaker Status; Breaker Status Form (page 26)
+- id: running_hours
+  aliases:
+  - Total Running Time (Hour)
+  address: 270
+  type: u16
+  unit: h
+  description: The document lists the minutes and seconds of the total running time
+    in the next two registers.
+  source:
+    address: '0270'
+    page: 17
+    reference: 5.1 map data field, Total Running Time (Hour)
+- id: start_count
+  aliases:
+  - Total Start Times
+  address: 273
+  type: u16
+  source:
+    address: '0273'
+    page: 17
+    reference: 5.1 map data field, Total Start Times

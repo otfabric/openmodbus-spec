@@ -1,0 +1,143 @@
+openmodbus: 0.1.0
+info:
+  id: eastron/sdm230-modbus/telemetry
+  title: Eastron SDM230-Modbus telemetry
+  version: 0.1.0
+  description: 'Subset of the Modbus RTU input registers for the SDM230-Modbus. Read
+    each selected value as a complete two-register float. Floats are most significant
+    register first by default; the meter''s Register Order setting can reverse that
+    order, which this contract does not model.
+
+    '
+  attribution: Derived from Eastron's SDM230Modbus Smart Meter Modbus Protocol Implementation.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: eastron-sdm230-modbus
+device:
+  manufacturer: Eastron
+  model: SDM230-Modbus
+  classes:
+  - energy_meter
+  transports:
+  - type: rtu
+  documentation:
+  - title: SDM230Modbus Smart Meter Modbus Protocol Implementation
+    url: https://www.eastroneurope.com/images/uploads/products/protocol/Correct_SDM230_Protocol.pdf
+    revision: '1.4'
+defaults:
+  table: input_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+constraints:
+  maxReadRegisters: 80
+points:
+- id: voltage
+  address: 0
+  type: f32
+  unit: V
+  aliases:
+  - Line to neutral volts.
+  source:
+    address: '30001'
+    page: 2
+    reference: SDM230Modbus input register table
+- id: current
+  address: 6
+  type: f32
+  unit: A
+  aliases:
+  - Current.
+  source:
+    address: '30007'
+    page: 2
+    reference: SDM230Modbus input register table
+- id: active_power
+  address: 12
+  type: f32
+  unit: W
+  aliases:
+  - Active power.
+  source:
+    address: '30013'
+    page: 2
+    reference: SDM230Modbus input register table
+- id: apparent_power
+  address: 18
+  type: f32
+  unit: V.A
+  aliases:
+  - Apparent power
+  source:
+    address: '30019'
+    page: 2
+    reference: SDM230Modbus input register table
+- id: reactive_power
+  address: 24
+  type: f32
+  description: 'Vendor unit: VAr.'
+  aliases:
+  - Reactive power
+  source:
+    address: '30025'
+    page: 2
+    reference: SDM230Modbus input register table
+- id: power_factor
+  address: 30
+  type: f32
+  aliases:
+  - Power factor
+  source:
+    address: '30031'
+    page: 2
+    reference: SDM230Modbus input register table
+- id: phase_angle
+  address: 36
+  type: f32
+  unit: deg
+  aliases:
+  - Phase angle.
+  source:
+    address: '30037'
+    page: 2
+    reference: SDM230Modbus input register table
+- id: frequency
+  address: 70
+  type: f32
+  unit: Hz
+  aliases:
+  - Frequency
+  source:
+    address: '30071'
+    page: 2
+    reference: SDM230Modbus input register table
+- id: import_active_energy
+  address: 72
+  type: f32
+  unit: kW.h
+  aliases:
+  - Import active energy
+  source:
+    address: '30073'
+    page: 3
+    reference: SDM230Modbus input register table
+- id: export_active_energy
+  address: 74
+  type: f32
+  unit: kW.h
+  aliases:
+  - Export active energy
+  source:
+    address: '30075'
+    page: 3
+    reference: SDM230Modbus input register table
+- id: total_active_energy
+  address: 342
+  type: f32
+  unit: kW.h
+  aliases:
+  - Total active energy
+  source:
+    address: '30343'
+    page: 3
+    reference: SDM230Modbus input register table

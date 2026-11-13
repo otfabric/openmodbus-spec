@@ -1,0 +1,177 @@
+openmodbus: 0.1.0
+info:
+  id: fanox/sia-b-specific-ct/protection
+  title: Fanox SIA-B Specific CT protection relay states
+  version: 0.1.0
+  description: 'Read-only state words of the SIA-B for specific CTs, read as two registers
+    with function 03. Measurements are not included.
+
+    '
+  attribution: Derived from Fanox's SIA-B Specific CT's Modbus RTU Protocol Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: fanox-sia-b-specific-ct-modbus
+device:
+  manufacturer: Fanox
+  model: SIA-B Specific CT
+  classes:
+  - protection_relay
+  transports:
+  - type: rtu
+  documentation:
+  - title: SIA-B Specific CT's Self & Dual Powered Overcurrent & Earth Fault Protection
+      Relay Modbus RTU Protocol Manual
+    url: https://www.fanox.com/wp-content/uploads/documents/EN_FANOXTD_MANU_SIA_MODBUS_SIAB-SPECIFIC-CT_R002.pdf
+    revision: Rev. 02
+defaults:
+  table: holding_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+points:
+- id: model_and_version
+  address: 100
+  type: string
+  registers: 44
+  aliases:
+  - Read of Model and Version
+  description: 'ASCII88: character string ended by a NUL character.'
+  source:
+    address: '100'
+    page: 7
+    reference: General Memory Map
+- id: general
+  address: 500
+  type: u32
+  flags:
+    flags:
+    - bit: 0
+      name: trip
+      label: Trip
+    - bit: 1
+      name: external_trip
+      label: External Trip
+    - bit: 4
+      name: trip_block_enable
+      label: Trip Block Enable
+    - bit: 6
+      name: ready
+      label: Ready
+    - bit: 11
+      name: eeprom_error
+      label: EEPROM Error
+    - bit: 16
+      name: pickup
+      label: Pickup (*)
+  aliases:
+  - General
+  description: 'Pickup (*) marked in the states map: this manual does not say what
+    the mark means.'
+  source:
+    address: '500'
+    page: 7
+    reference: States Map, General
+- id: overcurrent_50
+  address: 504
+  type: u32
+  flags:
+    flags:
+    - bit: 0
+      name: phase_a_pickup
+      label: 50 Phase A Pickup
+    - bit: 3
+      name: pickup
+      label: 50 Pickup
+    - bit: 12
+      name: trip
+      label: 50 Trip
+  aliases:
+  - '50'
+  source:
+    address: '504'
+    page: 8
+    reference: States Map, 50
+- id: overcurrent_51
+  address: 506
+  type: u32
+  flags:
+    flags:
+    - bit: 3
+      name: pickup
+      label: 51 Pickup
+    - bit: 11
+      name: trip
+      label: 51 Trip
+  aliases:
+  - 50/51
+  source:
+    address: '506'
+    page: 9
+    reference: States Map, 50/51
+- id: earth_overcurrent_50n
+  address: 508
+  type: u32
+  flags:
+    flags:
+    - bit: 4
+      name: pickup
+      label: 50N Pickup
+    - bit: 12
+      name: trip
+      label: 50N Trip
+  aliases:
+  - 50N
+  source:
+    address: '508'
+    page: 9
+    reference: States Map, 50N
+- id: earth_overcurrent_51n
+  address: 510
+  type: u32
+  flags:
+    flags:
+    - bit: 4
+      name: pickup
+      label: 51N Pickup
+    - bit: 12
+      name: trip
+      label: 51N Trip
+  aliases:
+  - 50/51N
+  source:
+    address: '510'
+    page: 9
+    reference: States Map, 50/51N
+- id: outputs
+  address: 514
+  type: u32
+  flags:
+    flags:
+    - bit: 3
+      name: trip_output
+      label: Trip Output
+  aliases:
+  - Outputs
+  source:
+    address: '514'
+    page: 9
+    reference: States Map, Outputs
+- id: thermal_49
+  address: 522
+  type: u32
+  flags:
+    flags:
+    - bit: 4
+      name: alarm
+      label: 49 Alarm
+    - bit: 12
+      name: trip
+      label: 49 Trip
+  aliases:
+  - 49 (*)
+  description: 'Marked (*) in the states map: this manual does not say what the mark
+    means.'
+  source:
+    address: '522'
+    page: 10
+    reference: States Map, 49 (*)

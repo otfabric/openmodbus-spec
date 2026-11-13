@@ -1,0 +1,123 @@
+openmodbus: 0.1.0
+info:
+  id: vaisala/mmt162/telemetry
+  title: Vaisala MMT162 moisture and temperature in oil telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the MMT162 Modbus registers (Appendix: Modbus
+    reference): 32-bit float measurements and oil coefficients (least significant
+    word first), the fault status and the 32-bit error code. Moisture in oil (ppm)
+    is calculated from water activity and temperature with the oil coefficients A
+    and B; the default coefficients are for mineral transformer oil. The guide says
+    to wait five seconds after power-up before sending Modbus requests.
+
+    '
+  attribution: Derived from Vaisala's HUMICAP Moisture and Temperature Transmitter
+    for Oil MMT162 User's Guide.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: vaisala-mmt162
+device:
+  manufacturer: Vaisala
+  family: HUMICAP
+  model: MMT162
+  classes:
+  - transformer_monitor
+  transports:
+  - type: rtu
+    notes: RS-485; factory Modbus default 19200 baud, 8 data bits, even parity, 1
+      stop bit (Table 17).
+  unitId:
+    mode: configurable
+    default: 240
+    notes: Default device address 240 (Table 17); also settable through register 1537.
+  documentation:
+  - title: HUMICAP Moisture and Temperature Transmitter for Oil MMT162 User's Guide
+    url: https://docs.vaisala.com/go/M210934EN-G/en-US
+    revision: M210934EN-G
+defaults:
+  table: holding_register
+  access: r
+points:
+- id: temperature
+  address: 2
+  type: f32
+  wordOrder: little
+  unit: Cel
+  aliases:
+  - T (measured)
+  source:
+    address: '3'
+    page: 74
+    reference: Table 19 Modbus Register Map
+- id: water_activity
+  address: 28
+  type: f32
+  wordOrder: little
+  aliases:
+  - aw (measured)
+  source:
+    address: '29'
+    page: 74
+    reference: Table 19 Modbus Register Map
+- id: moisture_in_oil
+  address: 34
+  type: f32
+  wordOrder: little
+  unit: '[ppm]'
+  description: Moisture in oil (ppm). Availability depends on the device model.
+  aliases:
+  - H2O (oil) (measured)
+  source:
+    address: '35'
+    page: 74
+    reference: Table 19 Modbus Register Map
+- id: fault_status
+  address: 512
+  type: u16
+  enum:
+    values:
+    - value: 1
+      name: no_errors
+      label: No errors
+  description: 16-bit boolean.
+  aliases:
+  - Fault status
+  source:
+    address: '513'
+    page: 74
+    reference: Table 19 Modbus Register Map
+- id: error_code
+  address: 515
+  type: u32
+  wordOrder: little
+  description: 32-bit bit field; 0 = no errors. The guide does not name the bits.
+  aliases:
+  - Error Code
+  source:
+    address: '516'
+    page: 74
+    reference: Table 19 Modbus Register Map
+- id: oil_factor_a
+  address: 784
+  type: f32
+  wordOrder: little
+  description: Oil-specific coefficient of the ppm conversion. Read/write in the device;
+    availability depends on the device model.
+  aliases:
+  - Oil factor A (set value)
+  source:
+    address: '785'
+    page: 74
+    reference: Table 19 Modbus Register Map
+- id: oil_factor_b
+  address: 786
+  type: f32
+  wordOrder: little
+  description: Oil-specific coefficient of the ppm conversion. Read/write in the device;
+    availability depends on the device model.
+  aliases:
+  - Oil factor B (set value)
+  source:
+    address: '787'
+    page: 74
+    reference: Table 19 Modbus Register Map

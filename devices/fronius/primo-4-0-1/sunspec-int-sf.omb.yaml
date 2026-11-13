@@ -1,0 +1,390 @@
+openmodbus: 0.1.0
+info:
+  id: fronius/primo-4-0-1/sunspec-int-sf
+  title: Fronius Primo 4.0-1 SunSpec inverter model (int+SF)
+  version: 0.1.0
+  description: Read-only subset of the SunSpec Common block and integer inverter model
+    (101, single phase) that the Fronius Datamanager 2.0 serves for a Fronius Primo
+    4.0-1 inverter. Valid only while the Datamanager's SunSpec model type is int+SF
+    (sunspec_model_type = 2); with the default float setting the inverter model is
+    111 with a different layout. The vendor map numbers registers from 1; the Fronius
+    Datamanager Modbus TCP & RTU operating instructions (section Register addresses)
+    state that register 40001 is read at address 40000, and section Unavailable data
+    records gives the not-available values used in invalid. The vendor recommends
+    locating SunSpec models by scanning; these addresses are the vendor's Complete
+    Map for the first two blocks. Scale factors are read from their registers and
+    may change with firmware. AC lifetime energy and event flags are 32-bit values
+    and are left out because the documents do not state their word order. DC current
+    and voltage of the inverter model are not supported on inverters with several
+    DC inputs and then read as not available.
+  attribution: Derived from Fronius's Modbus SunSpec Maps, State Codes and Events.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: fronius-primo-sunspec-maps
+device:
+  manufacturer: Fronius
+  family: Primo
+  model: Primo 4.0-1
+  classes:
+  - pv_inverter
+  transports:
+  - type: tcp
+    notes: Served by the Fronius Datamanager 2.0.
+  - type: rtu
+    notes: Served by the Fronius Datamanager 2.0 over RS-485.
+  unitId:
+    mode: configurable
+    notes: The device ID equals the inverter number set on the inverter; inverter
+      number 00 maps to device ID 100.
+  documentation:
+  - title: Modbus SunSpec Maps, State Codes and Events
+    url: https://www.fronius.com/en/~/downloads/Solar%20Energy/Operating%20Instructions/SE_EI_Modbus_Sunspec_Maps_State_Codes_Events_EN.zip
+    revision: 1.1.7-0
+  - title: Fronius Datamanager - Modbus TCP and RTU, Operating instructions
+    url: https://manuals.fronius.com/html/4204102049/en-US.html
+    revision: 033-24022026
+defaults:
+  table: holding_register
+  access: r
+points:
+- id: sunspec_model_type
+  aliases:
+  - F_ModelType
+  description: Type of SunSpec models used for inverter and meter data. Write 1 or
+    2 and then immediately 6 to acknowledge setting.
+  address: 215
+  type: u16
+  enum:
+    values:
+    - value: 1
+      name: floating_point
+      label: Floating point
+    - value: 2
+      name: integer_sf
+      label: Integer & SF
+  source:
+    address: '216'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 8
+- id: manufacturer
+  aliases:
+  - Mn
+  description: Manufacturer
+  address: 40004
+  type: string
+  registers: 16
+  source:
+    address: '40005'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 19
+- id: model_name
+  aliases:
+  - Md
+  description: Device model
+  address: 40020
+  type: string
+  registers: 16
+  source:
+    address: '40021'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 20
+- id: inverter_software_version
+  aliases:
+  - Vr
+  description: SW version of inverter
+  address: 40044
+  type: string
+  registers: 8
+  source:
+    address: '40045'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 22
+- id: ac_current
+  aliases:
+  - A
+  description: AC Total Current value
+  address: 40071
+  type: u16
+  unit: A
+  conversion:
+    exponent10:
+      point: ac_current_sf
+  invalid:
+  - 65535
+  source:
+    address: '40072'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 29
+- id: ac_current_sf
+  aliases:
+  - A_SF
+  description: AC Current Scale factor
+  address: 40075
+  type: i16
+  invalid:
+  - -32768
+  source:
+    address: '40076'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 33
+- id: ac_voltage_a_n
+  aliases:
+  - PhVphA
+  description: AC Voltage Phase-A-to-neutral value
+  address: 40079
+  type: u16
+  unit: V
+  conversion:
+    exponent10:
+      point: ac_voltage_sf
+  invalid:
+  - 65535
+  source:
+    address: '40080'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 37
+- id: ac_voltage_sf
+  aliases:
+  - V_SF
+  description: AC Voltage Scale factor
+  address: 40082
+  type: i16
+  invalid:
+  - -32768
+  source:
+    address: '40083'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 40
+- id: ac_power
+  aliases:
+  - W
+  description: AC Power value
+  address: 40083
+  type: i16
+  unit: W
+  conversion:
+    exponent10:
+      point: ac_power_sf
+  invalid:
+  - -32768
+  source:
+    address: '40084'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 41
+- id: ac_power_sf
+  aliases:
+  - W_SF
+  description: AC Power Scale factor
+  address: 40084
+  type: i16
+  invalid:
+  - -32768
+  source:
+    address: '40085'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 42
+- id: ac_frequency
+  aliases:
+  - Hz
+  description: AC Frequency value
+  address: 40085
+  type: u16
+  unit: Hz
+  conversion:
+    exponent10:
+      point: ac_frequency_sf
+  invalid:
+  - 65535
+  source:
+    address: '40086'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 43
+- id: ac_frequency_sf
+  aliases:
+  - Hz_SF
+  description: Scale factor
+  address: 40086
+  type: i16
+  invalid:
+  - -32768
+  source:
+    address: '40087'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 44
+- id: dc_current
+  aliases:
+  - DCA
+  description: 'DC Current value. Vendor remark: Not supported if multiple DC inputs;
+    current can be found in Multiple MPPT model'
+  address: 40096
+  type: u16
+  unit: A
+  conversion:
+    exponent10:
+      point: dc_current_sf
+  invalid:
+  - 65535
+  source:
+    address: '40097'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 53
+- id: dc_current_sf
+  aliases:
+  - DCA_SF
+  description: 'Scale factor. Vendor remark: Not supported if multiple DC inputs.'
+  address: 40097
+  type: i16
+  invalid:
+  - -32768
+  source:
+    address: '40098'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 54
+- id: dc_voltage
+  aliases:
+  - DCV
+  description: 'DC Voltage value. Vendor remark: Not supported if multiple DC inputs;
+    voltage can be found in Multiple MPPT model'
+  address: 40098
+  type: u16
+  unit: V
+  conversion:
+    exponent10:
+      point: dc_voltage_sf
+  invalid:
+  - 65535
+  source:
+    address: '40099'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 55
+- id: dc_voltage_sf
+  aliases:
+  - DCV_SF
+  description: 'Scale factor. Vendor remark: Not supported if multiple DC inputs.'
+  address: 40099
+  type: i16
+  invalid:
+  - -32768
+  source:
+    address: '40100'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 56
+- id: dc_power
+  aliases:
+  - DCW
+  description: 'DC Power value. Vendor remark: Total power of all DC inputs'
+  address: 40100
+  type: i16
+  unit: W
+  conversion:
+    exponent10:
+      point: dc_power_sf
+  invalid:
+  - -32768
+  source:
+    address: '40101'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 57
+- id: dc_power_sf
+  aliases:
+  - DCW_SF
+  description: Scale factor
+  address: 40101
+  type: i16
+  invalid:
+  - -32768
+  source:
+    address: '40102'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 58
+- id: operating_state
+  aliases:
+  - St
+  description: Operating State
+  address: 40107
+  type: u16
+  enum:
+    values:
+    - value: 1
+      name: 'off'
+      label: 'Off'
+    - value: 2
+      name: sleeping
+      label: Sleeping (auto-shutdown)
+    - value: 3
+      name: starting
+      label: Starting up
+    - value: 4
+      name: mppt
+      label: Tracking power point
+    - value: 5
+      name: throttled
+      label: Forced power reduction
+    - value: 6
+      name: shutting_down
+      label: Shutting down
+    - value: 7
+      name: fault
+      label: One or more faults exist
+    - value: 8
+      name: standby
+      label: Standby (service on unit)*might be in Events
+  invalid:
+  - 65535
+  source:
+    address: '40108'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 64
+- id: vendor_operating_state
+  aliases:
+  - StVnd
+  description: Vendor Defined Operating State
+  address: 40108
+  type: u16
+  enum:
+    values:
+    - value: 1
+      name: 'off'
+      label: 'Off'
+    - value: 2
+      name: sleeping
+      label: Sleeping (auto-shutdown)
+    - value: 3
+      name: starting
+      label: Starting up
+    - value: 4
+      name: mppt
+      label: Tracking power point
+    - value: 5
+      name: throttled
+      label: Forced power reduction
+    - value: 6
+      name: shutting_down
+      label: Shutting down
+    - value: 7
+      name: fault
+      label: One or more faults exist
+    - value: 8
+      name: standby
+      label: Standby (service on unit)*might be in Events
+    - value: 9
+      name: no_businit
+      label: No SolarNet communication
+    - value: 10
+      name: no_comm_inv
+      label: No communication with inverter
+    - value: 11
+      name: sn_overcurrent
+      label: Overcurrent on SolarNet plug detected
+    - value: 12
+      name: bootload
+      label: Inverter is being updated
+    - value: 13
+      name: afci
+      label: AFCI Event
+  invalid:
+  - 65535
+  source:
+    address: '40109'
+    reference: Inverter_Register_Map_Int&SF_v1.0_with_SYMOHYBRID_MODEL_124.xlsx!Complete
+      Map row 65

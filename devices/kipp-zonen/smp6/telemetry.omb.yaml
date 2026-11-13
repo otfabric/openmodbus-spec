@@ -1,0 +1,409 @@
+openmodbus: 0.1.0
+info:
+  id: kipp-zonen/smp6/telemetry
+  title: Kipp & Zonen SMP6 smart pyranometer telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the SMP6 Modbus RTU registers (data model version
+    107). The irradiance registers are left unconverted: the manual scales them by
+    the scale factor register as a divisor, which this draft cannot express. The 32-bit
+    float registers are left out because the manual does not state their word order.
+
+    '
+  attribution: Derived from OTT HydroMet's Smart Pyranometer Modbus® Communication
+    Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: kipp-zonen-smp-modbus
+device:
+  manufacturer: OTT HydroMet
+  brand: Kipp & Zonen
+  family: SMP series
+  model: SMP6
+  classes:
+  - irradiance_sensor
+  transports:
+  - type: rtu
+    notes: RS-485.
+  unitId:
+    notes: Input register 45 (IO_NODE_ID) reports the device address; the manual does
+      not state a default.
+  documentation:
+  - title: Smart Pyranometer Modbus® Communication Manual
+    url: https://cdn.hach.com/1XMCM0ZF/at/j8rsw3f2f9b7s3wtzkqs9ch/SO-KZ-RE-mn-Communications_Modbus-EN-GL-240320.pdf
+    revision: 0426210 | 01-0324
+defaults:
+  table: input_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+constraints:
+  ranges:
+  - table: input_register
+    start: 7
+    count: 1
+    policy: side_effects
+    reason: Reading IO_STDEV_SENSOR1 returns the standard deviation and starts a new
+      period.
+  - table: discrete_input
+    start: 2
+    count: 3
+    policy: side_effects
+    reason: Reading these discrete inputs clears them and the matching IO_STATUS_FLAGS
+      bits.
+points:
+- id: device_type
+  table: input_register
+  address: 0
+  type: u16
+  aliases:
+  - IO_DEVICE_TYPE
+  enum:
+    values:
+    - value: 601
+      name: smp3_volt_version
+      label: SMP3 (volt version)
+    - value: 602
+      name: smp3_current_loop_version
+      label: SMP3 (current loop version)
+    - value: 619
+      name: smp6_volt_version
+      label: SMP6 (volt version)
+    - value: 620
+      name: smp6_current_version
+      label: SMP6 (current version)
+    - value: 617
+      name: smp10_volt_version
+      label: SMP10 (volt version)
+    - value: 618
+      name: smp10_current_version
+      label: SMP10 (current version)
+    - value: 603
+      name: smp11_volt_version
+      label: SMP11 (volt version)
+    - value: 604
+      name: smp11_current_loop_version
+      label: SMP11 (current loop version)
+    - value: 633
+      name: smp12_volt_version
+      label: SMP12 (volt version)
+    - value: 605
+      name: smp21_volt_version
+      label: SMP21 (volt version)
+    - value: 606
+      name: smp21_current_loop_version
+      label: SMP21 (current loop version)
+    - value: 607
+      name: smp22_volt_version
+      label: SMP22 (volt version)
+    - value: 608
+      name: smp22_current_loop_version
+      label: SMP22 (current loop version)
+    - value: 609
+      name: sgr3_volt_version
+      label: SGR3 (volt version)
+    - value: 610
+      name: sgr3_current_loop_version
+      label: SGR3 (current loop version)
+    - value: 611
+      name: sgr4_volt_version
+      label: SGR4 (volt version)
+    - value: 612
+      name: sgr4_current_loop_version
+      label: SGR4 (current loop version)
+    - value: 613
+      name: shp1_volt_version
+      label: SHP1 (volt version)
+    - value: 614
+      name: shp1_current_loop_version
+      label: SHP1 (current loop version)
+    - value: 615
+      name: suv5_volt_version
+      label: SUV5 (volt version)
+    - value: 616
+      name: suv5_current_loop_version
+      label: SUV5 (current loop version)
+  stability: constant
+  description: Device type of the sensor.
+  source:
+    address: '0'
+    page: 2
+    reference: 'Input registers overview: IO_DEVICE_TYPE'
+- id: data_model_version
+  table: input_register
+  address: 1
+  type: u16
+  aliases:
+  - IO_DATAMODEL_VERSION
+  description: Data-model version; the manual describes version 107.
+  source:
+    address: '1'
+    page: 2
+    reference: 'Input registers overview: IO_DATAMODEL_VERSION'
+- id: operational_mode
+  table: input_register
+  address: 2
+  type: u16
+  aliases:
+  - IO_OPERATIONAL_MODE
+  enum:
+    values:
+    - value: 1
+      name: normal
+      label: Normal mode
+    - value: 2
+      name: service
+      label: Service mode
+    - value: 3
+      name: calibration
+      label: Calibration mode
+    - value: 4
+      name: factory
+      label: Factory mode
+    - value: 5
+      name: error
+      label: Error mode
+  description: Operational mode.
+  source:
+    address: '2'
+    page: 2
+    reference: 'Input registers overview: IO_OPERATIONAL_MODE'
+- id: status_flags
+  table: input_register
+  address: 3
+  type: u16
+  aliases:
+  - IO_STATUS_FLAGS
+  flags:
+    flags:
+    - bit: 0
+      name: quality_of_the_signal
+      label: Quality of the signal
+      description: See IO_VOID_DATA_FLAG.
+    - bit: 1
+      name: overflow
+      label: Overflow
+      description: See IO_OVERFLOW_ERROR.
+    - bit: 2
+      name: underflow
+      label: Underflow
+      description: See IO_UNDERFLOW_ERROR.
+    - bit: 3
+      name: error_flag
+      label: Error flag
+      description: See IO_ERROR_FLAG.
+    - bit: 4
+      name: adc_error
+      label: ADC Error
+      description: See IO_ADC_ERROR.
+    - bit: 5
+      name: dac_error
+      label: DAC Error
+      description: See IO_DAC_ERROR.
+    - bit: 6
+      name: calibration_error
+      label: Calibration Error
+      description: See IO_CALIBRATION_ERROR.
+    - bit: 7
+      name: update_eeprom_error
+      label: Update EEPROM error
+      description: See IO_UPDATE_FAILED.
+    - bit: 8
+      name: power_failure_error
+      label: Power failure error
+      description: See POWER_FAILED_FLAG.
+    - bit: 9
+      name: tilt_sensor_error
+      label: Tilt sensor error
+      description: See IO_TILT_ERROR.
+    - bit: 10
+      name: relative_humidity_sensor_error
+      label: Relative humidity sensor error
+      description: See IO_RH_ERROR.
+    - bit: 11
+      name: relative_humidity_threshold_warning
+      label: Relative humidity threshold warning
+      description: See IO_RH_THRESHOLD.
+    - bit: 12
+      name: body_temperature_sensor_error
+      label: Body temperature sensor error
+      description: See IO_BODY_TEMP_ERROR.
+  description: Device status and data validity flags.
+  source:
+    address: '3'
+    page: 2
+    reference: 'Input registers overview: IO_STATUS_FLAGS'
+- id: scale_factor
+  table: input_register
+  address: 4
+  type: i16
+  aliases:
+  - IO_SCALE_FACTOR
+  description: 'Decimal places of IO_SENSOR1_DATA and IO_RAW_SENSOR1_DATA: W/m2 =
+    raw / 10^scale_factor (2: /100, 1: /10, 0: x1, -1: x10). Default 0; IO_AUTO_RANGE
+    or IO_DEF_SCALE_FACTOR can change it.'
+  source:
+    address: '4'
+    page: 2
+    reference: 'Input registers overview: IO_SCALE_FACTOR'
+- id: irradiance_scaled
+  table: input_register
+  address: 5
+  type: i16
+  aliases:
+  - IO_SENSOR1_DATA
+  description: 'Temperature-compensated irradiance. Irradiance in W/m2 = raw / 10^scale_factor.
+    Not converted here: the draft''s exponent10 reference cannot negate the scale
+    factor.'
+  source:
+    address: '5'
+    page: 2
+    reference: 'Input registers overview: IO_SENSOR1_DATA'
+- id: irradiance_uncompensated_scaled
+  table: input_register
+  address: 6
+  type: i16
+  aliases:
+  - IO_RAW_SENSOR1_DATA
+  description: 'Calibrated irradiance before linearisation and temperature compensation.
+    Irradiance in W/m2 = raw / 10^scale_factor. Not converted here: the draft''s exponent10
+    reference cannot negate the scale factor.'
+  source:
+    address: '6'
+    page: 2
+    reference: 'Input registers overview: IO_RAW_SENSOR1_DATA'
+- id: body_temperature
+  table: input_register
+  address: 8
+  type: i16
+  aliases:
+  - IO_BODY_TEMPERATURE
+  conversion:
+    exponent10: -1
+  unit: Cel
+  description: Sensor body temperature (register resolution 0.1 °C).
+  source:
+    address: '8'
+    page: 2
+    reference: 'Input registers overview: IO_BODY_TEMPERATURE'
+- id: supply_voltage
+  table: input_register
+  address: 9
+  type: i16
+  aliases:
+  - IO_EXT_POWER_SENSOR
+  conversion:
+    exponent10: -1
+  unit: V
+  description: External supply voltage at the chassis socket (register resolution
+    0.1 V).
+  source:
+    address: '9'
+    page: 2
+    reference: 'Input registers overview: IO_EXT_POWER_SENSOR'
+- id: sensor_input_voltage
+  table: input_register
+  address: 18
+  type: i32
+  aliases:
+  - IO_ADC1_COUNTS
+  conversion:
+    exponent10: -2
+  unit: uV
+  description: Input voltage of sensor 1 (register resolution 0.01 µV), most significant
+    word first.
+  source:
+    address: '18'
+    page: 2
+    reference: 'Input registers overview: IO_ADC1_COUNTS'
+- id: error_code
+  table: input_register
+  address: 26
+  type: u16
+  aliases:
+  - IO_ERROR_CODE
+  description: Most recent or actual error code.
+  source:
+    address: '26'
+    page: 3
+    reference: 'Input registers overview: IO_ERROR_CODE'
+- id: on_time
+  table: input_register
+  address: 32
+  type: u32
+  aliases:
+  - IO_SENSOR_ON_TIMEH
+  - IO_SENSOR_ON_TIMEL
+  unit: s
+  description: 'On time: IO_SENSOR_ON_TIMEH (MSB word) and IO_SENSOR_ON_TIMEL (LSB
+    word) read as one 32-bit value.'
+  source:
+    address: '32'
+    page: 3
+    reference: 'Input registers overview: IO_SENSOR_ON_TIMEH'
+- id: batch_number
+  table: input_register
+  address: 41
+  type: u16
+  aliases:
+  - IO_BATCH_NUMBER
+  description: Production year as YY (20 = 2020); unique only together with serial_number.
+  source:
+    address: '41'
+    page: 3
+    reference: 'Input registers overview: IO_BATCH_NUMBER'
+- id: serial_number
+  table: input_register
+  address: 42
+  type: u16
+  aliases:
+  - IO_SERIAL_NUMBER
+  description: Four-digit serial number.
+  source:
+    address: '42'
+    page: 3
+    reference: 'Input registers overview: IO_SERIAL_NUMBER'
+- id: software_version
+  table: input_register
+  address: 43
+  type: u16
+  aliases:
+  - IO_SOFTWARE_VERSION
+  description: Software version.
+  source:
+    address: '43'
+    page: 3
+    reference: 'Input registers overview: IO_SOFTWARE_VERSION'
+- id: hardware_version
+  table: input_register
+  address: 44
+  type: u16
+  aliases:
+  - IO_HARDWARE_VERSION
+  description: Hardware version.
+  source:
+    address: '44'
+    page: 3
+    reference: 'Input registers overview: IO_HARDWARE_VERSION'
+- id: error_flag
+  table: discrete_input
+  address: 5
+  type: bool
+  aliases:
+  - IO_ERROR_FLAG
+  description: General hardware or software error; also set after every power-up until
+    cleared.
+  source:
+    address: '5'
+    page: 4
+    reference: 'Discrete inputs overview: IO_ERROR_FLAG'
+- id: calibration_error
+  table: discrete_input
+  address: 8
+  type: bool
+  aliases:
+  - IO_CALIBRATION_ERROR
+  description: Sensor not calibrated or calibration checksum error.
+  source:
+    address: '8'
+    page: 4
+    reference: 'Discrete inputs overview: IO_CALIBRATION_ERROR'

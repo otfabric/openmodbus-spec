@@ -1,0 +1,916 @@
+openmodbus: 0.1.0
+info:
+  id: schneider-electric/atv340/status
+  title: Schneider Electric Altivar ATV340 drive status and actual values
+  version: 0.1.0
+  description: 'Read-only subset of the ATV340 communication parameters: CiA402 status
+    word, drive state, last fault, actual values and the input energy counter. Parameters
+    are read with Read Holding Registers (function 3), the only read function the
+    ATV340 Modbus Serial Line Manual (NVE61654) lists. The output frequency scale
+    assumes bit 9 of the extended control word CMI is 0. The workbook gives no fixed
+    scale for motor current (LCR), so it is left out. Input energy is split over five
+    registers (Wh, kWh, MWh, GWh, TWh), each counting 0 to 999.
+
+    '
+  attribution: Derived from Schneider Electric's ATV340 - Communication Parameters
+    (NVE61728).
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: schneider-electric-atv340-comm
+device:
+  manufacturer: Schneider Electric
+  family: Altivar Machine
+  model: ATV340
+  classes:
+  - drive
+  documentation:
+  - title: ATV340 - Communication Parameters
+    url: https://www.se.com/us/en/download/document/NVE61728/
+    revision: NVE61728 v4.6
+  - title: Altivar Machine ATV340 Modbus Serial Line Manual
+    url: https://www.se.com/us/en/download/document/NVE61654/
+    revision: NVE61654.01, 06/2016
+defaults:
+  table: holding_register
+  access: r
+constraints:
+  maxReadRegisters: 63
+points:
+- id: status_word
+  label: Status Register
+  aliases:
+  - ETA
+  address: 3201
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: ready_to_switch_on
+      label: '= 1: "Ready to switch on", awaiting power section line supply'
+    - bit: 1
+      name: switched_on
+      label: '= 1: "Switched on", ready'
+    - bit: 2
+      name: operation_enabled
+      label: '= 1: "Operation enabled", running'
+    - bit: 3
+      name: fault
+      label: '= 1: Fault detection'
+    - bit: 4
+      name: voltage_enabled
+      label: '"Voltage enabled", power part connected to supply mains'
+      description: '"Voltage enabled", power part connected to supply mains = 0: Power
+        part not connected to supply mains = 1: Power part connected to supply mains
+        When the drive is powered by the power section only, this bit is always at
+        1.'
+    - bit: 6
+      name: switch_on_disabled
+      label: '= 1: "Switched on disabled", power section line supply locked'
+    - bit: 7
+      name: warning
+      label: Warning
+      description: 'Warning = 0: No warning = 1: Warning active'
+    - bit: 9
+      name: remote
+      label: 'Remote: command or reference via fieldbus'
+      description: 'Remote: command or reference via fieldbus = 0: Command or reference
+        given via the graphic display terminal or remote display terminal = 1: Command
+        or reference via fieldbus'
+    - bit: 10
+      name: target_reached
+      label: Target reference reached
+      description: 'Target reference reached = 0: The reference is not reached = 1:
+        The reference has been reached When the drive is in speed mode, this is the
+        reference frequency.'
+    - bit: 11
+      name: internal_limit_active
+      label: '"Internal limit active", reference outside limits'
+      description: '"Internal limit active", reference outside limits = 0: The reference
+        is within the limits = 1: The reference is not within the limits When the
+        drive is in speed mode, the limits are defined by the [Low speed] (LSP) and
+        [High speed] (HSP) parameters.'
+    - bit: 14
+      name: stop_key
+      label: '"Stop key", STOP via stop key'
+      description: '"Stop key", STOP via stop key = 0: STOP key not active = 1: Stop
+        triggered by the STOP key on the graphic display terminal or the remote display
+        terminal'
+    - bit: 15
+      name: reverse_rotation
+      label: '"Direction", direction of rotation'
+      description: '"Direction", direction of rotation = 0: Forward rotation at output
+        = 1: Reverse rotation at output The combination of Bits 0, 1, 2, 4, 5 and
+        6 defines the state in the DSP 402 state chart (refer to fieldbus manuals).'
+  description: Bit meanings for the CiA402 profile.
+  source:
+    address: 16#0C81 = 3201
+    reference: Parameters!A10:L10; Registers!A52:D86
+- id: output_frequency
+  label: Motor frequency
+  aliases:
+  - RFR
+  address: 3202
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: Hz
+  description: 0.1 Hz while bit 9 of the extended control word CMI is 0. With CMI
+    bit 9 at 1 the drive reports a standardised value where 32767 corresponds to [Max
+    frequency] (tFr); this contract does not describe that mode.
+  source:
+    address: 16#0C82 = 3202
+    reference: Parameters!A24:L24; Registers!C13:D16
+- id: motor_torque
+  label: Motor torque
+  aliases:
+  - OTR
+  address: 3205
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: '%'
+  source:
+    address: 16#0C85 = 3205
+    reference: Parameters!A25:L25
+- id: mains_voltage
+  label: Mains voltage
+  aliases:
+  - ULN
+  address: 3207
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: V
+  source:
+    address: 16#0C87 = 3207
+    reference: Parameters!A37:L37
+- id: motor_voltage
+  label: Motor voltage
+  aliases:
+  - UOP
+  address: 3208
+  type: u16
+  unit: V
+  source:
+    address: 16#0C88 = 3208
+    reference: Parameters!A27:L27
+- id: drive_thermal_state
+  label: Drive thermal state
+  aliases:
+  - THD
+  address: 3209
+  type: u16
+  unit: '%'
+  source:
+    address: 16#0C89 = 3209
+    reference: Parameters!A38:L38
+- id: motor_power
+  label: Motor power in %
+  aliases:
+  - OPR
+  address: 3211
+  type: i16
+  unit: '%'
+  source:
+    address: 16#0C8B = 3211
+    reference: Parameters!A28:L28
+- id: drive_state
+  label: Device state
+  aliases:
+  - HMIS
+  address: 3240
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: tun
+      label: Autotuning
+      description: Drive automatic tuning
+    - value: 1
+      name: dcb
+      label: In DC inject.
+      description: DC injection
+    - value: 2
+      name: rdy
+      label: Ready
+      description: Ready
+    - value: 3
+      name: nst
+      label: Freewheel
+      description: Freewheel stop
+    - value: 4
+      name: run
+      label: Running
+      description: Running
+    - value: 5
+      name: acc
+      label: Accelerating
+      description: Accelerating
+    - value: 6
+      name: dec
+      label: Decelerating
+      description: Decelerating
+    - value: 7
+      name: cli
+      label: Current Limitation
+      description: In current limitation
+    - value: 8
+      name: fst
+      label: Fast stop
+      description: Fast stop
+    - value: 9
+      name: flu
+      label: Mot. fluxing
+      description: Motor fluxing
+    - value: 11
+      name: nlp
+      label: No Mains Voltage
+      description: No mains voltage
+    - value: 13
+      name: ctl
+      label: control.stop
+      description: Control stopping
+    - value: 14
+      name: obr
+      label: Dec. adapt.
+      description: Dec ramp adaptation
+    - value: 15
+      name: soc
+      label: Output cut
+      description: Output cut
+    - value: 17
+      name: usa
+      label: UnderV Warn
+      description: Undervoltage warning
+    - value: 18
+      name: tc
+      label: TC Mode Active
+      description: TC mode active
+    - value: 19
+      name: st
+      label: In autotest
+      description: In autotest
+    - value: 20
+      name: fa
+      label: Autotest error
+      description: Autotest error
+    - value: 21
+      name: ok
+      label: Autotest OK
+      description: Autotest OK
+    - value: 22
+      name: ep
+      label: EEprom test
+      description: EEprom test
+    - value: 23
+      name: flt
+      label: Operating State "Fault"
+      description: Operating state "Fault"
+    - value: 25
+      name: dcp
+      label: DCP Flash Mode
+      description: DCP Flashing mode
+    - value: 28
+      name: ss1
+      label: SS1 Active
+      description: SS1 active
+    - value: 29
+      name: sls
+      label: SLS Active
+      description: SLS active
+    - value: 30
+      name: sto
+      label: STO active
+      description: STO active
+    - value: 36
+      name: fwup
+      label: Firmware Update
+      description: Firmware Update
+    - value: 38
+      name: asa
+      label: Angle test
+      description: Angle test
+    - value: 40
+      name: sos
+      label: SOS Active
+      description: SOS active
+    - value: 41
+      name: ss2
+      label: SS2 Active
+      description: SS2 active
+    - value: 42
+      name: sms
+      label: SMS Active
+      description: SMS active
+    - value: 43
+      name: sctp
+      label: Safety Config Test
+      description: Safety configuration test
+    - value: 44
+      name: sfty
+      label: Safety Function
+      description: Safety function
+  source:
+    address: 16#0CA8 = 3240
+    reference: Parameters!A11:L11; Enumerations!A606:D637
+- id: dc_bus_voltage
+  label: DC bus voltage
+  aliases:
+  - VBUS
+  address: 3243
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: V
+  source:
+    address: 16#0CAB = 3243
+    reference: Parameters!A1214:L1214
+- id: last_fault
+  label: Last error occurred
+  aliases:
+  - LFT
+  address: 7121
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: nof
+      label: No Error
+      description: No error detected
+    - value: 2
+      name: eef1
+      label: Ctrl Memory Error
+      description: Control memory error
+    - value: 3
+      name: cff
+      label: Incorrect Config
+      description: Incorrect configuration
+    - value: 4
+      name: cfi
+      label: Invalid Config
+      description: Invalid configuration
+    - value: 5
+      name: slf1
+      label: Mdb Com Interrupt
+      description: Modbus communication interruption
+    - value: 6
+      name: ilf
+      label: Internal Link Error
+      description: Internal communication interruption with option module
+    - value: 7
+      name: cnf
+      label: Fdbus Com Interrupt
+      description: Fieldbus communication interruption
+    - value: 8
+      name: epf1
+      label: External Error
+      description: External detected error
+    - value: 9
+      name: ocf
+      label: Overcurrent
+      description: Overcurrent
+    - value: 10
+      name: crf1
+      label: Precharge Capa
+      description: Precharge capacitor
+    - value: 11
+      name: spf
+      label: Enc Fdbk Loss
+      description: Encoder feedback loss
+    - value: 12
+      name: anf
+      label: Load slipping
+      description: Load slipping
+    - value: 15
+      name: ihf
+      label: Input Overheating
+      description: Input Overheating
+    - value: 16
+      name: ohf
+      label: Device Overheat
+      description: Device overheating
+    - value: 17
+      name: olf
+      label: Motor Overload
+      description: Motor overload
+    - value: 18
+      name: obf
+      label: DC Bus OverV
+      description: DC bus overvoltage
+    - value: 19
+      name: osf
+      label: Supply Mains OverV
+      description: Supply mains overvoltage
+    - value: 20
+      name: opf1
+      label: Single out ph loss
+      description: Single output phase loss
+    - value: 21
+      name: phf
+      label: Input Phase Loss
+      description: Input phase loss
+    - value: 22
+      name: usf
+      label: Supply Mains UnderV
+      description: Supply mains undervoltage
+    - value: 23
+      name: scf1
+      label: Motor short circuit
+      description: Motor short circuit
+    - value: 24
+      name: sof
+      label: Motor Overspeed
+      description: Motor overspeed
+    - value: 25
+      name: tnf
+      label: Autotuning Error
+      description: Autotuning detected error
+    - value: 26
+      name: inf1
+      label: Internal Error 1
+      description: Internal error 1 (Rating)
+    - value: 27
+      name: inf2
+      label: Internal Error 2
+      description: Internal error 2 (Soft)
+    - value: 28
+      name: inf3
+      label: Internal Error 3
+      description: Internal error 3 (Intern Comm)
+    - value: 29
+      name: inf4
+      label: Internal Error 4
+      description: Internal error 4 (Manufacturing)
+    - value: 30
+      name: eef2
+      label: Pwr Memory Error
+      description: Power memory error
+    - value: 32
+      name: scf3
+      label: Ground Short Circuit
+      description: Ground short circuit
+    - value: 33
+      name: opf2
+      label: Output Ph Loss
+      description: Output phase loss
+    - value: 34
+      name: cof
+      label: CANopen Com Interrupt
+      description: CANopen communication interruption
+    - value: 35
+      name: blf
+      label: Brake Control
+      description: Brake control
+    - value: 37
+      name: inf7
+      label: Internal Error 7
+      description: Internal error 7 (Init)
+    - value: 38
+      name: epf2
+      label: Fieldbus Error
+      description: External error detected by Fieldbus
+    - value: 40
+      name: inf8
+      label: Internal Error 8
+      description: Internal error 8 (Switching Supply)
+    - value: 41
+      name: brf
+      label: Brake Feedback
+      description: Brake feedback
+    - value: 42
+      name: slf2
+      label: PC Com Interrupt
+      description: PC communication interruption
+    - value: 43
+      name: ecf
+      label: Encoder Coupling
+      description: Encoder coupling
+    - value: 44
+      name: ssf
+      label: Torque Limit Error
+      description: Torque limitation error
+    - value: 45
+      name: slf3
+      label: HMI Com Interruption
+      description: HMI communication interruption
+    - value: 51
+      name: inf9
+      label: Internal Error 9
+      description: Internal error 9 (Measure)
+    - value: 52
+      name: infa
+      label: Internal Error 10
+      description: Internal error 10 (Mains)
+    - value: 53
+      name: infb
+      label: Internal Error 11
+      description: Internal error 11 (Temperature)
+    - value: 54
+      name: tjf
+      label: Device Overheat
+      description: Device overheating
+    - value: 55
+      name: scf4
+      label: IGBT Short Circuit
+      description: IGBT short circuit
+    - value: 56
+      name: scf5
+      label: Mot Short Circuit
+      description: Motor short circuit
+    - value: 57
+      name: srf
+      label: Torque timeout
+      description: Torque timeout
+    - value: 58
+      name: fcf1
+      label: Out Contact Closed Error
+      description: Output contactor closed error
+    - value: 59
+      name: fcf2
+      label: Out Contact Opened Error
+      description: Output contactor opened error
+    - value: 60
+      name: infc
+      label: Internal Error 12
+      description: Internal error 12 (Internal current supply)
+    - value: 62
+      name: enf
+      label: Encoder
+      description: Encoder
+    - value: 64
+      name: lcf
+      label: Input Contactor
+      description: input contactor
+    - value: 65
+      name: buf
+      label: DB unit sh. circuit
+      description: DB unit sh. circuit
+    - value: 68
+      name: inf6
+      label: Internal Error 6
+      description: Internal error 6 (Option)
+    - value: 69
+      name: infe
+      label: Internal Error 14
+      description: Internal error 14 (CPU)
+    - value: 70
+      name: bof
+      label: Braking Resistor ovld
+      description: Braking resistor overload
+    - value: 71
+      name: lff3
+      label: AI3 4-20mA loss
+      description: AI3 4-20mA loss
+    - value: 72
+      name: lff4
+      label: AI4 4-20mA loss
+      description: AI4 4-20mA loss
+    - value: 73
+      name: hcf
+      label: Boards Compat
+      description: Boards compatibility
+    - value: 76
+      name: dlf
+      label: Dyn Load Error
+      description: Dynamic load detected error
+    - value: 77
+      name: cfi2
+      label: Conf Transfer Error
+      description: Configuration transfer error
+    - value: 79
+      name: lff5
+      label: AI5 4-20 mA loss
+      description: AI5 4-20 mA loss
+    - value: 82
+      name: lkon
+      label: ON Lock Error
+      description: ON lock error
+    - value: 99
+      name: csf
+      label: Channel Switch Error
+      description: Channel switching detected error
+    - value: 100
+      name: ulf
+      label: Proc Underload
+      description: Process underload
+    - value: 101
+      name: olc
+      label: Process Overload
+      description: Process overload
+    - value: 105
+      name: asf
+      label: Angle error
+      description: Angle error
+    - value: 106
+      name: lff1
+      label: AI1 4-20 mA loss
+      description: AI1 4-20 mA loss
+    - value: 107
+      name: saff
+      label: Safety Func Error
+      description: Safety function detected error
+    - value: 112
+      name: th3f
+      label: AI3 Th Level Error
+      description: AI3 thermal level error
+    - value: 113
+      name: t3cf
+      label: AI3 Th Sensor Err
+      description: Thermal sensor error on AI3
+    - value: 120
+      name: th4f
+      label: AI4 Th Level Error
+      description: AI4 thermal level error
+    - value: 121
+      name: t4cf
+      label: AI4 Th Sensor Err
+      description: Thermal sensor error on AI4
+    - value: 122
+      name: th5f
+      label: AI5 Th Level Error
+      description: AI5 thermal level error
+    - value: 123
+      name: t5cf
+      label: AI5 Th Sensor Err
+      description: Thermal sensor error on AI5
+    - value: 128
+      name: pglf
+      label: Prog Load Error
+      description: Program loading detected error
+    - value: 129
+      name: pgrf
+      label: Prog Run Error
+      description: Program running detected error
+    - value: 133
+      name: savf
+      label: Safety Violation
+      description: Safety violation
+    - value: 134
+      name: scff
+      label: Safety Config Error
+      description: Safety configuration error
+    - value: 135
+      name: siof
+      label: Safety IO Error
+      description: Safety IO error
+    - value: 142
+      name: infg
+      label: Internal Error 16
+      description: Internal error 16 (IO module - relay)
+    - value: 143
+      name: infh
+      label: Internal Error 17
+      description: Internal error 17 (IO module - Standard)
+    - value: 144
+      name: inf0
+      label: Internal Error 0
+      description: Internal error 0 (IPC)
+    - value: 146
+      name: infd
+      label: Internal Error 13
+      description: Internal error 13 (Diff current)
+    - value: 147
+      name: infi
+      label: Internal Error 18
+      description: Internal error 18 (Safety function module)
+    - value: 148
+      name: stf
+      label: Motor Stall Error
+      description: Motor stall detected error
+    - value: 149
+      name: infl
+      label: Internal Error 21
+      description: Internal error 21 (RTC)
+    - value: 150
+      name: ethf
+      label: Embd Eth Com Interrupt
+      description: Embedded Ethernet communication interruption
+    - value: 151
+      name: inff
+      label: Internal Error 15
+      description: Internal error 15 (Flash)
+    - value: 152
+      name: fwer
+      label: FW Update Error
+      description: Firmware Update error
+    - value: 153
+      name: infm
+      label: Internal Error 22
+      description: Internal error 22 (Embedded Ethernet)
+    - value: 154
+      name: infp
+      label: Internal Error 25
+      description: Internal error 25 (Incompatibility CB & SW)
+    - value: 155
+      name: infk
+      label: Internal Error 20
+      description: Internal error 20 (option interface PCBA)
+    - value: 156
+      name: infj
+      label: Internal Error 19
+      description: Internal error 19 (Encoder module)
+    - value: 157
+      name: infr
+      label: Internal Error 27
+      description: Internal error 27 (Diagnostics CPLD)
+    - value: 158
+      name: infn
+      label: Internal Error 23
+      description: Internal error 23 (Module link)
+    - value: 159
+      name: scf6
+      label: AFE ShortCircuit error
+      description: AFE ShortCircuit error
+    - value: 160
+      name: obf2
+      label: AFE Bus unbalancing
+      description: AFE Bus unbalancing
+    - value: 161
+      name: infs
+      label: Internal Error 28
+      description: Internal error 28 (AFE)
+    - value: 162
+      name: ifa
+      label: MonitorCirc A Error
+      description: Monitoring circuit A error
+    - value: 163
+      name: ifb
+      label: MonitorCirc B Error
+      description: Monitoring circuit B error
+    - value: 164
+      name: ifc
+      label: MonitorCirc C Error
+      description: Monitoring circuit C error
+    - value: 165
+      name: ifd
+      label: MonitorCirc D Error
+      description: Monitoring circuit D error
+    - value: 173
+      name: chf
+      label: Cabinet Overheat Error
+      description: Cabinet overheat error
+    - value: 175
+      name: infv
+      label: Internal Error 31
+      description: Internal error 31 (Missing brick)
+    - value: 176
+      name: inft
+      label: Internal Error 29
+      description: Internal error 29 (Inverter)
+    - value: 177
+      name: infu
+      label: Internal Error 30
+      description: Internal error 30 (Rectifier)
+    - value: 179
+      name: tjf2
+      label: AFE IGBT over-heat error
+      description: AFE IGBT over-heat error
+    - value: 180
+      name: crf3
+      label: AFE contactor feedback error
+      description: AFE contactor feedback error
+    - value: 181
+      name: cfi3
+      label: Pre-settings Transfer Error
+      description: Pre-settings transfer error
+    - value: 182
+      name: cbf
+      label: Circuit Breaker Error
+      description: Circuit breaker error
+    - value: 184
+      name: bufo
+      label: DB unit op. circuit
+      description: DB unit open circuit
+    - value: 185
+      name: tlof
+      label: Drive Overload
+      description: Drive overload
+    - value: 186
+      name: mdlf
+      label: MultiDrive Link Error
+      description: MultiDrive Link error
+    - value: 187
+      name: th1f
+      label: AI1 Th Level Error
+      description: AI1 thermal level error
+    - value: 188
+      name: t1cf
+      label: AI1 Th Sensor Error
+      description: Thermal sensor error on AI1
+    - value: 189
+      name: bsqf
+      label: Backlash Error
+      description: Backlash error
+    - value: 190
+      name: msdf
+      label: M/S Device Error
+      description: M/S device error
+    - value: 194
+      name: thef
+      label: Encoder Th Level Error
+      description: Encoder module thermal level error
+    - value: 195
+      name: tecf
+      label: Encoder Th Sensor Error
+      description: Thermal sensor error on encoder module
+    - value: 196
+      name: cfi4
+      label: Empty Config
+      description: Empty configuration
+    - value: 200
+      name: fdr1
+      label: FDR 1 Error
+      description: FDR Eth embedded error
+    - value: 201
+      name: fdr2
+      label: FDR 2 Error
+      description: FDR Eth module error
+    - value: 206
+      name: dcre
+      label: DC Bus Ripple Error
+      description: DC Bus ripple error
+    - value: 208
+      name: idlf
+      label: Egy Saving Exit Error
+      description: Idle mode exit error
+    - value: 209
+      name: mdcf
+      label: Load Mvt Error
+      description: Load movement error
+    - value: 211
+      name: spfc
+      label: Security Files Corrupt
+      description: Security files corrupt
+  source:
+    address: 16#1BD1 = 7121
+    reference: Parameters!A54:L54; Enumerations!A721:D847
+- id: output_speed
+  label: Output velocity
+  aliases:
+  - RFRD
+  address: 8604
+  type: i16
+  unit: /min
+  source:
+    address: 16#219C = 8604
+    reference: Parameters!A23:L23
+- id: input_energy_wh
+  label: Input Energy (Wh)
+  aliases:
+  - IC0
+  address: 10626
+  type: u16
+  unit: W.h
+  description: 'Workbook access R/WS: the drive also accepts writes. Input energy
+    is split over IC0 to IC4, each 0 ... 999.'
+  source:
+    address: 16#2982 = 10626
+    reference: Parameters!A942:L942
+- id: input_energy_kwh
+  label: Input Energy (kWh)
+  aliases:
+  - IC1
+  address: 10627
+  type: u16
+  unit: kW.h
+  description: 'Workbook access R/WS: the drive also accepts writes. Input energy
+    is split over IC0 to IC4, each 0 ... 999.'
+  source:
+    address: 16#2983 = 10627
+    reference: Parameters!A943:L943
+- id: input_energy_mwh
+  label: Input Energy (MWh)
+  aliases:
+  - IC2
+  address: 10628
+  type: u16
+  unit: MW.h
+  description: 'Workbook access R/WS: the drive also accepts writes. Input energy
+    is split over IC0 to IC4, each 0 ... 999.'
+  source:
+    address: 16#2984 = 10628
+    reference: Parameters!A944:L944
+- id: input_energy_gwh
+  label: Input Energy (GWh)
+  aliases:
+  - IC3
+  address: 10629
+  type: u16
+  unit: GW.h
+  description: 'Workbook access R/WS: the drive also accepts writes. Input energy
+    is split over IC0 to IC4, each 0 ... 999.'
+  source:
+    address: 16#2985 = 10629
+    reference: Parameters!A945:L945
+- id: input_energy_twh
+  label: Input Energy (TWh)
+  aliases:
+  - IC4
+  address: 10630
+  type: u16
+  unit: TW.h
+  description: 'Workbook access R/WS: the drive also accepts writes. Input energy
+    is split over IC0 to IC4, each 0 ... 999.'
+  source:
+    address: 16#2986 = 10630
+    reference: Parameters!A946:L946

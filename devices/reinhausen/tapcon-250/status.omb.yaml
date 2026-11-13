@@ -1,0 +1,250 @@
+openmodbus: 0.1.0
+info:
+  id: reinhausen/tapcon-250/status
+  title: Reinhausen TAPCON 250 voltage controller status
+  version: 0.1.0
+  description: 'Read-only subset of the TAPCON 250 MODBUS data points: input status
+    bits for operating mode, limit and parallel-control messages, the tap position
+    and two documented parallel-control parameters. Values with a Scale column other
+    than 1 (voltages, currents, frequency) are left out because the document does
+    not say whether the factor multiplies or divides the raw value.
+
+    '
+  attribution: Derived from Maschinenfabrik Reinhausen's Digital OLTC Voltage Controller
+    TAPCON 250 Implementation of MODBUS (ASCII/RTU) Protocol.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: reinhausen-tapcon-250
+device:
+  manufacturer: Maschinenfabrik Reinhausen
+  family: TAPCON
+  model: TAPCON 250
+  classes:
+  - tap_changer_controller
+  transports:
+  - type: rtu
+    notes: RS232 (default), RS485 or optional optical fibre; 9600 baud default, 8E1
+      default.
+  - type: ascii
+    notes: RS232 (default), RS485 or optional optical fibre.
+  unitId:
+    mode: configurable
+    default: 1
+    notes: Address 0 to 255, 1 is the default; address 0 is broadcast.
+  documentation:
+  - title: Digital OLTC Voltage Controller TAPCON 250 Implementation of MODBUS (ASCII/RTU)
+      Protocol
+    url: https://www.reinhausen.com/fileadmin/downloadcenter/spannungsregler/tapcon_250_previous_generation/bb2072201_en_tc250_modbus.pdf
+    revision: Supplement BB 2072201/02
+defaults:
+  access: r
+points:
+- id: auto_mode
+  table: discrete_input
+  address: 0
+  type: bool
+  description: 0 = manual, 1 = auto.
+  aliases:
+  - status manual/auto
+  source:
+    address: '0'
+    page: 5
+    reference: 6.2 Input Status (1X references)
+- id: operation_counter_circuit_closed
+  table: discrete_input
+  address: 10
+  type: bool
+  description: 0 = open, 1 = closed.
+  aliases:
+  - operation counter circuit status
+  source:
+    address: '10'
+    page: 5
+    reference: 6.2 Input Status (1X references)
+- id: parallel_control
+  table: discrete_input
+  address: 11
+  type: bool
+  description: 0 = off, 1 = on.
+  aliases:
+  - parallel control
+  source:
+    address: '11'
+    page: 5
+    reference: 6.2 Input Status (1X references)
+- id: parallel_control_error
+  table: discrete_input
+  address: 12
+  type: bool
+  description: 0 = no error, 1 = error.
+  aliases:
+  - error parallel control
+  source:
+    address: '12'
+    page: 5
+    reference: 6.2 Input Status (1X references)
+- id: local_mode
+  table: discrete_input
+  address: 13
+  type: bool
+  description: 0 = remote, 1 = local.
+  aliases:
+  - Status remote/local
+  source:
+    address: '13'
+    page: 5
+    reference: 6.2 Input Status (1X references)
+- id: overvoltage
+  table: discrete_input
+  address: 14
+  type: bool
+  description: 0 = no overvoltage, 1 = overvoltage.
+  aliases:
+  - overvoltage
+  source:
+    address: '14'
+    page: 5
+    reference: 6.2 Input Status (1X references)
+- id: undervoltage
+  table: discrete_input
+  address: 15
+  type: bool
+  description: 0 = no undervoltage, 1 = undervoltage.
+  aliases:
+  - undervoltage
+  source:
+    address: '15'
+    page: 5
+    reference: 6.2 Input Status (1X references)
+- id: overcurrent
+  table: discrete_input
+  address: 16
+  type: bool
+  description: 0 = no overcurrent, 1 = overcurrent.
+  aliases:
+  - overcurrent
+  source:
+    address: '16'
+    page: 5
+    reference: 6.2 Input Status (1X references)
+- id: function_monitoring
+  table: discrete_input
+  address: 18
+  type: bool
+  description: 0 = inactive, 1 = active.
+  aliases:
+  - function monitoring 15 min
+  source:
+    address: '18'
+    page: 5
+    reference: 6.2 Input Status (1X references)
+- id: auto_inhibit
+  table: discrete_input
+  address: 21
+  type: bool
+  description: 0 = inactive, 1 = active.
+  aliases:
+  - auto inhibit
+  source:
+    address: '21'
+    page: 5
+    reference: 6.2 Input Status (1X references)
+- id: neutral_position
+  table: discrete_input
+  address: 22
+  type: bool
+  description: 0 = inactive, 1 = active.
+  aliases:
+  - neutral position indication
+  source:
+    address: '22'
+    page: 5
+    reference: 6.2 Input Status (1X references)
+- id: reverse_power_flow
+  table: discrete_input
+  address: 24
+  type: bool
+  description: 0 = forward, 1 = reverse.
+  aliases:
+  - power flow direction
+  source:
+    address: '24'
+    page: 5
+    reference: 6.2 Input Status (1X references)
+- id: hunting_alarm
+  table: discrete_input
+  address: 30
+  type: bool
+  description: 0 = inactive, 1 = active.
+  aliases:
+  - Hunting alarm
+  source:
+    address: '30'
+    page: 5
+    reference: 6.2 Input Status (1X references)
+- id: parallel_operation_method
+  table: holding_register
+  address: 6
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: 'off'
+      label: 'off'
+    - value: 1
+      name: circulating_current
+      label: circulating curr
+    - value: 2
+      name: master
+      label: master
+    - value: 3
+      name: follower
+      label: follower
+    - value: 4
+      name: auto_synchronous
+      label: auto synchron.
+    - value: 5
+      name: xpa
+      label: XPA
+  description: Read with function code 03; the device also accepts writes (06), which
+    this read-only contract does not describe.
+  aliases:
+  - parallel operation method
+  source:
+    address: '6'
+    page: 6
+    reference: 6.4 Holding registers (4X references)
+- id: paralleling_group
+  table: holding_register
+  address: 7
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: 'off'
+      label: 'off'
+    - value: 1
+      name: group_1
+      label: group1
+    - value: 2
+      name: group_2
+      label: group2
+  description: Read with function code 03; the device also accepts writes (06), which
+    this read-only contract does not describe.
+  aliases:
+  - paralleling group
+  source:
+    address: '7'
+    page: 6
+    reference: 6.4 Holding registers (4X references)
+- id: tap_position
+  table: input_register
+  address: 0
+  type: i16
+  description: Range -50 to 140 ((50L...140R) in the supplement).
+  aliases:
+  - tap position
+  source:
+    address: '0'
+    page: 6
+    reference: 6.3 Input registers (3X references)

@@ -1,0 +1,207 @@
+openmodbus: 0.1.0
+info:
+  id: eko-instruments/ms-40s/s-series
+  title: EKO Instruments MS-40S telemetry, S-series register map
+  version: 0.1.0
+  description: 'Read-only subset of the MS-40S Modbus RTU registers with the register
+    type set to S-series, the factory default; the M-series, SMP-series and SRD-series
+    maps are not covered. The sensor refreshes its values about every 110 ms.
+
+    '
+  attribution: Derived from EKO Instruments' Pyranometer MS-40/MS-40S Instruction
+    Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: eko-instruments-ms-40s
+device:
+  manufacturer: EKO Instruments
+  model: MS-40S
+  classes:
+  - irradiance_sensor
+  transports:
+  - type: rtu
+    notes: RS-485. Factory default 19200 baud, even parity.
+  unitId:
+    mode: configurable
+    notes: 'Configurable from 1 to 247. The factory default is the last two digits
+      of the serial number, or 100 when those are 00.
+
+      '
+  documentation:
+  - title: Pyranometer MS-40/MS-40S Instruction Manual
+    url: https://eko-instruments.com/wp-content/uploads/2024/08/ms-40_40s_manual20231013v8.pdf
+    revision: Ver. 8 (2023-10-13)
+defaults:
+  table: input_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+points:
+- id: model_code
+  address: 0
+  type: u16
+  aliases:
+  - Model
+  description: Model number of the transmitter.
+  stability: constant
+  enum:
+    values:
+    - value: 274
+      name: ms_40s
+      label: MS-40S
+  source:
+    address: '0'
+    page: 66
+    reference: 'Table A4-9 S-series type: Model'
+- id: irradiance
+  address: 2
+  type: f32
+  aliases:
+  - Comp.Irr
+  unit: W/m2
+  description: Irradiance after temperature and linearity compensation.
+  source:
+    address: '2'
+    page: 66
+    reference: 'Table A4-9 S-series type: Comp.Irr'
+- id: tilt_x
+  address: 14
+  type: f32
+  aliases:
+  - X-axis tilt angle
+  unit: deg
+  description: X-axis component of the tilt angle.
+  source:
+    address: '14'
+    page: 66
+    reference: 'Table A4-9 S-series type: X-axis tilt angle'
+- id: tilt_y
+  address: 16
+  type: f32
+  aliases:
+  - Y-axis tilt angle
+  unit: deg
+  description: Y-axis component of the tilt angle.
+  source:
+    address: '16'
+    page: 66
+    reference: 'Table A4-9 S-series type: Y-axis tilt angle'
+- id: irradiance_raw
+  address: 18
+  type: f32
+  aliases:
+  - Raw.Irr
+  unit: W/m2
+  description: Irradiance before correction.
+  source:
+    address: '18'
+    page: 66
+    reference: 'Table A4-9 S-series type: Raw.Irr'
+- id: sensor_voltage
+  address: 20
+  type: f32
+  aliases:
+  - ADmV
+  unit: mV
+  description: Sensor output voltage.
+  source:
+    address: '20'
+    page: 66
+    reference: 'Table A4-9 S-series type: ADmV'
+- id: internal_temperature
+  address: 22
+  type: f32
+  aliases:
+  - Internal temperature
+  unit: Cel
+  description: Temperature measured by the internal temperature sensor.
+  source:
+    address: '22'
+    page: 66
+    reference: 'Table A4-9 S-series type: Internal temperature'
+- id: humidity_alert
+  address: 26
+  type: u32
+  aliases:
+  - Alerts for abnormal internal humidity of the pyranometer
+  enum:
+    values:
+    - value: 0
+      name: normal
+    - value: 1
+      name: abnormal
+  description: Alert for abnormal internal humidity of the pyranometer.
+  source:
+    address: '26'
+    page: 66
+    reference: 'Table A4-9 S-series type: Alerts for abnormal internal humidity of
+      the pyranometer'
+- id: firmware_version
+  table: input_register
+  address: 98
+  type: u16
+  aliases:
+  - Firmware version
+  description: Firmware version number.
+  source:
+    address: '98'
+    page: 70
+    reference: 'Table A4-14: Firmware version'
+- id: hardware_version
+  table: input_register
+  address: 99
+  type: u16
+  aliases:
+  - Hardware version
+  description: Hardware version.
+  source:
+    address: '99'
+    page: 70
+    reference: 'Table A4-14: Hardware version'
+- id: serial_number
+  table: holding_register
+  address: 164
+  type: u32
+  aliases:
+  - Serial number
+  description: Serial number as an integer, without the leading letter S.
+  stability: constant
+  source:
+    address: '164'
+    page: 71
+    reference: 'Table A4-15: Serial number'
+- id: sensor_name
+  table: holding_register
+  address: 166
+  type: string
+  registers: 8
+  aliases:
+  - Sensor name
+  description: Sensor name, ASCII, up to 16 characters, NUL-terminated when shorter.
+  source:
+    address: 166-173
+    page: 71
+    reference: 'Table A4-15: Sensor name'
+- id: calibration_date
+  table: holding_register
+  address: 190
+  type: u32
+  aliases:
+  - Cal.Date
+  description: Calibration date as the decimal number YYYYMMDD.
+  source:
+    address: '190'
+    page: 72
+    reference: 'Table A4-15: Cal.Date'
+- id: sensitivity
+  table: holding_register
+  address: 192
+  type: f32
+  aliases:
+  - Cal.Value
+  description: Calibration value (sensitivity) in µV per W/m2.
+  unit: uV.m2/W
+  source:
+    address: '192'
+    page: 72
+    reference: 'Table A4-15: Cal.Value'

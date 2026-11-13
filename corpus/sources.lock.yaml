@@ -13,3 +13,279 @@ sources:
     size: 39831
     normalize: cloudflare
     verified_on: '2026-11-13'
+  abb-b21-manual:
+    sha256: a024533bb5600e56441f25042fd4440a34bd8cdcc2ec39940bdb8674484e2e51
+    size: 5301225
+    verified_on: '2026-11-13'
+  abb-b23-b24-manual:
+    sha256: 126dd50b276157c596fb9c3628c198fec40ffca01f994179e7fbb1f3839489e8
+    size: 4670643
+    verified_on: '2026-11-13'
+  carlo-gavazzi-em511-protocol:
+    sha256: aebf3ae7d8adc059ba2f3c6157895b9417316e7db5aae4cf78032b2ab8a957d9
+    size: 819577
+    verified_on: '2026-11-13'
+  carlo-gavazzi-em530-em540-protocol:
+    sha256: bd3b6aa2580ac915f2400ddf8914afedfd419d57589dd3ad672172d7d36a207e
+    size: 718475
+    verified_on: '2026-11-13'
+  eastron-sdm230-modbus:
+    sha256: 6ae454734f76d89854b008e5d784c04c2d047daeabcbf3d8e8a6aee47a22437d
+    size: 283626
+    verified_on: '2026-11-13'
+  eastron-sdm630-modbus:
+    sha256: 3968e14300023271c4dcd1acf450b8a1bc06cf961b2231d2b448e8e8c1fc57ee
+    size: 509911
+    verified_on: '2026-11-13'
+  abb-m4m-modbus-map:
+    sha256: 208b99f68a2f738fadf30f954a177aaf2f774d1944e1e54058100511ca7767d7
+    size: 139652
+    verified_on: '2026-11-13'
+  abb-m4m-modbus-manual:
+    sha256: 3331717bc796faaee9a292af6427d7fc7f991c4b48cbb24d7770775ab5896eaf
+    size: 708777
+    verified_on: '2026-11-13'
+  janitza-umg96rm-modbus-de:
+    sha256: 3d5bb560f11cbe7a6380232646393bec58a2dede1fe7ecd3e48bf81502a05079
+    size: 919104
+    verified_on: '2026-11-13'
+  janitza-umg96rm-e-modbus:
+    sha256: 2ba3e0f976bea5b23f88089e86e5683c3d69c5bfc0b49c57c82ecb9d4c7eed4c
+    size: 709064
+    verified_on: '2026-11-13'
+  fronius-primo-sunspec-maps:
+    sha256: 0a361f65837de2f59afb9b0006a13fc6010a61146a08ad4a592acbdf6e22d5f5
+    size: 268282
+    verified_on: '2026-11-13'
+  fronius-datamanager-modbus-manual:
+    sha256: 771dbd3855c2b775d27ece7b609593a3778514ead79a710c585f6f843004bc4b
+    size: 484521
+    verified_on: '2026-11-13'
+  solis-grid-rs485-modbus:
+    sha256: 41f04d5080839bd1d1a8a95fcd9a26f9d8cd5ad342eb5e812812a713472f1766
+    size: 959385
+    verified_on: '2026-11-13'
+  fronius-gen24-modbus:
+    sha256: dc4c5d49362ee0c9721f21886f17fa18497e54c4d92bb5cc2c50472deb266b55
+    size: 1048162
+    verified_on: '2026-11-13'
+  fronius-gen24-modbus-manual:
+    sha256: 4274a624785c9bb16f06ad6825a5eaed4abf14e4c5b23bf82d322b2e91572ed2
+    size: 506833
+    verified_on: '2026-11-13'
+  schneider-electric-conext-modbus-maps-v4:
+    sha256: b878d0f0bc3415f9798bb19cd5a8647dc793576da9bc3d032d7e6ad948eb8f8d
+    size: 1002899
+    verified_on: '2026-11-13'
+  schneider-electric-conext-combox-datasheet:
+    sha256: d206c33c1fa8e2d8029d34af7f8739384918dcb68c7385180b0bfb87c80eb005
+    size: 893461
+    verified_on: '2026-11-13'
+  victron-gx-vebus:
+    sha256: 5a81fbf8226bd1f35cfa681a438322766633f958d5a55a65a60ee2eff888110d
+    size: 75950
+    verified_on: '2026-11-13'
+  victron-gx-modbus-tcp-manual:
+    sha256: bc6f248f82aa5cd0b991d6b0e0092933f9878ae8421ec3c616cf8b054029b744
+    size: 10517
+    verified_on: '2026-11-13'
+  vaisala-opt100:
+    sha256: 9af81307c102df0fce6cf6ca4fe87b50d488a272534c9bc8f4127df11baee699
+    size: 14781603
+    verified_on: '2026-11-13'
+  vaisala-mht410:
+    sha256: c2aa380f7680f356f1b95532592a4187b44abf55fb485476aab6a8246b9f9648
+    size: 3158046
+    verified_on: '2026-11-13'
+  vaisala-mmt162:
+    sha256: 297735e6c139f3f4016cd436864c77c9dc860bf0b06a623d74cb6019307c08cc
+    size: 1577981
+    verified_on: '2026-11-13'
+  reinhausen-tapcon-230-avt:
+    sha256: 522c74f9410147dd044515c1e63dae8606eb1031485d3068a4d1b1c3c058447d
+    size: 2643057
+    verified_on: '2026-11-13'
+  reinhausen-tapcon-250:
+    sha256: 1eda65fb1de476da13ce9daf373dec2805714f10f64097cd19ff4bc720aa254d
+    size: 577044
+    verified_on: '2026-11-13'
+  reinhausen-tapcon-260:
+    sha256: 7e2cb2e847d50562b94ce77c544135a8114de5a5ecc1d972bd3e594ccf56349e
+    size: 3102660
+    verified_on: '2026-11-13'
+  tecsystem-nt935-ad:
+    sha256: 5c79d85ea2f2189213ddacb91e3be8386f094066d06ccfa8817639e0b6a06270
+    size: 1740655
+    verified_on: '2026-11-13'
+  tecsystem-nt935-eth:
+    sha256: 7a8387355c2076fb8cd9f5f2c89a0e5c074466646c7055ece6a393ec6c4e0d9c
+    size: 1784563
+    verified_on: '2026-11-13'
+  tecsystem-t1048:
+    sha256: c5c4ffa6de862701c58dc6d60c5574e1141726c9b42ca9b0d4e9e00bb4f9e177
+    size: 2058234
+    verified_on: '2026-11-13'
+  abb-ref615-modbus:
+    sha256: 07ac3e6679409992501304cd7c8f121089298fea20636ef663f76af5097c78bd
+    size: 2308027
+    verified_on: '2026-11-13'
+  abb-615-modbus-protocol-manual:
+    sha256: 58631d09350e5af17264d384ab57de9396ae88c1e78aa4a00b18153f9e0b85cd
+    size: 3000671
+    verified_on: '2026-11-13'
+  abb-rem615-modbus:
+    sha256: e3d66c236105bbcf2cec507bd26228ec65e214c3322a956c0c1e5db556d54cfd
+    size: 2425698
+    verified_on: '2026-11-13'
+  abb-ret615-ansi-modbus:
+    sha256: c0f764bdb8bf71fef675303cdbad110ad2f22105134945ea6358e18f0b5f927e
+    size: 2849518
+    verified_on: '2026-11-13'
+  abb-615-ansi-modbus-protocol-manual:
+    sha256: fcefa2733852466d1711719b756e8123cb49612afcb0353c4d91d80e47456b89
+    size: 2918609
+    verified_on: '2026-11-13'
+  fanox-sil-a-modbus:
+    sha256: 433e845e2e49a8e40c9e3e68c52e784fe38c0a228839d55bcc1f250e8ed75f90
+    size: 932501
+    verified_on: '2026-11-13'
+  fanox-sia-c-modbus:
+    sha256: 1b8244ebce7794ba0530d915b0e5298f3feb39fb6ae549012d80bea7342ac062
+    size: 726376
+    verified_on: '2026-11-13'
+  fanox-sia-b-specific-ct-modbus:
+    sha256: 3c8eb801f67700e0e2d40f7b9e67724fc3e363393a54d77648b17b20eae7cea6
+    size: 599701
+    verified_on: '2026-11-13'
+  schneider-electric-sepam-series20-manual:
+    sha256: 267311c59711d981d103f09018db44f3f9c6537f841ea6c40c7eb2874a528b3c
+    size: 15978026
+    verified_on: '2026-11-13'
+  siemens-siprotec-7sx80-modbus:
+    sha256: 2f29679e06948986c2e09fe975e2c16fc52b79bb804529314403e45ab15c4bd4
+    size: 403179
+    verified_on: '2026-11-13'
+  automationdirect-sio-mb12cdr:
+    sha256: 0fea15bae0e0bf2c3f2a87314e83845070bfd7d48f236bc1cbfff9b0c8262928
+    size: 668313
+    verified_on: '2026-11-13'
+  automationdirect-sio-mb16cdd2:
+    sha256: 89e0aff9d694092a8e00461d4b7ae270526a69618d433729bc195a306d75401c
+    size: 677042
+    verified_on: '2026-11-13'
+  automationdirect-sio-mb08thms:
+    sha256: f1495fcdecd3e7bc9ea8597467d15be0283f6110b3c6756dd694e9bf1385772d
+    size: 613454
+    verified_on: '2026-11-13'
+  icp-das-et-2200-manual:
+    sha256: 1db01fe2761d797340e73741765d1214deafcd4d52a5066af6f649b1b29701f1
+    size: 13165738
+    verified_on: '2026-11-13'
+  moxa-iologik-e1200-manual:
+    sha256: 90cfa362a3e1d7d92b518e48638437a56b8d3874e05e3fbfd8b25a5de656bee4
+    size: 8093421
+    verified_on: '2026-11-13'
+  automationdirect-gs20-manual:
+    sha256: 62a1a54205cf5780a62b165788f66d80dcee3038b44eb559f23c3bbac79107b1
+    size: 51091507
+    verified_on: '2026-11-13'
+  automationdirect-gs30-manual:
+    sha256: 9ef6603a4b151ef935f54c16f7a708c43f8b8c35f0588ac7be611781779ca900
+    size: 65022428
+    verified_on: '2026-11-13'
+  automationdirect-gs4-manual:
+    sha256: 420d8c83c264c07270700baa12c4e0c79dcc3cccca2442546a7cc90a251d4ae2
+    size: 62335524
+    verified_on: '2026-11-13'
+  danfoss-fc51-oi:
+    sha256: f16b8e1d9c3efb8c925a7d892e1fb478a2415cea4fee12ca591a2eb9b6407ac5
+    size: 2548650
+    verified_on: '2026-11-13'
+  schneider-electric-atv320-comm:
+    sha256: 6417bc9f0b302ec79b11ac08e12b250e54561b7e048954bcfdc444eb9573f5d0
+    size: 205712
+    verified_on: '2026-11-13'
+  schneider-electric-atv320-modbus-manual:
+    sha256: 61df7d2b81086c76ffe0db8b14c37b0f0ab83717ec11af0de9af2e468f471766
+    size: 4697136
+    verified_on: '2026-11-13'
+  schneider-electric-atv340-comm:
+    sha256: 083dcdee0fd99f11c881650fab5b3d641c9b190eb32f99941bbcce09cb57129d
+    size: 311538
+    verified_on: '2026-11-13'
+  schneider-electric-atv340-modbus-manual:
+    sha256: 9073c5113d8f5ad5b5a7cfc60897e2b6214496d9ba399aa3facea65a455eef33
+    size: 4687830
+    verified_on: '2026-11-13'
+  schneider-electric-atv600-comm:
+    sha256: 36eb0ace9b911c84c53d099f1d0821f129c41e07309767f94862b1c384486b3c
+    size: 348005
+    verified_on: '2026-11-13'
+  schneider-electric-atv600-modbus-manual:
+    sha256: 311159d00ab3f71fddc5163588f11911c3e7f3d8bbcca9065e6ff35f74f22f3e
+    size: 5255767
+    verified_on: '2026-11-13'
+  schneider-electric-atv600-programming-manual:
+    sha256: ebda77eb868ffbb7ec2ecff5255d15819149ffb01529bc1a02759b1f2aa51661
+    size: 19390644
+    verified_on: '2026-11-13'
+  datakom-500-modbus:
+    sha256: 8222940774f059a875e73c313f7c781285b122400fe71eb09b164f95f73eb407
+    size: 858896
+    verified_on: '2026-11-13'
+  deif-ml2-h2-h9:
+    sha256: 4a9bcd834ec67a8e727b5c70f6e2ce77a1b5360f6857320d0bb8fba08cafb2a7
+    size: 7233347
+    verified_on: '2026-11-13'
+  smartgen-hgm9510:
+    sha256: 56a72ee416973f2f096e4881800bfcce0110cb148b1f5e63c7d3fb78c445ed3f
+    size: 2329124
+    verified_on: '2026-11-13'
+  smartgen-hgm9530n:
+    sha256: 050d61da3615c6564544ea1dbf2e6fb82138dcaec52d959ab3eff43c7e5422fb
+    size: 828704
+    verified_on: '2026-11-13'
+  woodward-37528:
+    sha256: 74a9c1fda0b49cc3c8ef3016b31d7adcb533a016c09f38afde63bad1e9da9607
+    size: 71972078
+    verified_on: '2026-11-13'
+  woodward-b37574:
+    sha256: 5a6d6826643d21d1830864d9e5924792d614b28bcc8fd291b73db82f8a11bec2
+    size: 28817306
+    verified_on: '2026-11-13'
+  apogee-instruments-sp-422:
+    sha256: 2290d9918c02ef4b4afa4702ecd6574c1d0f9fa9e4bfc87c8dc3bd76e9e432b2
+    size: 1300322
+    verified_on: '2026-11-13'
+  apogee-instruments-sp-522:
+    sha256: 57d9f3ceffc41358f8e5bcc44112db4be97554aa565146d5fc4a7979290dd786
+    size: 861702
+    verified_on: '2026-11-13'
+  apogee-instruments-sp-722:
+    sha256: bb5860a7e9a2a9088d54dae2e83fbf6164bea9ccb78424f0874db92dfcaafe0e
+    size: 884040
+    verified_on: '2026-11-13'
+  eko-instruments-ms-40s:
+    sha256: ce8afbd20d966c7466b03af6d67339bc47d21056be2655803099d418fb02004a
+    size: 2773113
+    verified_on: '2026-11-13'
+  eko-instruments-ms-60s:
+    sha256: bbf6b1245d3f7572a1f92a8ec5a295f99470147f3f350216ce013e8d5e5bafa7
+    size: 2696995
+    verified_on: '2026-11-13'
+  eko-instruments-ms-80s:
+    sha256: 159e0df960d3165ab463a224812569b267679470cbc43b0cef5b4844e20f1035
+    size: 3134503
+    verified_on: '2026-11-13'
+  hukseflux-sr20-d2:
+    sha256: bf4ca36b77f875b0f38854db965844eedcc7e443924b8c1a9142ac5e2ced6848
+    size: 3418230
+    verified_on: '2026-11-13'
+  imt-technology-si-rs485-modbus:
+    sha256: 9d5928289883ec15b04ae1e9e5e595c39d43ecd9bafb0131cd35b6a0101fa960
+    size: 219094
+    verified_on: '2026-11-13'
+  kipp-zonen-smp-modbus:
+    sha256: 0f8bf73fe0bfed680a39960f5b7f626646031dbd7f2b264aabc79067b114ea3e
+    size: 336322
+    verified_on: '2026-11-13'

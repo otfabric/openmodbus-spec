@@ -1,0 +1,347 @@
+openmodbus: 0.1.0
+info:
+  id: woodward/easygen-3400/telemetry
+  title: Woodward easYgen-3400 generator, engine and status registers
+  version: 0.1.0
+  description: 'Read-only subset of the Modbus data protocol 5010 (basic visualization)
+    for easYgen-3400-P1/P2 with software version 1.211 or higher. The protocol is
+    served when parameter 3184 (Modbus protocol number) is 5010, the default. The
+    manual gives Modicon references (450001 may become bus address 50000) but no data
+    types, signedness or register order: 32-bit values and quantities whose sign the
+    manual leaves open (power, reactive power, power factor) are left out, and non-negative
+    values are read as unsigned. Voltages and currents use the exponent registers
+    (parameters 3182 and 3183). J1939 values need an engine control unit on the CAN
+    bus.
+
+    '
+  attribution: Derived from Woodward's easYgen-3000 Series Manual Genset Control,
+    easYgen-3400/3500-P1/P2.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: woodward-37528
+device:
+  manufacturer: Woodward
+  family: easYgen-3000 Series
+  model: easYgen-3400
+  classes:
+  - genset_controller
+  transports:
+  - type: rtu
+    notes: RS-485 serial interface.
+  unitId:
+    mode: configurable
+    default: 1
+    notes: Parameter 3188 (ModBus Slave ID, 0 to 255). 0 disables Modbus.
+  documentation:
+  - title: easYgen-3000 Series Manual Genset Control, easYgen-3400/3500-P1/P2
+    url: https://www.woodward.com/products/wp-content/uploads/sites/3/2024/08/37528_J.pdf
+    revision: 37528J
+defaults:
+  table: holding_register
+  access: r
+points:
+- id: voltage_exponent
+  address: 50002
+  type: i16
+  description: Power-of-ten exponent of the 16-bit voltage values (parameter 3182,
+    values [-1, 0, 1, 2]); see the examples on page 405.
+  aliases:
+  - Skaling Volts (16 bits) Exponent 10x V
+  source:
+    address: '450003'
+    page: 701
+    reference: 'Protocol 5010 (Basic Visualization): Skaling Volts (16 bits) Exponent
+      10x V'
+- id: current_exponent
+  address: 50003
+  type: i16
+  description: Power-of-ten exponent of the 16-bit current values (parameter 3183,
+    values [-1, 0]); see the examples on page 405.
+  aliases:
+  - Skaling Amps (16 bits) Exponent 10x A
+  source:
+    address: '450004'
+    page: 701
+    reference: 'Protocol 5010 (Basic Visualization): Skaling Amps (16 bits) Exponent
+      10x A'
+- id: generator_frequency
+  address: 50009
+  type: u16
+  conversion:
+    exponent10: -2
+  unit: Hz
+  aliases:
+  - Generator frequency
+  source:
+    address: '450010'
+    page: 702
+    reference: 'Protocol 5010 (Basic Visualization): Generator frequency'
+- id: generator_voltage_l1_l2
+  address: 50013
+  type: u16
+  conversion:
+    exponent10:
+      point: voltage_exponent
+  unit: V
+  aliases:
+  - Generator voltage L1-L2
+  source:
+    address: '450014'
+    page: 702
+    reference: 'Protocol 5010 (Basic Visualization): Generator voltage L1-L2'
+- id: generator_voltage_l2_l3
+  address: 50014
+  type: u16
+  conversion:
+    exponent10:
+      point: voltage_exponent
+  unit: V
+  aliases:
+  - Generator voltage L2-L3
+  source:
+    address: '450015'
+    page: 702
+    reference: 'Protocol 5010 (Basic Visualization): Generator voltage L2-L3'
+- id: generator_voltage_l3_l1
+  address: 50015
+  type: u16
+  conversion:
+    exponent10:
+      point: voltage_exponent
+  unit: V
+  aliases:
+  - Generator voltage L3-L1
+  source:
+    address: '450016'
+    page: 702
+    reference: 'Protocol 5010 (Basic Visualization): Generator voltage L3-L1'
+- id: generator_current_l1
+  address: 50019
+  type: u16
+  conversion:
+    exponent10:
+      point: current_exponent
+  unit: A
+  aliases:
+  - Generator current 1
+  source:
+    address: '450020'
+    page: 702
+    reference: 'Protocol 5010 (Basic Visualization): Generator current 1'
+- id: generator_current_l2
+  address: 50020
+  type: u16
+  conversion:
+    exponent10:
+      point: current_exponent
+  unit: A
+  aliases:
+  - Generator current 2
+  source:
+    address: '450021'
+    page: 702
+    reference: 'Protocol 5010 (Basic Visualization): Generator current 2'
+- id: generator_current_l3
+  address: 50021
+  type: u16
+  conversion:
+    exponent10:
+      point: current_exponent
+  unit: A
+  aliases:
+  - Generator current 3
+  source:
+    address: '450022'
+    page: 702
+    reference: 'Protocol 5010 (Basic Visualization): Generator current 3'
+- id: engine_speed
+  address: 50051
+  type: u16
+  unit: /min
+  aliases:
+  - Engine Pickup speed
+  source:
+    address: '450052'
+    page: 704
+    reference: 'Protocol 5010 (Basic Visualization): Engine Pickup speed'
+- id: battery_voltage
+  address: 50052
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: V
+  aliases:
+  - Battery voltage
+  source:
+    address: '450053'
+    page: 704
+    reference: 'Protocol 5010 (Basic Visualization): Battery voltage'
+- id: start_requests
+  address: 50054
+  type: u16
+  aliases:
+  - Engine, number of start requests
+  source:
+    address: '450055'
+    page: 704
+    reference: 'Protocol 5010 (Basic Visualization): Engine, number of start requests'
+- id: control_mode
+  address: 50099
+  type: u16
+  mask: 15
+  enum:
+    values:
+    - value: 1
+      name: auto
+      label: AUTO
+    - value: 2
+      name: stop
+      label: STOP
+    - value: 4
+      name: manual
+      label: MANUAL
+  aliases:
+  - Control mode (STOP/AUTO/MANUAL)
+  source:
+    address: '450100'
+    page: 706
+    reference: 'Protocol 5010 (Basic Visualization): Control mode (STOP/AUTO/MANUAL)'
+- id: engine_alarms_latched
+  address: 50120
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: canopen_error_can_interface_1
+      label: CANopen error at CAN Interface 1
+      description: Alarm parameter 10087.
+    - bit: 1
+      name: maintenance_hours_exceeded
+      label: Mainten. hours exceeded
+      description: Alarm parameter 2561.
+    - bit: 2
+      name: maintenance_days_exceeded
+      label: Mainten. days exceeded
+      description: Alarm parameter 2560.
+    - bit: 3
+      name: start_fail
+      label: Start fail
+      description: Alarm parameter 3325.
+    - bit: 4
+      name: can_fault_j1939
+      label: CAN-Fault J1939
+      description: Alarm parameter 10017.
+    - bit: 5
+      name: mcb_fail_to_open
+      label: MCB fail to open
+      description: Alarm parameter 2624.
+    - bit: 6
+      name: mcb_fail_to_close
+      label: MCB fail to close
+      description: Alarm parameter 2623.
+    - bit: 7
+      name: gcb_fail_to_open
+      label: GCB fail to open
+      description: Alarm parameter 2604.
+    - bit: 8
+      name: gcb_fail_to_close
+      label: GCB fail to close
+      description: Alarm parameter 2603.
+    - bit: 9
+      name: shutdown_malfunction
+      label: Shutdown malfunct.
+      description: Alarm parameter 2504.
+    - bit: 10
+      name: speed_detection_alarm
+      label: Speed det. Alarm
+      description: Alarm parameter 2457.
+    - bit: 11
+      name: unintended_stop
+      label: Unintended stop
+      description: Alarm parameter 2652.
+    - bit: 12
+      name: underspeed_2
+      label: Underspeed 2
+      description: Alarm parameter 2163.
+    - bit: 13
+      name: underspeed_1
+      label: Underspeed 1
+      description: Alarm parameter 2162.
+    - bit: 14
+      name: overspeed_2
+      label: Overspeed 2
+      description: Alarm parameter 2113.
+    - bit: 15
+      name: overspeed_1
+      label: Overspeed 1
+      description: Alarm parameter 2112.
+  description: Engine alarms 1, latched and not yet acknowledged.
+  aliases:
+  - Alarms 1 latched (unacknowledged)
+  source:
+    address: '450121'
+    page: 713
+    reference: 'Protocol 5010 (Basic Visualization): Alarms 1 latched (unacknowledged)'
+- id: j1939_engine_stop_information
+  address: 50195
+  type: u16
+  invalid:
+  - 65279
+  - 65535
+  description: Engine stop information from the engine control unit (DEUTZ EMR2 J1939
+    message), 0 to 250. Raw 65279 means error and 65535 means missing.
+  aliases:
+  - J1939 Engine Stop Information
+  source:
+    address: '450196'
+    page: 732
+    reference: 'Protocol 5010 (Basic Visualization): J1939 Engine Stop Information'
+- id: j1939_engine_speed
+  address: 50201
+  type: u16
+  unit: /min
+  invalid:
+  - 32766
+  - 32767
+  description: Value from the engine control unit over J1939 (SPN 190, data range
+    0 to 8031.875 rpm). Raw 32766 is shown for a defective sensor and 32767 for a
+    missing sensor (J1939 standard visualization messages, page 596).
+  aliases:
+  - Engine Speed (SPN 190)
+  source:
+    address: '450202'
+    page: 732
+    reference: 'Protocol 5010 (Basic Visualization): Engine Speed (SPN 190)'
+- id: j1939_coolant_temperature
+  address: 50202
+  type: i16
+  unit: Cel
+  invalid:
+  - 32766
+  - 32767
+  description: Value from the engine control unit over J1939 (SPN 110, data range
+    -40 to 210 °C). Raw 32766 is shown for a defective sensor and 32767 for a missing
+    sensor (J1939 standard visualization messages, page 595).
+  aliases:
+  - Engine Coolant Temperature (SPN 110)
+  source:
+    address: '450203'
+    page: 732
+    reference: 'Protocol 5010 (Basic Visualization): Engine Coolant Temperature (SPN
+      110)'
+- id: j1939_oil_pressure
+  address: 50205
+  type: u16
+  unit: kPa
+  invalid:
+  - 32766
+  - 32767
+  description: Value from the engine control unit over J1939 (SPN 100, data range
+    0 to 1000 kPa). Raw 32766 is shown for a defective sensor and 32767 for a missing
+    sensor (J1939 standard visualization messages, page 595).
+  aliases:
+  - Engine Oil Pressure (SPN 100)
+  source:
+    address: '450206'
+    page: 733
+    reference: 'Protocol 5010 (Basic Visualization): Engine Oil Pressure (SPN 100)'

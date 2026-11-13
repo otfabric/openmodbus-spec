@@ -1,0 +1,200 @@
+openmodbus: 0.1.0
+info:
+  id: automationdirect/gs20/status
+  title: AutomationDirect DURApulse GS20 drive status
+  version: 0.1.0
+  description: 'Read-only subset of the serial Modbus status addresses (2100h block):
+    fault and warning codes, run status, frequencies, voltages, output power, drive
+    state and the kWh display. Output current (2104h, 2200h) is left out because its
+    decimal place shifts above 655.35 A without a stated encoding; motor speed (210Ch)
+    and torque (210Bh) are left out because the list does not state their signedness.
+    Fault and warning codes are plain numbers; the manual''s fault code list gives
+    their meaning.
+
+    '
+  attribution: Derived from AutomationDirect's DURApulse GS20 & GS20X AC Drive User
+    Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: automationdirect-gs20-manual
+device:
+  manufacturer: AutomationDirect
+  family: DURApulse
+  model: GS20
+  classes:
+  - drive
+  transports:
+  - type: rtu
+  - type: ascii
+  documentation:
+  - title: DURApulse GS20 & GS20X AC Drive User Manual
+    url: https://cdn.automationdirect.com/static/manuals/gs20m/gs20m.pdf
+    revision: 1st Edition, Rev. F
+defaults:
+  table: holding_register
+  access: r
+points:
+- id: fault_code
+  address: 8448
+  type: u16
+  mask: 255
+  description: 'Low byte of status address 2100h: Low Byte: Fault code.'
+  source:
+    address: 2100h
+    page: 296
+    reference: Address list, status monitor read only
+- id: warning_code
+  address: 8448
+  type: u16
+  mask: 65280
+  description: 'High byte of status address 2100h: High byte: Warning code.'
+  source:
+    address: 2100h
+    page: 296
+    reference: Address list, status monitor read only
+- id: operation_status
+  address: 8449
+  type: u16
+  mask: 3
+  enum:
+    values:
+    - value: 0
+      name: stopped
+      label: The drive stops
+    - value: 1
+      name: decelerating
+      label: The drive is decelerating
+    - value: 2
+      name: standby
+      label: The drive is in standby status
+    - value: 3
+      name: operating
+      label: The drive is operating
+  description: Bits 1-0 of status address 2101h.
+  source:
+    address: 2101h
+    page: 297
+    reference: Address list, status monitor read only
+- id: operation_direction
+  address: 8449
+  type: u16
+  mask: 24
+  enum:
+    values:
+    - value: 0
+      name: forward
+      label: FWD running
+    - value: 1
+      name: reverse_to_forward
+      label: From REV running to FWD running
+    - value: 2
+      name: forward_to_reverse
+      label: From FWD running to REV running
+    - value: 3
+      name: reverse
+      label: REV running
+  description: Bits 4-3 of status address 2101h.
+  source:
+    address: 2101h
+    page: 297
+    reference: Address list, status monitor read only
+- id: frequency_command
+  label: Frequency command (XXX.XX Hz)
+  address: 8450
+  type: u16
+  conversion:
+    exponent10: -2
+  unit: Hz
+  source:
+    address: 2102h
+    page: 297
+    reference: Address list, status monitor read only
+- id: output_frequency
+  label: Output frequency (XXX.XX Hz)
+  address: 8451
+  type: u16
+  conversion:
+    exponent10: -2
+  unit: Hz
+  source:
+    address: 2103h
+    page: 297
+    reference: Address list, status monitor read only
+- id: dc_bus_voltage
+  label: DC bus voltage (XXX.X V)
+  address: 8453
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: V
+  source:
+    address: 2105h
+    page: 297
+    reference: Address list, status monitor read only
+- id: output_voltage
+  label: Output voltage (XXX.X V)
+  address: 8454
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: V
+  source:
+    address: 2106h
+    page: 297
+    reference: Address list, status monitor read only
+- id: output_power
+  label: Display the output power of U, V, W (XXXX.X kW)
+  address: 8710
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: kW
+  source:
+    address: 2206h
+    page: 298
+    reference: Address list, status monitor read only
+- id: drive_state
+  address: 8742
+  type: u16
+  mask: 12
+  enum:
+    values:
+    - value: 1
+      name: ready
+      label: Drive ready
+    - value: 2
+      name: error
+      label: Error
+  description: Bits 3-2 of status address 2226h.
+  source:
+    address: 2226h
+    page: 299
+    reference: Address list, status monitor read only
+- id: warning_active
+  address: 8742
+  type: u16
+  mask: 32
+  enum:
+    values:
+    - value: 0
+      name: no_warning
+      label: No warning
+    - value: 1
+      name: warning
+      label: Warning
+  description: Bits 5-5 of status address 2226h.
+  source:
+    address: 2226h
+    page: 299
+    reference: Address list, status monitor read only
+- id: energy
+  label: KWH display (XXXX.X)
+  address: 8745
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: kW.h
+  source:
+    address: 2229h
+    page: 299
+    reference: Address list, status monitor read only

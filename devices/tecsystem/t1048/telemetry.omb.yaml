@@ -1,0 +1,299 @@
+openmodbus: 0.1.0
+info:
+  id: tecsystem/t1048/telemetry
+  title: TECSYSTEM T1048 temperature monitor telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the T1048 Modbus mapping table for units with
+    the optional RS485 Modbus RTU or Ethernet Modbus TCP output: identification strings,
+    CPU error and relay bits, channel temperatures, the channel 1 maximum and set
+    points, and the channel status and story bytes. Modbus is only answered in temperature
+    reading mode; the manual recommends polling no faster than once a second.
+
+    '
+  attribution: Derived from TECSYSTEM's T1048 Instruction Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: tecsystem-t1048
+device:
+  manufacturer: TECSYSTEM
+  model: T1048
+  classes:
+  - transformer_monitor
+  transports:
+  - type: rtu
+    notes: Optional RS485 output; default 19.2 kb/s, even parity.
+  - type: tcp
+    notes: Optional Ethernet output, Modbus TCP slave.
+  unitId:
+    mode: configurable
+    default: 1
+    notes: Modbus address 1 to 255, default 001 (RS485 output).
+  documentation:
+  - title: T1048 Instruction Manual
+    url: https://www.tecsystem.it/docs/2026/img_99730cbd18.pdf
+    revision: 1MN0124 REV.0, R. 1.7 17/06/26
+defaults:
+  table: holding_register
+  access: r
+components:
+  flagSets:
+    channel_status:
+      flags:
+      - bit: 0
+        name: fcc
+        label: 'FCC: short-circuited sensor'
+      - bit: 1
+        name: foc
+        label: 'FOC: interrupted sensor'
+      - bit: 2
+        name: fcd
+        label: 'FCD: quick temperature increase'
+      - bit: 3
+        name: fan_1
+        label: FAN_1
+      - bit: 4
+        name: fan_2
+        label: FAN_2
+      - bit: 5
+        name: alarm
+        label: ALARM
+      - bit: 6
+        name: trip
+        label: TRIP
+    channel_story:
+      flags:
+      - bit: 0
+        name: fcc
+        label: 'FCC: short-circuited sensor'
+      - bit: 1
+        name: foc
+        label: 'FOC: interrupted sensor'
+      - bit: 5
+        name: alarm
+        label: ALARM
+      - bit: 6
+        name: trip
+        label: TRIP
+points:
+- id: model
+  address: 1
+  type: string
+  stability: constant
+  registers: 2
+  description: Four ASCII characters, most significant digit first.
+  aliases:
+  - Modello
+  source:
+    address: '1'
+    page: 22
+    reference: MODBUS MAPPING TABLE, HEADER
+- id: firmware_version
+  address: 3
+  type: string
+  stability: constant
+  registers: 2
+  description: A space (20H) followed by three ASCII characters.
+  aliases:
+  - Vers. Fw
+  source:
+    address: '3'
+    page: 22
+    reference: MODBUS MAPPING TABLE, HEADER
+- id: cpu_error
+  address: 14
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: ech
+      label: 'ECH: eeprom fault'
+    - bit: 1
+      name: fcd_fault
+      label: 'FCD Fault: quick temperature increase'
+    - bit: 2
+      name: cal
+      label: 'CAL: measurement circuit fault'
+    - bit: 3
+      name: pt_error
+      label: 'PT ERROR: FCC or FOC sensor fault'
+  description: Bit field in the low byte; the high byte is 00.
+  aliases:
+  - CPU Error
+  source:
+    address: '14'
+    page: 22
+    reference: 'SYSTEM: Setting and Status'
+- id: relay_status
+  address: 15
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: fan_1_relay
+      label: FAN_1 relay, 1=ON
+    - bit: 1
+      name: fan_2_relay
+      label: FAN_2 relay, 1=ON
+    - bit: 2
+      name: alarm_relay
+      label: ALARM relay, 1=ON
+    - bit: 3
+      name: trip_relay
+      label: TRIP relay, 1=ON
+    - bit: 4
+      name: fault_relay
+      label: FAULT relay, 1=No Fault
+  description: Coil energizing state of the relays, subject to the FAIL SAFE settings.
+    The high byte is 00.
+  aliases:
+  - Relays Status
+  source:
+    address: '15'
+    page: 22
+    reference: 'SYSTEM: Setting and Status'
+- id: ch1_temperature
+  address: 25
+  type: i16
+  unit: Cel
+  description: Measured temperature, range -23 °C to 228 °C. Reads 0000 (0 °C) when
+    the channel is not enabled.
+  aliases:
+  - Ch1 temper.
+  source:
+    address: '25'
+    page: 23
+    reference: MODBUS MAPPING TABLE, TEMPERATURES channels 1÷4
+- id: ch1_max_temperature
+  address: 26
+  type: i16
+  unit: Cel
+  description: Channel 1 maximum temperature.
+  aliases:
+  - Ch1 max temperat.
+  source:
+    address: '26'
+    page: 23
+    reference: MODBUS MAPPING TABLE, TEMPERATURES channels 1÷4
+- id: ch1_alarm_setpoint
+  address: 27
+  type: i16
+  unit: Cel
+  description: Channel 1 alarm threshold. Read/write in the device; read-only here.
+  aliases:
+  - Ch1 temper. (AL) alarm set point
+  source:
+    address: '27'
+    page: 23
+    reference: MODBUS MAPPING TABLE, TEMPERATURES channels 1÷4
+- id: ch1_trip_setpoint
+  address: 28
+  type: i16
+  unit: Cel
+  description: Channel 1 trip threshold. Read/write in the device; read-only here.
+  aliases:
+  - Ch1 temper. (TRP) trip set point
+  source:
+    address: '28'
+    page: 23
+    reference: MODBUS MAPPING TABLE, TEMPERATURES channels 1÷4
+- id: ch2_temperature
+  address: 29
+  type: i16
+  unit: Cel
+  description: Measured temperature, range -23 °C to 228 °C. Reads 0000 (0 °C) when
+    the channel is not enabled.
+  aliases:
+  - Ch2 temper.
+  source:
+    address: '29'
+    page: 23
+    reference: MODBUS MAPPING TABLE, TEMPERATURES channels 1÷4
+- id: ch3_temperature
+  address: 33
+  type: i16
+  unit: Cel
+  description: Measured temperature, range -23 °C to 228 °C. Reads 0000 (0 °C) when
+    the channel is not enabled.
+  aliases:
+  - Ch3 temper.
+  source:
+    address: '33'
+    page: 23
+    reference: MODBUS MAPPING TABLE, TEMPERATURES channels 1÷4
+- id: ch4_temperature
+  address: 37
+  type: i16
+  unit: Cel
+  description: Measured temperature, range -23 °C to 228 °C. Reads 0000 (0 °C) when
+    the channel is not enabled.
+  aliases:
+  - Ch4 temper.
+  source:
+    address: '37'
+    page: 23
+    reference: MODBUS MAPPING TABLE, TEMPERATURES channels 1÷4
+- id: ch1_status
+  address: 65
+  type: u16
+  mask: 255
+  flags:
+    $ref: '#/components/flagSets/channel_status'
+  description: Data LO byte of the register.
+  aliases:
+  - Ch1 status
+  source:
+    address: '65'
+    page: 25
+    reference: 'MODBUS MAPPING TABLE, CHANNELs 1÷4: Status'
+- id: ch1_story
+  address: 65
+  type: u16
+  mask: 65280
+  flags:
+    $ref: '#/components/flagSets/channel_story'
+  description: Data HI byte of the register.
+  aliases:
+  - Ch1 story
+  source:
+    address: '65'
+    page: 25
+    reference: 'MODBUS MAPPING TABLE, CHANNELs 1÷4: Status'
+- id: ch2_status
+  address: 66
+  type: u16
+  mask: 255
+  flags:
+    $ref: '#/components/flagSets/channel_status'
+  description: Data LO byte of the register.
+  aliases:
+  - Ch2 status
+  source:
+    address: '66'
+    page: 25
+    reference: 'MODBUS MAPPING TABLE, CHANNELs 1÷4: Status'
+- id: ch3_status
+  address: 67
+  type: u16
+  mask: 255
+  flags:
+    $ref: '#/components/flagSets/channel_status'
+  description: Data LO byte of the register.
+  aliases:
+  - Ch3 status
+  source:
+    address: '67'
+    page: 25
+    reference: 'MODBUS MAPPING TABLE, CHANNELs 1÷4: Status'
+- id: ch4_status
+  address: 68
+  type: u16
+  mask: 255
+  flags:
+    $ref: '#/components/flagSets/channel_status'
+  description: Data LO byte of the register.
+  aliases:
+  - Ch4 status
+  source:
+    address: '68'
+    page: 25
+    reference: 'MODBUS MAPPING TABLE, CHANNELs 1÷4: Status'

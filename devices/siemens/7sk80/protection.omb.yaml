@@ -1,0 +1,248 @@
+openmodbus: 0.1.0
+info:
+  id: siemens/7sk80/protection
+  title: Siemens SIPROTEC 7SK80 indications and measured values
+  version: 0.1.0
+  description: 'Read-only subset of Modbus standard mapping 3-1 for the 7SK80 (firmware
+    V4.60 or higher) with a Modbus communication module (firmware 04.00.05 or higher,
+    hardware version 4 or higher). Indications follow the 7SK80 functional scope;
+    measured values use the default scaling, which depends on the full-scale parameters
+    1101 and 1102 and can be changed.
+
+    '
+  attribution: Derived from Siemens' SIPROTEC Communication Modules Modbus Bus mapping
+    7SJ80/7SK80/7RW80.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: siemens-siprotec-7sx80-modbus
+device:
+  manufacturer: Siemens
+  family: SIPROTEC
+  model: 7SK80
+  classes:
+  - protection_relay
+  documentation:
+  - title: SIPROTEC Communication Modules Modbus Bus mapping 7SJ80/7SK80/7RW80
+    url: https://cache.industry.siemens.com/dl/files/228/109743228/att_903021/v1/com_modbus_7sj80_7sk80_7rw80_us.pdf
+    revision: C53000-L2240-A320-3, edition September 2010
+defaults:
+  access: r
+points:
+- id: overcurrent_pickup
+  table: discrete_input
+  address: 35
+  type: bool
+  aliases:
+  - 50(N)/51(N) PU
+  source:
+    address: '10036'
+    page: 23
+    reference: Chapter 1.4.3
+- id: earth_overcurrent_pickup
+  table: discrete_input
+  address: 39
+  type: bool
+  aliases:
+  - 50N/51NPickedup
+  source:
+    address: '10040'
+    page: 23
+    reference: Chapter 1.4.3
+- id: overcurrent_trip
+  table: discrete_input
+  address: 40
+  type: bool
+  aliases:
+  - 50(N)/51(N)TRIP
+  source:
+    address: '10041'
+    page: 23
+    reference: Chapter 1.4.3
+- id: negative_sequence_trip
+  table: discrete_input
+  address: 57
+  type: bool
+  aliases:
+  - 46 TRIP
+  source:
+    address: '10058'
+    page: 24
+    reference: Chapter 1.4.5
+- id: motor_start_protection_trip
+  table: discrete_input
+  address: 82
+  type: bool
+  aliases:
+  - 66 TRIP
+  source:
+    address: '10083'
+    page: 25
+    reference: Chapter 1.4.9
+- id: startup_supervision_trip
+  table: discrete_input
+  address: 84
+  type: bool
+  aliases:
+  - START-SUP TRIP
+  source:
+    address: '10085'
+    page: 26
+    reference: Chapter 1.4.10
+- id: trip_circuit_failure
+  table: discrete_input
+  address: 87
+  type: bool
+  aliases:
+  - 'FAIL: Trip cir.'
+  source:
+    address: '10088'
+    page: 26
+    reference: Chapter 1.4.11
+- id: control_authority_local
+  table: discrete_input
+  address: 88
+  type: bool
+  aliases:
+  - Cntrl Auth
+  source:
+    address: '10089'
+    page: 26
+    reference: Chapter 1.4.12
+- id: diagnostics
+  table: holding_register
+  address: 128
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: device_ok
+      label: Device OK
+    - bit: 1
+      name: settings_calculation
+      label: Settings Calc.
+    - bit: 2
+      name: protection_active
+      label: ProtActive
+    - bit: 3
+      name: error_summary_alarm
+      label: Error Sum Alarm
+    - bit: 4
+      name: alarm_summary_event
+      label: Alarm Sum Event
+    - bit: 5
+      name: relay_pickup
+      label: Relay PICKUP
+    - bit: 6
+      name: relay_trip
+      label: Relay TRIP
+    - bit: 8
+      name: test_mode
+      label: Test mode
+    - bit: 15
+      name: data_invalid
+      label: Data invalid
+  description: Diagnostic register; bit n is listed as 40129/2^n. Data invalid (bit
+    15) is set by the Modbus slave when the data in the message are invalid.
+  source:
+    address: '40129'
+    page: 31
+    reference: Chapter 1.6.3 Diagnostics
+- id: current_a
+  table: input_register
+  address: 0
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: A
+  aliases:
+  - Ia
+  description: 'Default scaling: 32767 corresponds to 3276.7 A.'
+  source:
+    address: '30001'
+    page: 28
+    reference: Chapter 1.5 Input Registers
+- id: current_b
+  table: input_register
+  address: 1
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: A
+  aliases:
+  - Ib
+  description: 'Default scaling: 32767 corresponds to 3276.7 A.'
+  source:
+    address: '30002'
+    page: 28
+    reference: Chapter 1.5 Input Registers
+- id: current_c
+  table: input_register
+  address: 2
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: A
+  aliases:
+  - Ic
+  description: 'Default scaling: 32767 corresponds to 3276.7 A.'
+  source:
+    address: '30003'
+    page: 28
+    reference: Chapter 1.5 Input Registers
+- id: current_n
+  table: input_register
+  address: 3
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: A
+  aliases:
+  - In
+  description: 'Default scaling: 32767 corresponds to 3276.7 A.'
+  source:
+    address: '30004'
+    page: 28
+    reference: Chapter 1.5 Input Registers
+- id: voltage_a_n
+  table: input_register
+  address: 4
+  type: i16
+  conversion:
+    exponent10: 1
+  unit: V
+  aliases:
+  - Va
+  description: 'Default scaling: 32767 corresponds to 327.67 kV.'
+  source:
+    address: '30005'
+    page: 28
+    reference: Chapter 1.5 Input Registers
+- id: voltage_a_b
+  table: input_register
+  address: 7
+  type: i16
+  conversion:
+    exponent10: 1
+  unit: V
+  aliases:
+  - Va-b
+  description: 'Default scaling: 32767 corresponds to 327.67 kV.'
+  source:
+    address: '30008'
+    page: 28
+    reference: Chapter 1.5 Input Registers
+- id: frequency
+  table: input_register
+  address: 14
+  type: i16
+  conversion:
+    exponent10: -2
+  unit: Hz
+  aliases:
+  - Freq
+  - Frequency
+  description: 'Default scaling: 32767 corresponds to 327.67 Hz.'
+  source:
+    address: '30015'
+    page: 28
+    reference: Chapter 1.5 Input Registers

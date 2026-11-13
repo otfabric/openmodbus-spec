@@ -1,0 +1,572 @@
+openmodbus: 0.1.0
+info:
+  id: schneider-electric/atv320/status
+  title: Schneider Electric Altivar ATV320 drive status and actual values
+  version: 0.1.0
+  description: 'Read-only subset of the ATV320 communication parameters: CiA402 status
+    word, drive state, last fault and actual values. Parameters are read with Read
+    Holding Registers (function 3), the only read function the ATV320 Modbus Serial
+    Link Manual (NVE41308) lists. The output frequency scale assumes bit 9 of the
+    extended control word CMI is 0.
+
+    '
+  attribution: Derived from Schneider Electric's ATV320 - Communication Parameters
+    (NVE41316).
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: schneider-electric-atv320-comm
+device:
+  manufacturer: Schneider Electric
+  family: Altivar Machine
+  model: ATV320
+  classes:
+  - drive
+  documentation:
+  - title: ATV320 - Communication Parameters
+    url: https://www.se.com/us/en/download/document/NVE41316/
+    revision: NVE41316 V3.5
+  - title: Altivar Machine 320 Modbus Serial Link Manual
+    url: https://www.se.com/us/en/download/document/NVE41308/
+    revision: NVE41308.01, 04/2016
+defaults:
+  table: holding_register
+  access: r
+constraints:
+  maxReadRegisters: 63
+points:
+- id: status_word
+  label: Drivecom state register
+  aliases:
+  - ETA
+  address: 3201
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: ready_to_switch_on
+      label: '= 1: "Ready to switch on", awaiting power section line supply'
+    - bit: 1
+      name: switched_on
+      label: '= 1: "Switched on", ready'
+    - bit: 2
+      name: operation_enabled
+      label: '= 1: "Operation enabled", running'
+    - bit: 3
+      name: fault
+      label: '= 1: Fault detection'
+    - bit: 4
+      name: voltage_enabled
+      label: '"Voltage enabled", power part connected to supply mains'
+      description: '"Voltage enabled", power part connected to supply mains = 0: Power
+        part not connected to supply mains = 1: Power part connected to supply mains
+        When the drive is powered by the power section only, this bit is always at
+        1.'
+    - bit: 6
+      name: switch_on_disabled
+      label: '= 1: "Switched on disabled", power section line supply locked'
+    - bit: 7
+      name: warning
+      label: Warning
+      description: 'Warning = 0: No warning = 1: Warning active'
+    - bit: 9
+      name: remote
+      label: 'Remote: command or reference via fieldbus'
+      description: 'Remote: command or reference via fieldbus = 0: Command or reference
+        given via the graphic display terminal or remote display terminal = 1: Command
+        or reference via fieldbus'
+    - bit: 10
+      name: target_reached
+      label: Target reference reached
+      description: 'Target reference reached = 0: The reference is not reached = 1:
+        The reference has been reached When the drive is in speed mode, this is the
+        reference frequency.'
+    - bit: 11
+      name: internal_limit_active
+      label: '"Internal limit active", reference outside limits'
+      description: '"Internal limit active", reference outside limits = 0: The reference
+        is within the limits = 1: The reference is not within the limits When the
+        drive is in speed mode, the limits are defined by the [Low speed] (LSP) and
+        [High speed] (HSP) parameters.'
+    - bit: 14
+      name: stop_key
+      label: '"Stop key", STOP via stop key'
+      description: '"Stop key", STOP via stop key = 0: STOP key not active = 1: Stop
+        triggered by the STOP key on the graphic display terminal or the remote display
+        terminal'
+    - bit: 15
+      name: reverse_rotation
+      label: '"Direction", direction of rotation'
+      description: '"Direction", direction of rotation = 0: Forward rotation at output
+        = 1: Reverse rotation at output The combination of Bits 0, 1, 2, 4, 5 and
+        6 defines the state in the DSP 402 state chart (refer to fieldbus manuals).'
+  description: Bit meanings for the CiA402 profile.
+  source:
+    address: 16#0C81 = 3201
+    reference: Parameters!A10:L10; Registers!A52:D86
+- id: output_frequency
+  label: Output frequency
+  aliases:
+  - RFR
+  address: 3202
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: Hz
+  description: 0.1 Hz while bit 9 of the extended control word CMI is 0. With CMI
+    bit 9 at 1 the drive reports a standardised value where 32767 corresponds to [Max
+    frequency] (tFr); this contract does not describe that mode.
+  source:
+    address: 16#0C82 = 3202
+    reference: Parameters!A21:L21; Registers!C13:D16
+- id: motor_current
+  label: Motor current
+  aliases:
+  - LCR
+  address: 3204
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: A
+  source:
+    address: 16#0C84 = 3204
+    reference: Parameters!A23:L23
+- id: motor_torque
+  label: Motor torque
+  aliases:
+  - OTR
+  address: 3205
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: '%'
+  source:
+    address: 16#0C85 = 3205
+    reference: Parameters!A22:L22
+- id: mains_voltage
+  label: Line mains voltage
+  aliases:
+  - ULN
+  address: 3207
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: V
+  source:
+    address: 16#0C87 = 3207
+    reference: Parameters!A34:L34
+- id: motor_voltage
+  label: Motor voltage
+  aliases:
+  - UOP
+  address: 3208
+  type: u16
+  unit: V
+  source:
+    address: 16#0C88 = 3208
+    reference: Parameters!A24:L24
+- id: drive_thermal_state
+  label: Drive thermal state
+  aliases:
+  - THD
+  address: 3209
+  type: u16
+  unit: '%'
+  source:
+    address: 16#0C89 = 3209
+    reference: Parameters!A35:L35
+- id: motor_power
+  label: Motor power
+  aliases:
+  - OPR
+  address: 3211
+  type: i16
+  unit: '%'
+  source:
+    address: 16#0C8B = 3211
+    reference: Parameters!A25:L25
+- id: drive_state
+  label: Drive state
+  aliases:
+  - HMIS
+  address: 3240
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: tun
+      label: Auto-tuning
+      description: Drive automatic tuning
+    - value: 1
+      name: dcb
+      label: In DC inject.
+      description: Drive DC inj braking
+    - value: 2
+      name: rdy
+      label: Ready
+      description: Drive ready
+    - value: 3
+      name: nst
+      label: Freewheel
+      description: Drive freewheel stopping
+    - value: 4
+      name: run
+      label: Drv running
+      description: Drive running
+    - value: 5
+      name: acc
+      label: In accel.
+      description: Drive accelerating
+    - value: 6
+      name: dec
+      label: In decel.
+      description: Drive decelerating
+    - value: 7
+      name: cli
+      label: Current lim.
+      description: Drive in current limit
+    - value: 8
+      name: fst
+      label: Fast stop
+      description: Drive fast stopping
+    - value: 9
+      name: flu
+      label: Mot. fluxing
+      description: Drive fluxing motor
+    - value: 11
+      name: nlp
+      label: no mains V.
+      description: Drive no line voltage
+    - value: 12
+      name: pra
+      label: Active PWR
+      description: Drive in power removal
+    - value: 13
+      name: ctl
+      label: control.stop
+      description: Drive control stopping
+    - value: 14
+      name: obr
+      label: Dec. adapt.
+      description: Drive dec ramp adaption
+    - value: 15
+      name: soc
+      label: Output cut
+      description: Drive cutting output
+    - value: 17
+      name: usa
+      label: UnderV. al.
+      description: Drive undervoltage alarm
+    - value: 18
+      name: tc
+      label: In mfg. test
+      description: Drive test in progress
+    - value: 19
+      name: st
+      label: in autotest
+      description: In autotest
+    - value: 20
+      name: fa
+      label: autotest err
+      description: Autotest err
+    - value: 21
+      name: ok
+      label: Autotest OK
+      description: Autotest OK
+    - value: 22
+      name: ep
+      label: eeprom test
+      description: Eeprom test
+    - value: 23
+      name: flt
+      label: In fault
+      description: Product in fault
+    - value: 25
+      name: dcp
+      label: DCP
+      description: DCP
+    - value: 28
+      name: ss1
+      label: SS1 active
+      description: SS1 active
+    - value: 29
+      name: sls
+      label: SLS active
+      description: SLS active
+    - value: 30
+      name: sto
+      label: STO active
+      description: STO active
+    - value: 31
+      name: sms
+      label: None
+    - value: 32
+      name: gdl
+      label: None
+  source:
+    address: 16#0CA8 = 3240
+    reference: Parameters!A11:L11; Enumerations!A265:D292
+- id: last_fault
+  label: Last fault occurred
+  aliases:
+  - LFT
+  address: 7121
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: nof
+      label: No fault
+      description: No fault saved
+    - value: 2
+      name: eef1
+      label: Control Eeprom
+      description: EEprom control fault
+    - value: 3
+      name: cff
+      label: Incorrect config.
+      description: Incorrect configuration
+    - value: 4
+      name: cfi
+      label: Invalid config.
+      description: Invalid config parameters
+    - value: 5
+      name: slf1
+      label: Modbus com.
+      description: Modbus coms fault
+    - value: 6
+      name: ilf
+      label: int. com.link
+      description: Com Internal link fault
+    - value: 7
+      name: cnf
+      label: Com. network
+      description: Network fault
+    - value: 8
+      name: epf1
+      label: External flt-LI/Bit
+      description: External fault logic input
+    - value: 9
+      name: ocf
+      label: Overcurrent
+      description: Overcurrent fault
+    - value: 10
+      name: crf1
+      label: Precharge
+      description: Precharge
+    - value: 11
+      name: spf
+      label: Speed fdback loss
+      description: Speed feedback loss
+    - value: 12
+      name: anf
+      label: Load slipping
+      description: Output speed <> ref
+    - value: 16
+      name: ohf
+      label: Drive overheat
+      description: Drive overheating fault
+    - value: 17
+      name: olf
+      label: Motor overload
+      description: Motor overload fault
+    - value: 18
+      name: obf
+      label: Overbraking
+      description: DC bus overvoltage fault
+    - value: 19
+      name: osf
+      label: Mains overvoltage
+      description: Supply overvoltage fault
+    - value: 20
+      name: opf1
+      label: 1 output phase loss
+      description: 1 motor phase loss fault
+    - value: 21
+      name: phf
+      label: Input phase loss
+      description: Supply phase loss fault
+    - value: 22
+      name: usf
+      label: Undervoltage
+      description: Supply undervolt fault
+    - value: 23
+      name: scf1
+      label: Motor short circuit
+      description: Motor short circuit
+    - value: 24
+      name: sof
+      label: Overspeed
+      description: Motor overspeed fault
+    - value: 25
+      name: tnf
+      label: 'Auto-tuning '
+      description: Auto-tuning fault
+    - value: 26
+      name: inf1
+      label: Rating error
+      description: Rating error
+    - value: 27
+      name: inf2
+      label: PWR Calib.
+      description: Incompatible control card
+    - value: 28
+      name: inf3
+      label: Int.serial link
+      description: Internal coms link fault
+    - value: 29
+      name: inf4
+      label: Int.Mfg area
+      description: Internal manu zone fault
+    - value: 30
+      name: eef2
+      label: Power Eeprom
+      description: EEprom power fault
+    - value: 32
+      name: scf3
+      label: Ground short circuit
+      description: Ground short circuit
+    - value: 33
+      name: opf2
+      label: 3out ph loss
+      description: 3 motor phase loss fault
+    - value: 34
+      name: cof
+      label: CAN com.
+      description: Comms fault CANopen
+    - value: 35
+      name: blf
+      label: Brake control
+      description: Brake control fault
+    - value: 38
+      name: epf2
+      label: External fault com.
+      description: External fault comms
+    - value: 41
+      name: brf
+      label: Brake feedback
+      description: Brake feedback fault
+    - value: 42
+      name: slf2
+      label: PC com.
+      description: PC coms fault
+    - value: 44
+      name: ssf
+      label: Torque/current lim
+      description: Torque/current limit fault
+    - value: 45
+      name: slf3
+      label: HMI com.
+      description: HMI coms fault
+    - value: 49
+      name: ptfl
+      label: LI6=PTC probe
+      description: LI6=PTC failed
+    - value: 50
+      name: otfl
+      label: PTC fault
+      description: LI6=PTC overheat fault
+    - value: 51
+      name: inf9
+      label: Internal- I measure
+      description: Internal I measure fault
+    - value: 52
+      name: infa
+      label: Internal-mains circuit
+      description: Internal i/p volt circuit flt
+    - value: 53
+      name: infb
+      label: Internal- th. sensor
+      description: Internal temperature fault
+    - value: 54
+      name: tjf
+      label: IGBT overheat
+      description: IGBT overheat fault
+    - value: 55
+      name: scf4
+      label: IGBT short circuit
+      description: IGBT short circuit fault
+    - value: 56
+      name: scf5
+      label: Motor short circuit
+      description: motor short circuit
+    - value: 58
+      name: fcf1
+      label: Out. contact. stuck
+      description: Output cont close fault
+    - value: 59
+      name: fcf2
+      label: Out. contact. open.
+      description: Output cont open fault
+    - value: 64
+      name: lcf
+      label: input contactor
+      description: input contactor
+    - value: 67
+      name: hdf
+      label: IGBT desaturation
+      description: IGBT desaturation
+    - value: 68
+      name: inf6
+      label: Internal-option
+      description: Internal option fault
+    - value: 69
+      name: infe
+      label: 'internal- CPU '
+      description: internal- CPU
+    - value: 71
+      name: lff3
+      label: AI3 4-20mA loss
+      description: AI3 4-20mA loss
+    - value: 73
+      name: hcf
+      label: Cards pairing
+      description: Cards pairing
+    - value: 76
+      name: dlf
+      label: Load fault
+      description: Dynamic load fault
+    - value: 77
+      name: cfi2
+      label: Bad conf
+      description: Interrupted config.
+    - value: 99
+      name: csf
+      label: Ch.sw. fault
+      description: Channel switching fault
+    - value: 100
+      name: ulf
+      label: Pr.Underload.Flt
+      description: Process Underlaod Fault
+    - value: 101
+      name: olc
+      label: Proc.Overload Flt
+      description: Process Overload Fault
+    - value: 105
+      name: asf
+      label: Angle error
+      description: Angle error
+    - value: 107
+      name: saff
+      label: Safety fault
+      description: Safety fault
+    - value: 108
+      name: fbe
+      label: FB fault
+      description: FB fault
+    - value: 109
+      name: fbes
+      label: FB stop flt.
+      description: FB stop fault
+  source:
+    address: 16#1BD1 = 7121
+    reference: Parameters!A51:L51; Enumerations!A313:D373
+- id: output_speed
+  label: Output velocity
+  aliases:
+  - RFRD
+  address: 8604
+  type: i16
+  unit: /min
+  source:
+    address: 16#219C = 8604
+    reference: Parameters!A20:L20

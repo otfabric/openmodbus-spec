@@ -1,0 +1,212 @@
+openmodbus: 0.1.0
+info:
+  id: janitza/umg-96rm-pn/telemetry
+  title: Janitza UMG 96RM-PN telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the UMG 96RM base-device address list, which the
+    document applies to the UMG 96RM-PN extension, firmware 1.14 or later, read over
+    RS-485. Floats return big-endian data at the listed addresses and include the
+    transformer ratios; the 16-bit short value does not. The document notes that short-format
+    values cannot be read through the PROFINET module of the UMG 96RM-PN but can be
+    read over RS-485. The document states neither the address base nor the register
+    table; the list is read as zero-based because it starts at address 0 and as holding
+    registers because read-only and writable (FC 06/16) rows share it.
+
+    '
+  attribution: Derived from Janitza's UMG 96RM Modbus-Adressenliste und Formelsammlung.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: janitza-umg96rm-modbus-de
+device:
+  manufacturer: Janitza electronics
+  family: UMG 96RM
+  model: UMG 96RM-PN
+  classes:
+  - power_meter
+  transports:
+  - type: rtu
+    notes: RS-485.
+  documentation:
+  - title: UMG 96RM Modbus-Adressenliste und Formelsammlung (ab Firmware Rel. 1.14)
+    url: https://assets.janitza.com/ce18jq9ih0x6/84e474c2bb03ea1ac23190/049ae8165fa5627ffd074d79780a5514/janitza-mal-umg96rm-cbm-p-pn-de.pdf
+    revision: Dok. Nr. 1.040.033.u, 11/2023
+defaults:
+  table: holding_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+points:
+- id: power_factor_total
+  address: 834
+  type: f32
+  aliases:
+  - Sum; Power factor sum3=Psum3/Ssum3 [3]
+  source:
+    address: '834'
+    page: 18
+    reference: Messwerte, Typ Float
+- id: voltage_l1_n_secondary
+  address: 3530
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: V
+  description: 16-bit value without the voltage transformer ratio.
+  aliases:
+  - Voltage U1 L1-N [0]
+  source:
+    address: '3530'
+    page: 20
+    reference: Messwerte, Typ Short
+- id: active_energy_import
+  address: 5352
+  type: f32
+  unit: W.h
+  description: Rate index 0; the document states tariff 0 is always active.
+  aliases:
+  - Real energy, sum. L1..L3, obtained, rate [0]
+  source:
+    address: '5352'
+    page: 40
+    reference: Energie, Typ Float
+- id: active_energy_export
+  address: 5368
+  type: f32
+  unit: W.h
+  description: Rate index 0; the document states tariff 0 is always active.
+  aliases:
+  - Real energy, sum. L1..L3, supplied, rate [0]
+  source:
+    address: '5368'
+    page: 40
+    reference: Energie, Typ Float
+- id: voltage_l1_n
+  address: 19000
+  type: f32
+  unit: V
+  aliases:
+  - Voltage L1-N [0]
+  source:
+    address: '19000'
+    page: 17
+    reference: Häufig benötigte Messwerte
+- id: voltage_l2_n
+  address: 19002
+  type: f32
+  unit: V
+  aliases:
+  - Voltage L2-N [1]
+  source:
+    address: '19002'
+    page: 17
+    reference: Häufig benötigte Messwerte
+- id: voltage_l3_n
+  address: 19004
+  type: f32
+  unit: V
+  aliases:
+  - Voltage L3-N [2]
+  source:
+    address: '19004'
+    page: 17
+    reference: Häufig benötigte Messwerte
+- id: voltage_l1_l2
+  address: 19006
+  type: f32
+  unit: V
+  aliases:
+  - Voltage L1-L2 [0]
+  source:
+    address: '19006'
+    page: 17
+    reference: Häufig benötigte Messwerte
+- id: current_l1
+  address: 19012
+  type: f32
+  unit: A
+  aliases:
+  - Current I L1 [0]
+  source:
+    address: '19012'
+    page: 17
+    reference: Häufig benötigte Messwerte
+- id: current_l2
+  address: 19014
+  type: f32
+  unit: A
+  aliases:
+  - Current I L2 [1]
+  source:
+    address: '19014'
+    page: 17
+    reference: Häufig benötigte Messwerte
+- id: current_l3
+  address: 19016
+  type: f32
+  unit: A
+  aliases:
+  - Current I L3 [2]
+  source:
+    address: '19016'
+    page: 17
+    reference: Häufig benötigte Messwerte
+- id: active_power_total
+  address: 19026
+  type: f32
+  unit: W
+  aliases:
+  - Sum; Psum3=P1+P2+P3 [3]
+  source:
+    address: '19026'
+    page: 17
+    reference: Häufig benötigte Messwerte
+- id: apparent_power_total
+  address: 19034
+  type: f32
+  unit: V.A
+  aliases:
+  - Sum; Ssum3=S1+S2+S3 [3]
+  source:
+    address: '19034'
+    page: 17
+    reference: Häufig benötigte Messwerte
+- id: reactive_power_total
+  address: 19042
+  type: f32
+  description: 'Sum of the fundamental reactive power of L1 to L3. Vendor unit: var.'
+  aliases:
+  - Sum; Qsum3=Q1+Q2+Q3 [3]
+  source:
+    address: '19042'
+    page: 17
+    reference: Häufig benötigte Messwerte
+- id: frequency
+  address: 19050
+  type: f32
+  unit: Hz
+  aliases:
+  - Measured frequency
+  source:
+    address: '19050'
+    page: 17
+    reference: Häufig benötigte Messwerte
+- id: voltage_thd_l1_n
+  address: 19110
+  type: f32
+  unit: '%'
+  aliases:
+  - Harmonic, THD U L1-N [0]
+  source:
+    address: '19110'
+    page: 17
+    reference: Häufig benötigte Messwerte
+- id: current_thd_l1
+  address: 19116
+  type: f32
+  unit: '%'
+  aliases:
+  - Harmonic, THD I L1 [0]
+  source:
+    address: '19116'
+    page: 17
+    reference: Häufig benötigte Messwerte

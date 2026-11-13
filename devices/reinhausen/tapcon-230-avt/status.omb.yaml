@@ -1,0 +1,197 @@
+openmodbus: 0.1.0
+info:
+  id: reinhausen/tapcon-230-avt/status
+  title: Reinhausen TAPCON 230 AVT voltage regulator status
+  version: 0.1.0
+  description: 'Read-only subset of the TAPCON 230 AVT MODBUS profile: discrete inputs
+    for tap-change outputs, operating mode and limit messages, the tap position and
+    the 32-bit operation counter. Values the supplement scales with a Multiplier column
+    (voltages, currents, frequency) are left out because the document does not say
+    whether the factor multiplies or divides the raw value.
+
+    '
+  attribution: Derived from Maschinenfabrik Reinhausen's TAPCON 230 AVT Supplement
+    Device Profile Document MODBUS.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: reinhausen-tapcon-230-avt
+device:
+  manufacturer: Maschinenfabrik Reinhausen
+  family: TAPCON
+  model: TAPCON 230 AVT
+  classes:
+  - tap_changer_controller
+  transports:
+  - type: rtu
+    notes: RS-232, RS-485 or optical fibre; 9600 to 57600 baud.
+  - type: ascii
+    notes: RS-232, RS-485 or optical fibre.
+  - type: rtu_over_tcp
+    notes: RJ45, TCP port 1234; the supplement states this is not Modbus TCP.
+  unitId:
+    mode: configurable
+    notes: Local SCADA address 1 to 255; 0 is broadcast.
+  documentation:
+  - title: TAPCON 230 AVT Supplement Device Profile Document MODBUS
+    url: https://www.reinhausen.com/fileadmin/downloadcenter/spannungsregler/tapcon230_previous_generation/2224208_00_en_tapcon230-avt_supplement-modbus_f0223000.pdf
+    revision: 2224208/00 EN
+defaults:
+  access: r
+points:
+- id: auto_mode
+  table: discrete_input
+  address: 3
+  type: bool
+  description: 0 = Manual, 1 = Auto.
+  aliases:
+  - Status of Auto/Manual regulation mode
+  source:
+    address: '3'
+    page: 15
+    reference: 'Table 6 Device Data Points: Input Status'
+- id: raise_output
+  table: discrete_input
+  address: 11
+  type: bool
+  description: 0 = inactive, 1 = active.
+  aliases:
+  - Raise Output
+  source:
+    address: '11'
+    page: 15
+    reference: 'Table 6 Device Data Points: Input Status'
+- id: lower_output
+  table: discrete_input
+  address: 12
+  type: bool
+  description: 0 = inactive, 1 = active.
+  aliases:
+  - Lower Output
+  source:
+    address: '12'
+    page: 15
+    reference: 'Table 6 Device Data Points: Input Status'
+- id: parallel_error
+  table: discrete_input
+  address: 14
+  type: bool
+  description: 0 = No Error, 1 = Error.
+  aliases:
+  - Parallel Error status
+  source:
+    address: '14'
+    page: 15
+    reference: 'Table 6 Device Data Points: Input Status'
+- id: remote_mode
+  table: discrete_input
+  address: 15
+  type: bool
+  description: 0 = Local, 1 = Remote.
+  aliases:
+  - Control mode status of AVR
+  source:
+    address: '15'
+    page: 15
+    reference: 'Table 6 Device Data Points: Input Status'
+- id: overvoltage
+  table: discrete_input
+  address: 16
+  type: bool
+  description: 0 = No overvoltage, 1 = Overvoltage.
+  aliases:
+  - Overvoltage detection status
+  source:
+    address: '16'
+    page: 16
+    reference: 'Table 6 Device Data Points: Input Status'
+- id: undervoltage
+  table: discrete_input
+  address: 17
+  type: bool
+  description: Undervoltage detection status.
+  aliases:
+  - Undervoltage detection status
+  source:
+    address: '17'
+    page: 16
+    reference: 'Table 6 Device Data Points: Input Status'
+- id: overcurrent
+  table: discrete_input
+  address: 18
+  type: bool
+  description: 0 = No overcurrent, 1 = Overcurrent.
+  aliases:
+  - Overcurrent detection status
+  source:
+    address: '18'
+    page: 16
+    reference: 'Table 6 Device Data Points: Input Status'
+- id: undercurrent
+  table: discrete_input
+  address: 19
+  type: bool
+  description: Undercurrent detection status.
+  aliases:
+  - Undercurrent detection status
+  source:
+    address: '19'
+    page: 16
+    reference: 'Table 6 Device Data Points: Input Status'
+- id: status_alarm_relay
+  table: discrete_input
+  address: 20
+  type: bool
+  description: 0 = No alarm, 1 = Alarm.
+  aliases:
+  - Status of the Status Alarm Relay
+  source:
+    address: '20'
+    page: 16
+    reference: 'Table 6 Device Data Points: Input Status'
+- id: function_monitoring
+  table: discrete_input
+  address: 21
+  type: bool
+  description: 0 = Normal mode, 1 = Signal 15 min out of Bandwith.
+  aliases:
+  - Function Monitoring
+  source:
+    address: '21'
+    page: 16
+    reference: 'Table 6 Device Data Points: Input Status'
+- id: negative_power_flow
+  table: discrete_input
+  address: 26
+  type: bool
+  description: 0 = Positive active power flow, 1 = Negative active power flow.
+  aliases:
+  - Direction of the active power flow
+  source:
+    address: '26'
+    page: 16
+    reference: 'Table 6 Device Data Points: Input Status'
+- id: operation_counter
+  table: input_register
+  address: 3
+  type: u32
+  wordOrder: little
+  description: 'Operation counter: least significant word first, then most significant
+    word. Transmitted range 0 to 99999999.'
+  aliases:
+  - Operation Counter LSW
+  - Operation Counter MSW
+  source:
+    address: 3-4
+    page: 19
+    reference: 'Table 8 Device Data Points: Input Registers'
+- id: tap_position
+  table: input_register
+  address: 5
+  type: i16
+  description: Transmitted range -40 to 40.
+  aliases:
+  - Tap Position
+  source:
+    address: '5'
+    page: 19
+    reference: 'Table 8 Device Data Points: Input Registers'

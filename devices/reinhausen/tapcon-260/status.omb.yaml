@@ -1,0 +1,155 @@
+openmodbus: 0.1.0
+info:
+  id: reinhausen/tapcon-260/status
+  title: Reinhausen TAPCON 260 voltage regulator status
+  version: 0.1.0
+  description: 'Read-only subset of the TAPCON 260 MODBUS protocol description: discrete
+    inputs for function monitoring, limit, operating-mode and parallel-operation messages,
+    and the tap position. Values with a Multiplier column other than 1 (voltages,
+    currents, frequency) are left out because the document does not say whether the
+    factor multiplies or divides the raw value.
+
+    '
+  attribution: Derived from Maschinenfabrik Reinhausen's Voltage regulator TAPCON
+    260 Protocol description MODBUS.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: reinhausen-tapcon-260
+device:
+  manufacturer: Maschinenfabrik Reinhausen
+  family: TAPCON
+  model: TAPCON 260
+  classes:
+  - tap_changer_controller
+  transports:
+  - type: rtu
+    notes: RS-232, RS-485 or optical fibre; 8E1.
+  - type: ascii
+    notes: RS-232, RS-485 or optical fibre.
+  - type: rtu_over_tcp
+    notes: RJ45, TCP port 1234, fixed 19.2 kBaud; the supplement states this is not
+      Modbus TCP.
+  unitId:
+    mode: configurable
+    notes: Local SCADA address 1 to 255 (0 = broadcast) on RS232; the supplement gives
+      0 to 254 (255 = broadcast) for RS485, FOC and RJ45.
+  documentation:
+  - title: Voltage regulator TAPCON 260 Protocol description MODBUS
+    url: https://www.reinhausen.com/fileadmin/downloadcenter/products/voltage_regulators/discontinued_products/tapcon_260/protocol/modbus/2531994_01protokollbeschreibung_modbus_tc260_en.pdf
+    revision: Supplement 2531994/01 EN
+defaults:
+  access: r
+points:
+- id: function_monitoring
+  table: discrete_input
+  address: 0
+  type: bool
+  aliases:
+  - Function monitoring
+  source:
+    address: '0'
+    page: 16
+    reference: 'Table 10 Device data points: Inputs'
+- id: undervoltage
+  table: discrete_input
+  address: 1
+  type: bool
+  aliases:
+  - Undervoltage
+  source:
+    address: '1'
+    page: 16
+    reference: 'Table 10 Device data points: Inputs'
+- id: overvoltage
+  table: discrete_input
+  address: 2
+  type: bool
+  aliases:
+  - Overvoltage
+  source:
+    address: '2'
+    page: 16
+    reference: 'Table 10 Device data points: Inputs'
+- id: overcurrent
+  table: discrete_input
+  address: 3
+  type: bool
+  aliases:
+  - Overcurrent
+  source:
+    address: '3'
+    page: 16
+    reference: 'Table 10 Device data points: Inputs'
+- id: parallel_operation_error
+  table: discrete_input
+  address: 4
+  type: bool
+  aliases:
+  - Parallel operation error
+  source:
+    address: '4'
+    page: 16
+    reference: 'Table 10 Device data points: Inputs'
+- id: auto_mode
+  table: discrete_input
+  address: 5
+  type: bool
+  description: 0 = Manual, 1 = Auto.
+  aliases:
+  - Auto/Manual (1 = Auto, 0 = Manual)
+  source:
+    address: '5'
+    page: 16
+    reference: 'Table 10 Device data points: Inputs'
+- id: tap_change_in_progress
+  table: discrete_input
+  address: 14
+  type: bool
+  aliases:
+  - Tap-change in progress
+  source:
+    address: '14'
+    page: 16
+    reference: 'Table 10 Device data points: Inputs'
+- id: parallel_operation_on
+  table: discrete_input
+  address: 15
+  type: bool
+  aliases:
+  - Parallel operation On
+  source:
+    address: '15'
+    page: 16
+    reference: 'Table 10 Device data points: Inputs'
+- id: local_remote
+  table: discrete_input
+  address: 16
+  type: bool
+  description: The supplement does not state which value means local.
+  aliases:
+  - Local/remote
+  source:
+    address: '16'
+    page: 16
+    reference: 'Table 10 Device data points: Inputs'
+- id: motor_protective_switch
+  table: discrete_input
+  address: 24
+  type: bool
+  aliases:
+  - Motor protective switch
+  source:
+    address: '24'
+    page: 16
+    reference: 'Table 10 Device data points: Inputs'
+- id: tap_position
+  table: input_register
+  address: 0
+  type: i16
+  description: Transmitted range -40 to 40.
+  aliases:
+  - Tap position
+  source:
+    address: '0'
+    page: 17
+    reference: 'Table 12 Device data points: Input register'
