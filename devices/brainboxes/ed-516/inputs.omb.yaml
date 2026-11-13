@@ -1,0 +1,251 @@
+openmodbus: 0.1.0
+info:
+  id: brainboxes/ed-516/inputs
+  title: Brainboxes ED-516 discrete inputs and 16-bit counters
+  version: 0.1.0
+  description: 'Read-only input states and counters. The counter mapping applies when
+    the device is configured for 16-bit counters or runs firmware with only 16-bit
+    counter support.
+
+    '
+  attribution: Derived from the Brainboxes ED-516 Modbus data table.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: brainboxes-ed-tables
+device:
+  manufacturer: Brainboxes
+  model: ED-516
+  classes:
+  - remote_io
+  transports:
+  - type: tcp
+  documentation:
+  - title: ED Modbus Product Data Tables
+    url: https://docs.brainboxes.com/reference/protocols/ed-modbus-product-data-tables
+defaults:
+  access: r
+points:
+- id: di_0
+  table: discrete_input
+  address: 0
+  type: bool
+  source:
+    address: '0x0000'
+    reference: ED-516 product data table
+- id: di_1
+  table: discrete_input
+  address: 1
+  type: bool
+  source:
+    address: '0x0001'
+    reference: ED-516 product data table
+- id: di_2
+  table: discrete_input
+  address: 2
+  type: bool
+  source:
+    address: '0x0002'
+    reference: ED-516 product data table
+- id: di_3
+  table: discrete_input
+  address: 3
+  type: bool
+  source:
+    address: '0x0003'
+    reference: ED-516 product data table
+- id: di_4
+  table: discrete_input
+  address: 4
+  type: bool
+  source:
+    address: '0x0004'
+    reference: ED-516 product data table
+- id: di_5
+  table: discrete_input
+  address: 5
+  type: bool
+  source:
+    address: '0x0005'
+    reference: ED-516 product data table
+- id: di_6
+  table: discrete_input
+  address: 6
+  type: bool
+  source:
+    address: '0x0006'
+    reference: ED-516 product data table
+- id: di_7
+  table: discrete_input
+  address: 7
+  type: bool
+  source:
+    address: '0x0007'
+    reference: ED-516 product data table
+- id: di_8
+  table: discrete_input
+  address: 8
+  type: bool
+  source:
+    address: '0x0008'
+    reference: ED-516 product data table
+- id: di_9
+  table: discrete_input
+  address: 9
+  type: bool
+  source:
+    address: '0x0009'
+    reference: ED-516 product data table
+- id: di_10
+  table: discrete_input
+  address: 10
+  type: bool
+  source:
+    address: '0x000A'
+    reference: ED-516 product data table
+- id: di_11
+  table: discrete_input
+  address: 11
+  type: bool
+  source:
+    address: '0x000B'
+    reference: ED-516 product data table
+- id: di_12
+  table: discrete_input
+  address: 12
+  type: bool
+  source:
+    address: '0x000C'
+    reference: ED-516 product data table
+- id: di_13
+  table: discrete_input
+  address: 13
+  type: bool
+  source:
+    address: '0x000D'
+    reference: ED-516 product data table
+- id: di_14
+  table: discrete_input
+  address: 14
+  type: bool
+  source:
+    address: '0x000E'
+    reference: ED-516 product data table
+- id: di_15
+  table: discrete_input
+  address: 15
+  type: bool
+  source:
+    address: '0x000F'
+    reference: ED-516 product data table
+- id: counter_0
+  table: input_register
+  address: 0
+  type: u16
+  source:
+    address: '0x0000'
+    reference: ED-516 product data table
+- id: counter_1
+  table: input_register
+  address: 1
+  type: u16
+  source:
+    address: '0x0001'
+    reference: ED-516 product data table
+- id: counter_2
+  table: input_register
+  address: 2
+  type: u16
+  source:
+    address: '0x0002'
+    reference: ED-516 product data table
+- id: counter_3
+  table: input_register
+  address: 3
+  type: u16
+  source:
+    address: '0x0003'
+    reference: ED-516 product data table
+- id: counter_4
+  table: input_register
+  address: 4
+  type: u16
+  source:
+    address: '0x0004'
+    reference: ED-516 product data table
+- id: counter_5
+  table: input_register
+  address: 5
+  type: u16
+  source:
+    address: '0x0005'
+    reference: ED-516 product data table
+- id: counter_6
+  table: input_register
+  address: 6
+  type: u16
+  source:
+    address: '0x0006'
+    reference: ED-516 product data table
+- id: counter_7
+  table: input_register
+  address: 7
+  type: u16
+  source:
+    address: '0x0007'
+    reference: ED-516 product data table
+- id: counter_8
+  table: input_register
+  address: 8
+  type: u16
+  source:
+    address: '0x0008'
+    reference: ED-516 product data table
+- id: counter_9
+  table: input_register
+  address: 9
+  type: u16
+  source:
+    address: '0x0009'
+    reference: ED-516 product data table
+- id: counter_10
+  table: input_register
+  address: 10
+  type: u16
+  source:
+    address: '0x000A'
+    reference: ED-516 product data table
+- id: counter_11
+  table: input_register
+  address: 11
+  type: u16
+  source:
+    address: '0x000B'
+    reference: ED-516 product data table
+- id: counter_12
+  table: input_register
+  address: 12
+  type: u16
+  source:
+    address: '0x000C'
+    reference: ED-516 product data table
+- id: counter_13
+  table: input_register
+  address: 13
+  type: u16
+  source:
+    address: '0x000D'
+    reference: ED-516 product data table
+- id: counter_14
+  table: input_register
+  address: 14
+  type: u16
+  source:
+    address: '0x000E'
+    reference: ED-516 product data table
+- id: counter_15
+  table: input_register
+  address: 15
+  type: u16
+  source:
+    address: '0x000F'
+    reference: ED-516 product data table

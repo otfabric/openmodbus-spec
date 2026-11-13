@@ -7,7 +7,6 @@ info:
     the battery instrumentation connected to the GX device.
 
     '
-  license: MIT
   attribution: Derived from Victron Energy BV's GX Modbus-TCP register definitions.
   source: integrator
   verification: documented

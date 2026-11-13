@@ -6,13 +6,13 @@ and FC 03 (PDF page 4). Its input table on page 5 identifies each value as a
 two-register float. The [pilot contract](../../devices/eastron/sdm120-modbus/telemetry.omb.yaml)
 uses that width and the zero-based addresses from the table.
 
-The draft can express the width of each point and an upper request limit.
-It lacks a device-level alignment constraint. A planner can satisfy the
-current request-size limit and still ask for an odd-sized or misaligned range.
+The mapped voltage point starts at 0 and occupies registers 0 and 1.
+A read of that point starts at 0 with count 2. Starting at 1 splits the
+point. The two-register width already supplies the boundary a point-based
+planner needs.
 
-For D10, consider optional start-address and register-count multiples per
-read table. For this device both multiples would be 2. A start of 0 with
-count 2 is aligned. A start of 1 with count 2 or a start of 0 with count 3
-should be rejected. A validator would check explicit blocks against these
-multiples. A runtime would apply the same rule to merged requests, alongside
-the existing range policies. This proposal leaves the draft schema as-is.
+For this mapping, merging adjacent complete points with the default
+`gaps: forbid` preserves the vendor's pair boundaries. For example, the
+frequency and import-energy points at 70 and 72 can be read together
+with count 4. This case supplies a read-planner regression using the
+existing contract fields.

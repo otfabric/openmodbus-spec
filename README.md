@@ -38,9 +38,10 @@ A contract describes the device, not the deployment: no IP addresses, serial set
 Tooling lives in separate repositories (see the proposal, §4): `go-openmodbus` (model, validator, runtime, `omb` CLI),
 `py-openmodbus` and `openmodbus-studio` (editor).
 
-The device catalog lives here. Run `make corpus CORPUS_SET=pilot` to verify the pilot mapping against its original
-vendor source. The [corpus guide](corpus/README.md) describes source links, checksums and the temporary cache.
+The device catalog lives here. Run `make corpus CORPUS_SET=all` to rebuild every contract from its original vendor
+source. The [corpus guide](corpus/README.md) describes source links, checksums, extractors and the temporary cache.
 
 ## Licence
 
-MIT for the specification, schema, vectors and tools (decision D15, maintainer, 2026-10-30): see [LICENSE](LICENSE).
+MIT for the specification, schema, vectors, tools and the device catalog (decision D15, maintainer): see
+[LICENSE](LICENSE). Catalog contracts carry their vendor source link, checksum and attribution.

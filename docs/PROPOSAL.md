@@ -125,7 +125,7 @@ Status of every row: **proposed**.
 | **D12** | Extensibility | Unknown keys are errors except `x-<owner>-*`. Profiles (`sunspec@1`, later `commands`, `conditions`, `banks`, `discovery`) add `x-<profile>-*` keys and rules, never relax core rules. SunSpec starts as an *importer*, becomes a profile when the importer proves the mapping. | Open schema; or SunSpec as core dependency | Strictness keeps validators useful; the OpenAPI `x-` precedent is familiar. |
 | **D13** | Semantics & units | Units are UCUM codes. Optional `semantics: [{scheme, id}]` links to external vocabularies; no built-in ontology. Sign conventions live in the external scheme or in descriptions for now. | Own ontology; free-text units | UCUM is machine-parsable; the semantic layer should be protocol-neutral and separate (also relevant for OPC UA / DNP3 later). |
 | **D14** | Validation & conformance | Four levels (schema → 20 error/9 warning semantic rules with stable codes → vectors → device tests). A claim "conforms to OpenModbus 0.1" requires levels 1–3 for the relevant class. `omb diff` flags breaking changes. | Schema only | JSON Schema cannot detect overlaps, cycles or unsafe blocks; vectors are what make a second implementation credible. |
-| **D15** | Governance & licensing | Spec, schema, vectors, tools: MIT (maintainer, 2026-10-30). Catalog contracts: per-contract `info.license` (default CC0 or CC-BY-4.0 for facts-only maps), mandatory `info.source`/`verification`/`attribution`. Changes via short RFCs in `docs/rfcs/`; DCO sign-off. | CLA; single licence for everything | Matches OpenAPI/most OT ecosystems; separates tool licensing from vendor-documentation provenance. |
+| **D15** | Governance & licensing | MIT for spec, schema, vectors and tools (maintainer, 2026-10-30), extended by the maintainer to the catalog contracts (2026-11-13): one root licence, no per-contract `info.license`. Catalog contracts record `info.source`, `verification` and `attribution`; the corpus manifest links and checksums the public vendor source. Changes via short RFCs in `docs/rfcs/`; DCO sign-off. | CLA; per-contract licences (CC0 or CC-BY-4.0) | Matches OpenAPI/most OT ecosystems; provenance lives in the source link, checksum and attribution rather than in a second licence. |
 | **D16** | Implementation languages | Reference implementation and CLI in Go (static binaries for amd64/arm64/armv7 gateways); second implementation in Python; generators as out-of-process plugins consuming the canonical model JSON on stdin. | Single-language toolchain; JVM | Fits the OTFabric stack and your gateways; two languages from the start prevent Go-isms from leaking into the spec. |
 
 ### Smaller choices already made in the draft (flag any you dislike)
@@ -213,7 +213,7 @@ Typed SDKs are facades over the runtime. Generated server skeletons expose the r
 
 **Importers** — SunSpec (SMDX/JSON → components + a profile), CSV/Excel register tables with an explicit addressing-notation step, evcc templates, pcap-derived hints via the trace-explorer engine.
 
-**Catalog** — `devices/` in `openmodbus-spec` with CI (validate, diff vs previous release, simulator test), provenance (`source`: vendor/integrator/community/generated; `verification`: unverified/documented/simulated/device_tested), licence per contract, a takedown policy for vendor documentation concerns.
+**Catalog** — `devices/` in `openmodbus-spec` with CI (validate, diff vs previous release, simulator test) and provenance (`source`: vendor/integrator/community/generated; `verification`: unverified/documented/simulated/device_tested). The manifest links directly to public vendor documents and pins their checksums; a takedown policy covers vendor documentation concerns.
 
 ## 9. Roadmap
 
@@ -238,7 +238,7 @@ Rule of thumb: do not freeze the schema before M1; do not start the editor befor
 | Scope creep into command sequences, conditions, bank switching | Reserved profiles; core stays at "describes the device". Each addition needs an RFC with ≥ 2 real devices. |
 | Decimal-exact conversion is a burden for implementers | Restricted to decimal literals and a power of ten; reference implementations in Go and Python with test vectors; fallback to IEEE-tolerance only through an RFC. |
 | YAML parser differences (1.1 vs 1.2, duplicate keys, anchors) | Restricted subset, level-1 schema runs on the parsed JSON model, lint rule for risky scalars, test corpus of tricky YAML. |
-| Vendor documentation copyright | Contracts record facts (addresses, types) with attribution; per-contract licence; takedown policy; vendor-authored contracts encouraged. |
+| Vendor documentation copyright and availability | Contracts record facts (addresses, types) with attribution and a direct public source link; takedown policy; vendor-authored contracts encouraged. The lock detects changed bytes and accepts an identical download at a replacement URL. |
 | Adoption chicken-and-egg | Importers (SunSpec, evcc, CSV) seed the catalog; the simulator and docs generator make a contract valuable on day one even for a single user. |
 | Documentation disagrees with firmware | Level-4 tests, `verification` and `testedWith` fields; contracts carry firmware ranges via variants. |
 | Name clash | D1. |

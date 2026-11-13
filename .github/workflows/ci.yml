@@ -26,6 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -35,37 +37,22 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y poppler-utils
           fi
-      - name: Download, extract and verify public mappings
-        run: make corpus CORPUS_SET=pilot
+      # Live downloads only for sources this pull request changes; the scheduled
+      # corpus-health workflow re-fetches every source.
+      - name: Download, extract and verify changed sources
+        run: make corpus CORPUS_ARGS="--changed-from origin/$BASE_REF --write-catalog"
         env:
           PYTHON: python
+          BASE_REF: ${{ github.base_ref }}
           CORPUS_CACHE: ${{ runner.temp }}/openmodbus-corpus
-      - name: Rebuild the catalog offline
+      - name: Rebuild changed sources offline and compare the catalog
         run: |
-          rm devices/victron/cerbo-gx/system.omb.yaml devices/eastron/sdm120-modbus/telemetry.omb.yaml
-          make corpus CORPUS_SET=pilot CORPUS_ARGS="--offline --write-catalog"
-          make corpus CORPUS_SET=pilot CORPUS_ARGS=--offline
-          git diff --exit-code -- devices/
+          make corpus CORPUS_ARGS="--changed-from origin/$BASE_REF --offline"
+          if [ -n "$(git status --porcelain -- devices/)" ]; then
+            git status --short -- devices/
+            git diff -- devices/
+            exit 1
+          fi
         env:
+          BASE_REF: ${{ github.base_ref }}
           CORPUS_CACHE: ${{ runner.temp }}/openmodbus-corpus
-      - name: Verify public source candidates
-        run: |
-          source_file="$(mktemp "$RUNNER_TEMP/map.XXXXXXXX")"
-          trap 'rm -f "$source_file"' EXIT
-          for url in 'https://emea.socomec.com/sites/default/files/2022-11/COUNTIS-E43-MODBUS---ACTIVE-ENERGY-METERS_COMMUNICATION-TABLE_2019-09_CMT201266_EN.html' 'https://emea.socomec.com/sites/default/files/2025-01/COUNTIS-E43-MODBUS---ACTIVE-ENERGY-METERS_COMMUNICATION-TABLE_2025-01_CMT201266_EN.html' 'https://docs.brainboxes.com/reference/protocols/ed-modbus-product-data-tables' 'https://www.brainboxes.com/files/catalog/product/ED/ED-588/documents/Brainboxes%20Modbus%20TCP%20Manual.pdf'; do
-            printf '%s\n' "$url"
-            if curl -fsSL --proto '=https' --proto-redir '=https' --max-time 15 -o "$source_file" "$url"; then
-              sha256sum "$source_file"
-              wc -c < "$source_file"
-              file "$source_file"
-              python - "$source_file" <<'PY'
-          import pathlib, sys
-          data = pathlib.Path(sys.argv[1]).read_bytes()
-          print(repr(data[:120]))
-          for key in (b'51284', b'ED-588'):
-              index = data.find(key)
-              if index >= 0:
-                  print(repr(data[index-60:index+260]))
-          PY
-            fi
-          done

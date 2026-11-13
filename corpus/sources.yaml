@@ -1,53 +1,86 @@
-version: 1
+version: 2
 sets:
-  pilot: [victron-cerbo-gx-system, eastron-sdm120-modbus]
+  pilot: [victron-cerbo-gx-system, eastron-sdm120-modbus, brainboxes-ed-tables]
 sources:
   victron-cerbo-gx-system:
+    publisher: Victron Energy
     title: GX Modbus-TCP manual
     revision: 205bf75ecfc4e6263a3d36db5b5c1ee19f38f74d
     landing_url: https://www.victronenergy.com/live/ccgx:modbustcp_faq
     documentation_url: https://www.victronenergy.com/live/ccgx:modbustcp_faq
     download_urls:
       - https://raw.githubusercontent.com/victronenergy/dbus_modbustcp/205bf75ecfc4e6263a3d36db5b5c1ee19f38f74d/attributes.csv
-    contract: devices/victron/cerbo-gx/system.omb.yaml
-    info:
-      id: victron/cerbo-gx/system
-      title: Victron Cerbo GX system battery telemetry
-      version: 0.1.0
-      description: >
-        Read-only pilot subset of the GX system service. Values depend on the battery
-        instrumentation connected to the GX device.
-      license: MIT
-      attribution: Derived from Victron Energy BV's GX Modbus-TCP register definitions.
-    device:
-      manufacturer: Victron Energy
-      family: GX
-      model: Cerbo GX
-      classes: [energy_storage, gateway]
-      transports: [{type: tcp}]
-      unitId:
-        mode: fixed
-        default: 100
-        notes: The GX system service also responds to unit ID 0.
-    defaults: {table: holding_register, access: r}
+    format: csv
+    extractor: victron_gx_attributes
+    contracts:
+      - path: devices/victron/cerbo-gx/system.omb.yaml
+        info:
+          id: victron/cerbo-gx/system
+          title: Victron Cerbo GX system battery telemetry
+          version: 0.1.0
+          description: >
+            Read-only pilot subset of the GX system service. Values depend on the battery
+            instrumentation connected to the GX device.
+          attribution: Derived from Victron Energy BV's GX Modbus-TCP register definitions.
+        device:
+          manufacturer: Victron Energy
+          family: GX
+          model: Cerbo GX
+          classes: [energy_storage, gateway]
+          transports: [{type: tcp}]
+          unitId:
+            mode: fixed
+            default: 100
+            notes: The GX system service also responds to unit ID 0.
+        defaults: {table: holding_register, access: r}
   eastron-sdm120-modbus:
+    publisher: Eastron
     title: SDM120-Modbus RTU Protocol
     revision: '2.4'
     landing_url: https://www.eastrongroup.com/download/
     download_urls:
       - https://www.eastroneurope.com/images/uploads/products/protocol/SDM120-MODBUS_Protocol.pdf
-    contract: devices/eastron/sdm120-modbus/telemetry.omb.yaml
-    info:
-      id: eastron/sdm120-modbus/telemetry
-      title: Eastron SDM120-Modbus telemetry
-      version: 0.1.0
-      description: >
-        Pilot subset of the Modbus RTU input registers for the SDM120-Modbus.
-        Read each selected value as a complete two-register float.
-      attribution: Derived from Eastron's SDM120-Modbus RTU protocol.
-    device:
-      manufacturer: Eastron
-      model: SDM120-Modbus
-      classes: [energy_meter]
-      transports: [{type: rtu}]
-    defaults: {table: input_register, access: r, wordOrder: big, byteOrder: big}
+    format: pdf
+    extractor: eastron_sdm120
+    contracts:
+      - path: devices/eastron/sdm120-modbus/telemetry.omb.yaml
+        info:
+          id: eastron/sdm120-modbus/telemetry
+          title: Eastron SDM120-Modbus telemetry
+          version: 0.1.0
+          description: >
+            Pilot subset of the Modbus RTU input registers for the SDM120-Modbus.
+            Read each selected value as a complete two-register float.
+          attribution: Derived from Eastron's SDM120-Modbus RTU protocol.
+        device:
+          manufacturer: Eastron
+          model: SDM120-Modbus
+          classes: [energy_meter]
+          transports: [{type: rtu}]
+        defaults: {table: input_register, access: r, wordOrder: big, byteOrder: big}
+  brainboxes-ed-tables:
+    publisher: Brainboxes
+    title: ED Modbus Product Data Tables
+    landing_url: https://docs.brainboxes.com/reference/protocols/ed-modbus-product-data-tables
+    download_urls:
+      - https://docs.brainboxes.com/reference/protocols/ed-modbus-product-data-tables
+    format: html
+    extractor: brainboxes_ed_tables
+    contracts:
+      - path: devices/brainboxes/ed-516/inputs.omb.yaml
+        selector: ed-516
+        info:
+          id: brainboxes/ed-516/inputs
+          title: Brainboxes ED-516 discrete inputs and 16-bit counters
+          version: 0.1.0
+          description: >
+            Read-only input states and counters. The counter mapping applies when
+            the device is configured for 16-bit counters or runs firmware with
+            only 16-bit counter support.
+          attribution: Derived from the Brainboxes ED-516 Modbus data table.
+        device:
+          manufacturer: Brainboxes
+          model: ED-516
+          classes: [remote_io]
+          transports: [{type: tcp}]
+        defaults: {access: r}

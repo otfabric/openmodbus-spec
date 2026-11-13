@@ -8,3 +8,8 @@ sources:
     sha256: 9353b6813b2de3bcc85414988c93dee3177d655168123ff5ee194908b30d3f0c
     size: 238378
     verified_on: '2026-11-13'
+  brainboxes-ed-tables:
+    sha256: 9bc222610d322458a6af6b8454fa7a29aa162a678592105265cf44d755cf3889
+    size: 39831
+    normalize: cloudflare
+    verified_on: '2026-11-13'
