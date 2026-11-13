@@ -48,3 +48,17 @@ jobs:
           git diff --exit-code -- devices/
         env:
           CORPUS_CACHE: ${{ runner.temp }}/openmodbus-corpus
+      - name: Measure the Socomec source
+        run: |
+          source_file="$(mktemp "$RUNNER_TEMP/socomec.XXXXXXXX")"
+          trap 'rm -f "$source_file"' EXIT
+          curl --fail --silent --show-error --location --proto '=https' --proto-redir '=https' --max-time 30 --output "$source_file" 'https://apac.socomec.com/sites/default/files/2025-01/COUNTIS-E43-MODBUS---ACTIVE-ENERGY-METERS_COMMUNICATION-TABLE_2025-01_CMT201266_EN.html'
+          sha256sum "$source_file"
+          wc -c < "$source_file"
+          file "$source_file"
+          python - "$source_file" <<'PY'
+          import pathlib, re, sys
+          data = pathlib.Path(sys.argv[1]).read_bytes()
+          print(repr(data[:180]))
+          print(repr(data[max(0,data.find(b'51284')-50):data.find(b'51284')+300]))
+          PY
