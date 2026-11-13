@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Structural checks of the draft: schema, examples and conformance vectors.
+"""Structural checks of the draft, examples, device contracts and corpus metadata.
 
   validate.py fmt    text files use LF, end in a newline, no trailing whitespace
   validate.py lint   the schema is valid JSON Schema 2020-12; YAML files parse
-  validate.py test   every example validates against the schema
+  validate.py test   examples and device contracts validate against the schema
 
 This does not implement the semantic validation rules of the draft: those
 belong to the tooling repositories (docs/PROPOSAL.md, section 4).
@@ -18,15 +18,17 @@ import yaml
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SCHEMA = ROOT / "schema/0.1/contract.schema.json"
 EXAMPLES = sorted((ROOT / "examples").glob("*.omb.yaml"))
+DEVICES = sorted((ROOT / "devices").rglob("*.omb.yaml"))
 VECTORS = ROOT / "conformance/decode-vectors.yaml"
-TEXT_DIRS = ("conformance", "docs", "examples", "schema", "spec")
+CORPUS_METADATA = sorted((ROOT / "corpus").glob("*.yaml"))
+TEXT_DIRS = ("conformance", "corpus", "devices", "docs", "examples", "schema", "spec")
 
 
 def check_fmt():
     errors = []
     for directory in TEXT_DIRS:
         for path in sorted((ROOT / directory).rglob("*")):
-            if not path.is_file():
+            if not path.is_file() or "__pycache__" in path.parts:
                 continue
             data = path.read_bytes()
             name = path.relative_to(ROOT)
@@ -47,7 +49,7 @@ def check_lint():
         jsonschema.Draft202012Validator.check_schema(schema)
     except (ValueError, jsonschema.SchemaError) as err:
         errors.append(f"{SCHEMA.relative_to(ROOT)}: {err}")
-    for path in [*EXAMPLES, VECTORS]:
+    for path in [*EXAMPLES, *DEVICES, *CORPUS_METADATA, VECTORS]:
         try:
             yaml.safe_load(path.read_text())
         except yaml.YAMLError as err:
@@ -55,16 +57,25 @@ def check_lint():
     return errors
 
 
+def contract_validator():
+    return jsonschema.Draft202012Validator(json.loads(SCHEMA.read_text()))
+
+
+def validate_contract(validator, document, path):
+    return [
+        f"{path}: {'/'.join(str(part) for part in err.absolute_path)}: {err.message}"
+        for err in validator.iter_errors(document)
+    ]
+
+
 def check_test():
-    errors = []
-    validator = jsonschema.Draft202012Validator(json.loads(SCHEMA.read_text()))
     if not EXAMPLES:
-        errors.append("examples: no *.omb.yaml files")
-    for path in EXAMPLES:
+        return ["examples: no *.omb.yaml files"]
+    errors = []
+    validator = contract_validator()
+    for path in [*EXAMPLES, *DEVICES]:
         document = yaml.safe_load(path.read_text())
-        for err in validator.iter_errors(document):
-            where = "/".join(str(part) for part in err.absolute_path)
-            errors.append(f"{path.relative_to(ROOT)}: {where}: {err.message}")
+        errors.extend(validate_contract(validator, document, path.relative_to(ROOT)))
     return errors
 
 

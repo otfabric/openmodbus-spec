@@ -1,0 +1,67 @@
+openmodbus: 0.1.0
+info:
+  id: victron/cerbo-gx/system
+  title: Victron Cerbo GX system battery telemetry
+  version: 0.1.0
+  description: 'Read-only pilot subset of the GX system service. Values depend on
+    the battery instrumentation connected to the GX device.
+
+    '
+  license: MIT
+  attribution: Derived from Victron Energy BV's GX Modbus-TCP register definitions.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: victron-cerbo-gx-system
+device:
+  manufacturer: Victron Energy
+  family: GX
+  model: Cerbo GX
+  classes:
+  - energy_storage
+  - gateway
+  transports:
+  - type: tcp
+  unitId:
+    mode: fixed
+    default: 100
+    notes: The GX system service also responds to unit ID 0.
+  documentation:
+  - title: GX Modbus-TCP manual
+    url: https://www.victronenergy.com/live/ccgx:modbustcp_faq
+    revision: 205bf75ecfc4e6263a3d36db5b5c1ee19f38f74d
+defaults:
+  table: holding_register
+  access: r
+points:
+- id: battery_voltage
+  address: 840
+  type: u16
+  unit: V
+  conversion:
+    multiplier: 0.1
+  source:
+    address: '840'
+    reference: attributes.csv:352
+- id: battery_current
+  address: 841
+  type: i16
+  unit: A
+  conversion:
+    multiplier: 0.1
+  source:
+    address: '841'
+    reference: attributes.csv:353
+- id: battery_power
+  address: 842
+  type: i16
+  unit: W
+  source:
+    address: '842'
+    reference: attributes.csv:354
+- id: battery_state_of_charge
+  address: 843
+  type: u16
+  unit: '%'
+  source:
+    address: '843'
+    reference: attributes.csv:355

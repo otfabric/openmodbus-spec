@@ -26,6 +26,7 @@ Once agreed, decisions are recorded as short ADRs in `docs/decisions/`, the draf
 | `schema/0.1/contract.schema.json` | JSON Schema 2020-12 for the structure (validation level 1). |
 | `examples/` | Three complete contracts for fictional devices: power meter, inverter with scale factors, I/O module. |
 | `conformance/decode-vectors.yaml` | 47 language-neutral decode/encode test vectors. |
+| `devices/`, `corpus/` | Reviewed device contracts, source manifest, checksum lock and source regression checks. |
 
 Checked so far: the schema is a valid 2020-12 schema; all three examples pass it and pass a prototype of the main level-2
 rules (overlaps, references, table/type fit, forbidden ranges, write function fit); all 47 vectors decode and round-trip with an
@@ -96,11 +97,10 @@ Three structural choices that shape everything else:
 
 | Repo | Contents | Notes |
 |---|---|---|
-| `openmodbus-spec` (this one) | spec, schema, vectors, examples, ADRs | language-neutral, no code except tiny scripts |
+| `openmodbus-spec` (this one) | spec, schema, vectors, examples, ADRs, and device catalog | source checks use an external cache |
 | `go-openmodbus` | model, loader, validator, codec/runtime, planner, `omb` CLI | follows the `go-modbus` / `go-sunspec` pattern; model package has no I/O dependency |
 | `py-openmodbus` | second implementation: model + codec + runtime on pymodbus | the proof that the spec is language-neutral |
 | `openmodbus-studio` | Wails v3 editor | same pattern as SunSpec Explorer / Trace Explorer |
-| `openmodbus-devices` | catalog of contracts with CI | separate licence and provenance policy |
 
 `go-modbus` supplies transports and the simulator server; `go-sunspec` becomes the SunSpec importer source;
 `go-modbus-capture` data can seed a simulator's initial state (it stays raw and decoder-free, as you decided; a contract is what adds meaning on top).
@@ -213,7 +213,7 @@ Typed SDKs are facades over the runtime. Generated server skeletons expose the r
 
 **Importers** — SunSpec (SMDX/JSON → components + a profile), CSV/Excel register tables with an explicit addressing-notation step, evcc templates, pcap-derived hints via the trace-explorer engine.
 
-**Catalog** — `openmodbus-devices` with CI (validate, diff vs previous release, simulator test), provenance (`source`: vendor/integrator/community/generated; `verification`: unverified/documented/simulated/device_tested), licence per contract, a takedown policy for vendor documentation concerns.
+**Catalog** — `devices/` in `openmodbus-spec` with CI (validate, diff vs previous release, simulator test), provenance (`source`: vendor/integrator/community/generated; `verification`: unverified/documented/simulated/device_tested), licence per contract, a takedown policy for vendor documentation concerns.
 
 ## 9. Roadmap
 
@@ -225,7 +225,7 @@ Sizes are relative effort: S ≈ days, M ≈ weeks, L ≈ a few months.
 | **M1 Model proven on real devices** | Map ≥ 4 real devices: a meter, a complex vendor inverter, a SunSpec inverter, a non-energy I/O device. Revise spec/schema; grow vectors to ≥ 100 (add write encoding, arrays of strings, masks on 32-bit, error cases). | All four validate; no open question that would change the model; schema tagged `0.1.0-draft.n`. | M |
 | **M2 Validator + runtime core** | `go-openmodbus`: loader, canonical model, `omb validate/compile/diff`, codec and dependency resolution passing 100% of vectors; `py-openmodbus` decoder passing the same vectors. | Two languages green on the same vectors in CI. | M–L |
 | **M3 Generators + simulator** | Plugin protocol, Go/Python/TS/doc generators, simulator on `go-modbus`; `omb test` against simulator. | Generated SDKs read/write the simulator for all example contracts. | M |
-| **M4 Editor, importers, catalog** | Schema-store integration, LSP diagnostics, SunSpec importer, Studio, `openmodbus-devices` with CI. | A third party can add a device contract by PR with green CI. | L |
+| **M4 Editor, importers, catalog** | Schema-store integration, LSP diagnostics, SunSpec importer, Studio, and expanded catalog CI. | A third party can add a device contract by PR with green CI. | L |
 | **1.0** | Freeze. | ≥ 10 devices from ≥ 5 vendors; two independent runtime implementations; no known breaking spec changes pending; at least one external reviewer outside OTFabric. | — |
 
 Rule of thumb: do not freeze the schema before M1; do not start the editor before the validator.

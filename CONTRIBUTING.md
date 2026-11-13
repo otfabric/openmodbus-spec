@@ -19,5 +19,6 @@ Python 3 and network access for the first run: the Makefile creates `.venv` from
 - Never invent Modbus semantics: wire behaviour is defined by the Modbus specification, never here.
 - Never claim conformance or certification.
 - Examples stay fictional devices.
-- No tooling beyond the checks in `scripts/`: it belongs in the repositories the proposal names.
+- Reviewed vendor contracts go in `devices/`. Record the direct public vendor download and its checksum in the
+  [corpus](corpus/README.md). Store raw vendor files outside the checkout.
 - Agents follow [AGENTS.md](AGENTS.md).

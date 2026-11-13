@@ -6,10 +6,11 @@ VENV       ?= .venv
 VENV_PY    := $(VENV)/bin/python
 VENV_STAMP := $(VENV)/.install-stamp
 PIP_AUDIT  ?= pip-audit==2.9.0
+CORPUS_SET ?= pilot
 
 .DEFAULT_GOAL := help
 
-.PHONY: help check fmt-check lint test vuln
+.PHONY: help check fmt-check lint test vuln corpus
 
 help: ## This help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {printf "%-12s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -27,8 +28,11 @@ fmt-check: $(VENV_STAMP) ## Fail on CR, trailing whitespace or a missing final n
 lint: $(VENV_STAMP) ## Check the schema against JSON Schema 2020-12 and parse the YAML files
 	$(VENV_PY) scripts/validate.py lint
 
-test: $(VENV_STAMP) ## Validate every example against the schema
+test: $(VENV_STAMP) ## Validate examples and catalog contracts against the schema
 	$(VENV_PY) scripts/validate.py test
+
+corpus: $(VENV_STAMP) ## Extract and verify catalog mappings from pinned vendor sources
+	$(VENV_PY) corpus/run.py --set "$(CORPUS_SET)" $(CORPUS_ARGS)
 
 vuln: $(VENV_STAMP) ## Audit the pinned Python tooling dependencies (network)
 	$(VENV_PY) -m pip install --quiet $(PIP_AUDIT)
