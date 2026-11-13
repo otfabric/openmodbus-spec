@@ -21,3 +21,30 @@ jobs:
       - run: make check
         env:
           PYTHON: python
+  corpus:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install PDF extraction tool
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+      - name: Download, extract and verify public mappings
+        run: make corpus CORPUS_SET=pilot
+        env:
+          PYTHON: python
+          CORPUS_CACHE: ${{ runner.temp }}/openmodbus-corpus
+      - name: Rebuild the catalog offline
+        run: |
+          rm devices/victron/cerbo-gx/system.omb.yaml devices/eastron/sdm120-modbus/telemetry.omb.yaml
+          make corpus CORPUS_SET=pilot CORPUS_ARGS="--offline --write-catalog"
+          make corpus CORPUS_SET=pilot CORPUS_ARGS=--offline
+          git diff --exit-code -- devices/
+        env:
+          CORPUS_CACHE: ${{ runner.temp }}/openmodbus-corpus

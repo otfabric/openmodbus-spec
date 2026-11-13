@@ -1,0 +1,10 @@
+version: 1
+sources:
+  victron-cerbo-gx-system:
+    sha256: 1bd3dfd3115e0edcd971cfe524b9ad7a6f65f13360ce2e3d498f4af38d9c786c
+    size: 90715
+    verified_on: '2026-11-13'
+  eastron-sdm120-modbus:
+    sha256: 9353b6813b2de3bcc85414988c93dee3177d655168123ff5ee194908b30d3f0c
+    size: 238378
+    verified_on: '2026-11-13'

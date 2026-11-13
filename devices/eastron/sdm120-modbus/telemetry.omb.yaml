@@ -1,0 +1,70 @@
+openmodbus: 0.1.0
+info:
+  id: eastron/sdm120-modbus/telemetry
+  title: Eastron SDM120-Modbus telemetry
+  version: 0.1.0
+  description: 'Pilot subset of the Modbus RTU input registers for the SDM120-Modbus.
+    Read each selected value as a complete two-register float.
+
+    '
+  attribution: Derived from Eastron's SDM120-Modbus RTU protocol.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: eastron-sdm120-modbus
+device:
+  manufacturer: Eastron
+  model: SDM120-Modbus
+  classes:
+  - energy_meter
+  transports:
+  - type: rtu
+  documentation:
+  - title: SDM120-Modbus RTU Protocol
+    url: https://www.eastroneurope.com/images/uploads/products/protocol/SDM120-MODBUS_Protocol.pdf
+    revision: '2.4'
+defaults:
+  table: input_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+points:
+- id: voltage
+  address: 0
+  type: f32
+  unit: V
+  source:
+    address: '30001'
+    page: 5
+    reference: Input register map
+- id: current
+  address: 6
+  type: f32
+  unit: A
+  source:
+    address: '30007'
+    page: 5
+    reference: Input register map
+- id: active_power
+  address: 12
+  type: f32
+  unit: W
+  source:
+    address: '30013'
+    page: 5
+    reference: Input register map
+- id: frequency
+  address: 70
+  type: f32
+  unit: Hz
+  source:
+    address: '30071'
+    page: 5
+    reference: Input register map
+- id: import_active_energy
+  address: 72
+  type: f32
+  unit: kW.h
+  source:
+    address: '30073'
+    page: 5
+    reference: Input register map

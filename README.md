@@ -12,6 +12,8 @@ scaled, what they mean, what may be written, and which constraints a client must
 | [`schema/0.1/contract.schema.json`](schema/0.1/contract.schema.json) | JSON Schema 2020-12 for the document structure. |
 | [`examples/`](examples) | Three complete contracts for fictional devices (power meter, inverter with scale factors, I/O module). |
 | [`conformance/decode-vectors.yaml`](conformance/decode-vectors.yaml) | Language-neutral decode/encode test vectors. |
+| [`devices/`](devices) | Reviewed vendor and device contracts. |
+| [`corpus/`](corpus) | Source URLs, provenance, checksum lock and checks against vendor data. |
 
 ## At a glance
 
@@ -34,7 +36,10 @@ A contract describes the device, not the deployment: no IP addresses, serial set
 ## Planned layout
 
 Tooling lives in separate repositories (see the proposal, §4): `go-openmodbus` (model, validator, runtime, `omb` CLI),
-`py-openmodbus`, `openmodbus-studio` (editor), `openmodbus-devices` (catalog).
+`py-openmodbus` and `openmodbus-studio` (editor).
+
+The device catalog lives here. Run `make corpus CORPUS_SET=pilot` to verify the pilot mapping against its original
+vendor source. The [corpus guide](corpus/README.md) describes source links, checksums and the temporary cache.
 
 ## Licence
 
