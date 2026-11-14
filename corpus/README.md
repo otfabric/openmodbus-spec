@@ -58,8 +58,11 @@ source, and it does not change the contracts. CI writes it for the sources a pul
 request changes, so the hooks stay in working order.
 
 ```sh
-CORPUS_CACHE=~/corpus-cache corpus/run.py --set all --offline --dump-rows ~/corpus-rows
+CORPUS_CACHE=~/corpus-cache make corpus CORPUS_SET=all CORPUS_ARGS="--dump-rows $HOME/corpus-rows"
 ```
+
+The first run downloads the sources into the cache; later runs can add
+`--offline` to `CORPUS_ARGS`.
 
 Vendors often state a convention the mapping depends on, such as the address
 base, the function code or the word order, in a companion manual rather than
