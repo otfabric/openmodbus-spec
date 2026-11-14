@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Extract and verify catalog contracts from checksum-pinned vendor sources."""
 import argparse
-import csv
 import hashlib
-import io
+import importlib.util
 import os
 from pathlib import Path
 import re
@@ -11,38 +10,66 @@ import subprocess
 import sys
 import tempfile
 from contextlib import nullcontext
-from decimal import Decimal
 from urllib.parse import urlsplit
-from urllib.request import HTTPRedirectHandler, build_opener
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 import yaml
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from validate import ROOT, contract_validator, validate_contract
+CORPUS = Path(__file__).resolve().parent
+sys.path.insert(0, str(CORPUS.parent / "scripts"))
+from validate import ROOT, contract_validator, validate_contract  # noqa: E402
+from sourcelib import CorpusError, require  # noqa: E402
 
-
-class CorpusError(Exception):
-    pass
-
-
-def require(condition, message):
-    if not condition:
-        raise CorpusError(message)
+# Some publishers reject the default Python client string. This one names the
+# tool honestly without identifying the repository or its maintainer.
+USER_AGENT = "corpus-fetch/1"
+EXTRACTORS = CORPUS / "extractors"
+WIDTHS = {"bool": 1, "u16": 1, "i16": 1, "u32": 2, "i32": 2, "f32": 2, "u64": 4, "i64": 4, "f64": 4}
+BIT_TABLES = ("coil", "discrete_input")
+REGISTER_TABLES = ("holding_register", "input_register")
+NOT_UCUM = {"kWh", "Wh", "MWh", "kVAh", "kvarh", "varh", "kVArh", "degC", "°C", "rpm", "RPM", "VA", "kVA",
+            "var", "kvar", "VAr", "kVAr", "sec", "hrs", "W/m²", "Ω", "% RH", "%RH"}
 
 
 def read_yaml(path):
-    return yaml.safe_load(path.read_text(encoding="utf-8"))
+    return yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+
+
+def cloudflare_injections(data):
+    """Remove what Cloudflare adds per response: email-obfuscation keys and the analytics beacon."""
+    data = re.sub(rb"/cdn-cgi/l/email-protection#[0-9a-f]+", b"/cdn-cgi/l/email-protection#", data)
+    data = re.sub(rb'data-cfemail="[0-9a-f]+"', b'data-cfemail=""', data)
+    return re.sub(rb"<script[^>]*static\.cloudflareinsights\.com/beacon[^>]*></script>\n?", b"", data)
+
+
+# A normalisation removes bytes that a publisher's CDN randomises or injects per
+# response. The lock names it, and its `size` and `sha256` describe the
+# normalised bytes. Raw responses may exceed `size` by at most NORMALIZE_SLACK.
+NORMALIZERS = {"cloudflare": cloudflare_injections}
+NORMALIZE_SLACK = 64 * 1024
+
+
+def normalized(data, lock):
+    name = lock.get("normalize")
+    require(name is None or name in NORMALIZERS, f"Unknown source normalisation {name!r}")
+    return NORMALIZERS[name](data) if name else data
+
+
+def read_limit(lock):
+    return lock["size"] + (NORMALIZE_SLACK if lock.get("normalize") else 0) + 1
 
 
 def verify(data, lock, origin):
-    require(len(data) == lock["size"], f"{origin}: byte size differs from lock")
+    require(len(data) < read_limit(lock), f"{origin}: response larger than the lock allows")
+    data = normalized(data, lock)
+    require(len(data) == lock["size"], f"{origin}: byte size differs from lock ({len(data)} bytes)")
     actual = hashlib.sha256(data).hexdigest()
     require(actual == lock["sha256"], f"{origin}: SHA-256 differs from lock ({actual})")
 
 
 def read_source(path, lock):
     with path.open("rb") as source:
-        data = source.read(lock["size"] + 1)
+        data = source.read(read_limit(lock))
     verify(data, lock, path)
     return data
 
@@ -80,11 +107,12 @@ def cached_source(source, lock, cache, offline):
     failures = []
     for url in urls:
         try:
-            with build_opener(HTTPSRedirects()).open(url, timeout=20) as response:
-                data = response.read(lock["size"] + 1)
+            request = Request(url, headers={"User-Agent": USER_AGENT})
+            with build_opener(HTTPSRedirects()).open(request, timeout=60) as response:
+                data = response.read(read_limit(lock))
             verify(data, lock, url)
         except (CorpusError, OSError) as exc:
-            failures.append(str(exc))
+            failures.append(f"{url}: {exc}")
             continue
 
         cache.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -98,160 +126,250 @@ def cached_source(source, lock, cache, offline):
     raise CorpusError("No vendor URL returned the locked source: " + " | ".join(failures))
 
 
-def extract_victron(data):
-    point_ids = {
-        "/Dc/Battery/Voltage": "battery_voltage",
-        "/Dc/Battery/Current": "battery_current",
-        "/Dc/Battery/Power": "battery_power",
-        "/Dc/Battery/Soc": "battery_state_of_charge",
+def load_extractor(name):
+    require(isinstance(name, str) and re.fullmatch(r"[a-z][a-z0-9_]*", name), f"Invalid extractor name {name!r}")
+    path = EXTRACTORS / f"{name}.py"
+    require(path.is_file(), f"Extractor module missing: {path.relative_to(ROOT)}")
+    spec = importlib.util.spec_from_file_location(f"corpus_extractor_{name}", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    require(callable(getattr(module, "extract", None)), f"{name}: no extract(data, selector) function")
+    return module
+
+
+def build_contract(source_id, source, contract, extracted):
+    if isinstance(extracted, list):
+        extracted = {"points": extracted}
+    require(set(extracted) <= {"points", "components", "constraints"}, "Unexpected extractor result keys")
+    documentation = {
+        "title": source["title"],
+        "url": source.get("documentation_url", source["download_urls"][0]),
     }
-    points = {}
-    rows = csv.reader(io.StringIO(data.decode("utf-8"), newline=""))
-    for service, path, _, raw_unit, address, raw_type, divisor, access in rows:
-        if service != "com.victronenergy.system" or path not in point_ids:
-            continue
-        require(path not in points, f"Duplicate Victron point {path}")
-        require(access == "R", f"Unexpected Victron access for {path}: {access}")
-        point = {
-            "id": point_ids[path],
-            "address": int(address),
-            "type": {"uint16": "u16", "int16": "i16"}[raw_type],
-            "unit": {"V DC": "V", "A DC": "A", "W": "W", "%": "%"}[raw_unit],
-        }
-        if Decimal(divisor) != 1:
-            multiplier = Decimal(1) / Decimal(divisor)
-            encoded = float(multiplier)
-            require(Decimal(str(encoded)) * Decimal(divisor) == 1, f"{path}: scale needs review")
-            point["conversion"] = {"multiplier": encoded}
-        point["source"] = {"address": address, "reference": f"attributes.csv:{rows.line_num}"}
-        points[path] = point
-    require(points.keys() == point_ids.keys(), f"Missing Victron rows: {sorted(point_ids.keys() - points.keys())}")
-    return sorted(points.values(), key=lambda point: point["address"])
-
-
-def extract_eastron(data):
-    result = subprocess.run(
-        ["pdftotext", "-f", "5", "-l", "5", "-enc", "UTF-8", "-layout", "-", "-"],
-        input=data, capture_output=True, check=True, timeout=20,
-    )
-    page = result.stdout.decode("utf-8")
-    require(re.search(r"Function code\s+04\s+to read input parameters", page, re.IGNORECASE),
-            "Eastron PDF page 5: input register table header missing")
-    selected = {
-        "Voltage": ("voltage", "Volts", "V"),
-        "Current": ("current", "Amps", "A"),
-        "Active power": ("active_power", "Watts", "W"),
-        "Frequency": ("frequency", "Hz", "Hz"),
-        "Import active energy": ("import_active_energy", "kWh", "kW.h"),
-    }
-    rows = re.findall(
-        r"^[ \t]*(3\d{4})[ \t]+([^\n]+?)[ \t]+(\d+)[ \t]+(\S+)[ \t]+(\w+)[ \t]+"
-        r"([0-9A-F]{2})[ \t]+([0-9A-F]{2})[ \t]*$",
-        page, re.MULTILINE,
-    )
-    points = {}
-    for reference, label, size, raw_unit, kind, high, low in rows:
-        label = " ".join(label.split())
-        if label not in selected:
-            continue
-        point_id, expected_unit, unit = selected[label]
-        require(point_id not in points, f"Duplicate Eastron point {point_id}")
-        address = int(high + low, 16)
-        require(int(reference) - 30001 == address and address % 2 == 0,
-                f"Eastron {label}: conflicting register addresses")
-        require((size, raw_unit, kind) == ("4", expected_unit, "Float"),
-                f"Eastron {label}: unexpected width, unit or encoding")
-        points[point_id] = {
-            "id": point_id,
-            "address": address,
-            "type": "f32",
-            "unit": unit,
-            "source": {"address": reference, "page": 5, "reference": "Input register map"},
-        }
-    missing = {point_id for point_id, _, _ in selected.values()} - points.keys()
-    require(not missing, f"Missing Eastron rows: {sorted(missing)}")
-    return sorted(points.values(), key=lambda point: point["address"])
-
-
-def build_contract(source_id, source, points):
-    return {
+    if "revision" in source:
+        documentation["revision"] = source["revision"]
+    document = {
         "openmodbus": "0.1.0",
         "info": {
-            **source["info"],
+            **contract["info"],
             "source": "integrator",
             "verification": "documented",
             "x-otfabric-corpus-source": source_id,
         },
-        "device": {
-            **source["device"],
-            "documentation": [{
-                "title": source["title"],
-                "url": source.get("documentation_url", source["download_urls"][0]),
-                "revision": source["revision"],
-            }],
-        },
-        "defaults": source["defaults"],
-        "points": points,
+        "device": {**contract["device"], "documentation": [documentation]},
     }
+    for key in ("defaults", "constraints"):
+        if key in contract or key in extracted:
+            document[key] = {**contract.get(key, {}), **extracted.get(key, {})}
+    if "components" in extracted:
+        document["components"] = extracted["components"]
+    document["points"] = extracted["points"]
+    return document
+
+
+def register_bits(point, defaults, width):
+    mask = point.get("mask")
+    if mask is None:
+        return [0xFFFF] * width
+    words = [(mask >> (16 * (width - 1 - index))) & 0xFFFF for index in range(width)]
+    if point.get("wordOrder", defaults.get("wordOrder", "big")) == "little":
+        words.reverse()
+    return words
 
 
 def verify_contract(validator, document, path):
+    """Schema validation plus the structural rules the corpus relies on.
+
+    Corpus contracts are flat lists of read-only points. This is a subset of the
+    draft's level-2 rules, not a full semantic validator.
+    """
     errors = validate_contract(validator, document, path)
     require(not errors, "\n".join(errors))
-    # The pilot emits flat, scalar, read-only register maps.
-    widths = {"i16": 1, "u16": 1, "f32": 2}
-    require(document["defaults"]["table"] in ("holding_register", "input_register")
-            and document["defaults"]["access"] == "r", "Expected a read-only register table")
-    ids = set()
-    occupied = set()
-    for point in document["points"]:
+    defaults = document.get("defaults", {})
+    points = document["points"]
+    require(points, "Contract has no points")
+    ids = {point["id"] for point in points}
+    require(len(ids) == len(points), "Duplicate point ID")
+    occupied = {}
+    for point in points:
         point_id = point["id"]
-        width = widths[point["type"]]
-        addresses = set(range(point["address"], point["address"] + width))
-        require(point_id not in ids, f"{point_id}: duplicate point ID")
-        require(max(addresses) <= 65535, f"{point_id}: register range exceeds address space")
-        require(not occupied & addresses, f"{point_id}: register range overlaps another point")
-        ids.add(point_id)
-        occupied.update(addresses)
+        kind = point["type"]
+        table = point.get("table", defaults.get("table"))
+        require(table is not None, f"{point_id}: no table")
+        require(table in (BIT_TABLES if kind == "bool" else REGISTER_TABLES),
+                f"{point_id}: type {kind} does not fit table {table}")
+        require(point.get("access", defaults.get("access", "r")) == "r" and "write" not in point,
+                f"{point_id}: corpus contracts are read-only")
+        if kind in ("string", "bytes"):
+            require("registers" in point, f"{point_id}: {kind} needs registers")
+            width = point["registers"]
+        else:
+            require("registers" not in point, f"{point_id}: registers is only for string and bytes")
+            width = WIDTHS[kind]
+        count = point.get("count", 1)
+        end = point["address"] + width * count - 1
+        require(end <= 65535, f"{point_id}: address range exceeds address space")
+        if "mask" in point:
+            require(kind in ("u16", "u32", "u64"), f"{point_id}: mask on {kind}")
+            mask = point["mask"]
+            require(mask < (1 << (16 * width)), f"{point_id}: mask wider than the type")
+            shifted = mask >> ((mask & -mask).bit_length() - 1)
+            require(shifted & (shifted + 1) == 0, f"{point_id}: mask is not contiguous")
+        no_conversion = kind in ("bool", "string", "bytes") or "enum" in point or "flags" in point
+        require(not (no_conversion and "conversion" in point), f"{point_id}: conversion not allowed")
+        exponent = point.get("conversion", {}).get("exponent10")
+        if isinstance(exponent, dict):
+            require(exponent["point"] in ids, f"{point_id}: exponent10 refers to unknown point")
+        unit = point.get("unit")
+        require(unit is None or unit not in NOT_UCUM, f"{point_id}: unit {unit!r} is not a UCUM code")
+        bits = [1] * (width * count) if kind == "bool" else register_bits(point, defaults, width) * count
+        for index, mask in enumerate(bits):
+            key = (table, point["address"] + index)
+            require(not occupied.get(key, 0) & mask, f"{point_id}: address range overlaps another point")
+            occupied[key] = occupied.get(key, 0) | mask
+
+
+def select_sources(manifest, lock, args):
+    sources = manifest["sources"]
+    if args.source:
+        unknown = sorted(set(args.source) - sources.keys())
+        if unknown:
+            raise CorpusError(f"Unknown source IDs: {unknown}")
+        return list(args.source)
+    if args.changed_from:
+        return changed_sources(manifest, lock, args.changed_from)
+    if args.source_set == "all":
+        return list(sources)
+    require(args.source_set in manifest["sets"], f"Unknown corpus set {args.source_set!r}")
+    return manifest["sets"][args.source_set]
+
+
+def changed_sources(manifest, lock, ref):
+    """Sources whose manifest entry, lock pin, extractor or contracts differ from ref."""
+    base = subprocess.run(["git", "merge-base", ref, "HEAD"], cwd=ROOT, capture_output=True, text=True,
+                          check=True).stdout.strip()
+
+    def show(path):
+        result = subprocess.run(["git", "show", f"{base}:{path}"], cwd=ROOT, capture_output=True, text=True)
+        return yaml.safe_load(result.stdout) if result.returncode == 0 else {}
+
+    changed_files = subprocess.run(["git", "diff", "--name-only", base, "--"], cwd=ROOT, capture_output=True,
+                                   text=True, check=True).stdout.split()
+    untracked = subprocess.run(["git", "ls-files", "--others", "--exclude-standard"], cwd=ROOT,
+                               capture_output=True, text=True, check=True).stdout.split()
+    changed_files = set(changed_files) | set(untracked)
+    if changed_files & {"corpus/run.py", "corpus/sourcelib.py", "scripts/validate.py",
+                        "schema/0.1/contract.schema.json"}:
+        return list(manifest["sources"])
+    old_sources = (show("corpus/sources.yaml") or {}).get("sources", {})
+    old_lock = (show("corpus/sources.lock.yaml") or {}).get("sources", {})
+    selected = []
+    for source_id, source in manifest["sources"].items():
+        files = {f"corpus/extractors/{source.get('extractor')}.py",
+                 *(contract["path"] for contract in source.get("contracts", []))}
+        if (old_sources.get(source_id) != source or old_lock.get(source_id) != lock.get(source_id)
+                or files & changed_files):
+            selected.append(source_id)
+    return selected
+
+
+def check_manifest(manifest, lock):
+    """Offline consistency of manifest, lock, extractors and catalog files. No downloads."""
+    errors = []
+    sources = manifest.get("sources") or {}
+    pins = lock.get("sources") or {}
+    for set_name, members in (manifest.get("sets") or {}).items():
+        errors += [f"set {set_name}: unknown source {member}" for member in members if member not in sources]
+    paths, contract_ids = set(), set()
+    for source_id, source in sources.items():
+        def fail(message):
+            errors.append(f"{source_id}: {message}")
+        if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", source_id):
+            fail("invalid source ID")
+        missing = [key for key in ("publisher", "title", "download_urls", "format", "extractor", "contracts")
+                   if key not in source]
+        if missing:
+            fail(f"missing keys {missing}")
+            continue
+        for url in source["download_urls"]:
+            try:
+                https_url(url)
+            except CorpusError as exc:
+                fail(f"{url}: {exc}")
+        if not re.fullmatch(r"[a-z][a-z0-9_]*", str(source["extractor"])) or \
+                not (EXTRACTORS / f"{source['extractor']}.py").is_file():
+            fail(f"extractor module missing: {source['extractor']}")
+        pin = pins.get(source_id)
+        if not isinstance(pin, dict):
+            fail("no lock entry")
+        elif not (re.fullmatch(r"[a-f0-9]{64}", str(pin.get("sha256"))) and type(pin.get("size")) is int
+                  and pin["size"] > 0 and pin.get("verified_on") and pin.get("normalize", None) in (None, *NORMALIZERS)):
+            fail("invalid lock entry")
+        for contract in source["contracts"]:
+            path = (ROOT / contract["path"]).resolve()
+            if not (path.is_relative_to(ROOT / "devices") and path.name.endswith(".omb.yaml")):
+                fail(f"{contract['path']}: not a .omb.yaml under devices/")
+            elif not path.is_file():
+                fail(f"{contract['path']}: contract file missing")
+            if path in paths or contract["info"]["id"] in contract_ids:
+                fail(f"{contract['path']}: duplicate path or catalog ID")
+            paths.add(path)
+            contract_ids.add(contract["info"]["id"])
+    errors += [f"lock entry without source: {source_id}" for source_id in pins if source_id not in sources]
+    errors += [f"{path.relative_to(ROOT)}: not produced by any corpus source"
+               for path in sorted((ROOT / "devices").rglob("*.omb.yaml")) if path.resolve() not in paths]
+    return errors
+
+
+def build_source(source_id, source, pin, cache, offline, validator, catalog, contract_ids):
+    devices = ROOT / "devices"
+    require(re.fullmatch(r"[a-f0-9]{64}", pin["sha256"]), "Invalid SHA-256 in source lock")
+    require(type(pin["size"]) is int and pin["size"] > 0, "Invalid byte size in source lock")
+    extractor = load_extractor(source["extractor"])
+    contracts = source.get("contracts")
+    require(isinstance(contracts, list) and contracts, "Source needs at least one contract")
+    data = normalized(cached_source(source, pin, cache, offline), pin)
+    built = []
+    for contract in contracts:
+        path = (ROOT / contract["path"]).resolve()
+        require(path.is_relative_to(devices) and path.name.endswith(".omb.yaml"),
+                "Contract path must be a .omb.yaml under devices/")
+        require(path not in catalog, f"Duplicate catalog path: {path.relative_to(ROOT)}")
+        document = build_contract(source_id, source, contract, extractor.extract(data, contract.get("selector")))
+        verify_contract(validator, document, path.relative_to(ROOT))
+        contract_id = document["info"]["id"]
+        require(contract_id not in contract_ids, f"Duplicate catalog ID: {contract_id}")
+        contract_ids.add(contract_id)
+        catalog[path] = document
+        built.append((path, document))
+    return built
 
 
 def build_catalog(source_ids, sources, lock, cache, offline, write):
-    extractors = {
-        "victron-cerbo-gx-system": extract_victron,
-        "eastron-sdm120-modbus": extract_eastron,
-    }
     validator = contract_validator()
     catalog = {}
     contract_ids = set()
-    devices = ROOT / "devices"
+    failures = []
     for source_id in source_ids:
         try:
-            source = sources[source_id]
-            pin = lock[source_id]
-            require(re.fullmatch(r"[a-f0-9]{64}", pin["sha256"]), "Invalid SHA-256 in source lock")
-            require(type(pin["size"]) is int and pin["size"] > 0, "Invalid byte size in source lock")
-            path = (ROOT / source["contract"]).resolve()
-            require(path.is_relative_to(devices) and path.name.endswith(".omb.yaml"),
-                    "Contract path must be a .omb.yaml under devices/")
-            require(path not in catalog, f"Duplicate catalog path: {path.relative_to(ROOT)}")
-            data = cached_source(source, pin, cache, offline)
-            document = build_contract(source_id, source, extractors[source_id](data))
-            verify_contract(validator, document, path.relative_to(ROOT))
-            contract_id = document["info"]["id"]
-            require(contract_id not in contract_ids, f"Duplicate catalog ID: {contract_id}")
-            contract_ids.add(contract_id)
-            if not write:
-                require(path.is_file() and read_yaml(path) == document,
-                        f"{path.relative_to(ROOT)} differs from extraction. "
-                        "Run with --write-catalog and review the diff.")
-            catalog[path] = document
-            print(f"{source_id}: extracted and verified {len(document['points'])} points")
-        except (CorpusError, OSError, KeyError, ValueError, yaml.YAMLError, subprocess.SubprocessError) as exc:
-            raise CorpusError(f"{source_id}: {exc}") from exc
+            require(source_id in lock, "Source has no lock entry")
+            built = build_source(source_id, sources[source_id], lock[source_id], cache, offline,
+                                 validator, catalog, contract_ids)
+        except (CorpusError, OSError, KeyError, TypeError, ValueError, yaml.YAMLError,
+                subprocess.SubprocessError) as exc:
+            failures.append(f"{source_id}: {type(exc).__name__}: {exc}")
+            print(f"{source_id}: FAILED: {exc}", file=sys.stderr)
+            continue
+        for path, document in built:
+            relative = path.relative_to(ROOT)
+            if not write and not (path.is_file() and read_yaml(path) == document):
+                failures.append(f"{source_id}: {relative} differs from extraction. "
+                                "Run with --write-catalog and review the diff.")
+                continue
+            print(f"{source_id}: {relative}: {len(document['points'])} points")
 
     if write:
         for path, document in catalog.items():
-            content = yaml.safe_dump(document, sort_keys=False)
+            content = yaml.safe_dump(document, sort_keys=False, allow_unicode=True)
             if path.is_file() and path.read_text(encoding="utf-8") == content:
                 continue
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -259,30 +377,48 @@ def build_catalog(source_ids, sources, lock, cache, offline, write):
                 temp = Path(staging) / path.name
                 temp.write_text(content, encoding="utf-8")
                 temp.replace(path)
-    print(f"Catalog {'built' if write else 'verified'}: {len(catalog)} contracts")
+    print(f"Catalog {'built' if write else 'verified'}: {len(catalog)} contracts from "
+          f"{len(source_ids) - len(failures)} of {len(source_ids)} sources")
+    if failures:
+        raise CorpusError("\n".join(["Failed sources:", *failures]))
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--set", default="pilot", dest="source_set")
+    parser.add_argument("--set", default="pilot", dest="source_set", help="named set, or 'all'")
+    parser.add_argument("--source", action="append", help="build only this source ID (repeatable)")
+    parser.add_argument("--changed-from", metavar="REF", help="build only sources changed since a git ref")
+    parser.add_argument("--manifest", default=CORPUS / "sources.yaml", type=Path)
+    parser.add_argument("--lock", default=CORPUS / "sources.lock.yaml", type=Path)
     parser.add_argument("--offline", action="store_true")
     parser.add_argument("--write-catalog", action="store_true")
+    parser.add_argument("--check-manifest", action="store_true", help="offline consistency check only")
     args = parser.parse_args()
-    manifest = read_yaml(ROOT / "corpus/sources.yaml")
-    lock = read_yaml(ROOT / "corpus/sources.lock.yaml")
-    if manifest.get("version") != 1 or lock.get("version") != 1:
+    manifest = read_yaml(args.manifest)
+    lock = read_yaml(args.lock)
+    if manifest.get("version") != 2 or lock.get("version") != 1:
         parser.error("unsupported corpus manifest or lock version")
-    if args.source_set not in manifest["sets"]:
-        parser.error(f"unknown corpus set {args.source_set!r}")
+    if args.check_manifest:
+        errors = check_manifest(manifest, lock)
+        for error in errors:
+            print(error, file=sys.stderr)
+        if errors:
+            sys.exit(1)
+        print(f"corpus manifest ok: {len(manifest['sources'])} sources")
+        return
     cache_dir = os.getenv("CORPUS_CACHE")
     if args.offline and not cache_dir:
         parser.error("--offline needs CORPUS_CACHE from a previous run")
     cache_context = nullcontext(cache_dir) if cache_dir else tempfile.TemporaryDirectory(prefix="openmodbus-")
     try:
+        source_ids = select_sources(manifest, lock["sources"], args)
+        if not source_ids:
+            print("No corpus sources selected")
+            return
         with cache_context as cache:
-            build_catalog(manifest["sets"][args.source_set], manifest["sources"], lock["sources"],
-                          Path(cache), args.offline, args.write_catalog)
-    except (CorpusError, OSError) as exc:
+            build_catalog(source_ids, manifest["sources"], lock["sources"], Path(cache),
+                          args.offline, args.write_catalog)
+    except (CorpusError, OSError, subprocess.SubprocessError) as exc:
         sys.exit(str(exc))
 
 

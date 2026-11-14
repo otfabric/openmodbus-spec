@@ -1,0 +1,40 @@
+name: Corpus source health
+run-name: "Corpus source health (${{ github.event_name }}) on ${{ github.ref_name }}"
+
+# Re-fetches every pinned vendor source, rebuilds the catalog and compares it
+# with devices/. A failure means a publisher moved, changed or withdrew a
+# document: review it, never refresh the lock silently.
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sources:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install PDF extraction tool
+        run: |
+          if ! command -v pdftotext >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+      - name: Download, extract and verify every source
+        run: make corpus CORPUS_SET=all CORPUS_ARGS=--write-catalog
+        env:
+          PYTHON: python
+          CORPUS_CACHE: ${{ runner.temp }}/openmodbus-corpus
+      - name: Compare the rebuilt catalog
+        run: |
+          if [ -n "$(git status --porcelain -- devices/)" ]; then
+            git status --short -- devices/
+            git diff -- devices/
+            exit 1
+          fi
