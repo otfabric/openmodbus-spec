@@ -1,6 +1,73 @@
 version: 2
 sets:
   pilot: [victron-cerbo-gx-system, eastron-sdm120-modbus, brainboxes-ed-tables]
+  class-01:
+  - abb-b21-manual
+  - abb-b23-b24-manual
+  - carlo-gavazzi-em511-protocol
+  - carlo-gavazzi-em530-em540-protocol
+  - eastron-sdm230-modbus
+  - eastron-sdm630-modbus
+  class-02:
+  - abb-m4m-modbus-map
+  - janitza-umg96rm-modbus-de
+  - janitza-umg96rm-e-modbus
+  class-03: [fronius-primo-sunspec-maps, solis-grid-rs485-modbus]
+  class-04:
+  - fronius-gen24-modbus
+  - schneider-electric-conext-modbus-maps-v4
+  - victron-gx-vebus
+  class-05:
+  - vaisala-opt100
+  - vaisala-mht410
+  - vaisala-mmt162
+  - reinhausen-tapcon-230-avt
+  - reinhausen-tapcon-250
+  - reinhausen-tapcon-260
+  - tecsystem-nt935-ad
+  - tecsystem-nt935-eth
+  - tecsystem-t1048
+  class-06:
+  - abb-ref615-modbus
+  - abb-rem615-modbus
+  - abb-ret615-ansi-modbus
+  - fanox-sil-a-modbus
+  - fanox-sia-c-modbus
+  - fanox-sia-b-specific-ct-modbus
+  - schneider-electric-sepam-series20-manual
+  - siemens-siprotec-7sx80-modbus
+  class-07:
+  - brainboxes-ed-tables
+  - automationdirect-sio-mb12cdr
+  - automationdirect-sio-mb16cdd2
+  - automationdirect-sio-mb08thms
+  - icp-das-et-2200-manual
+  - moxa-iologik-e1200-manual
+  class-08:
+  - automationdirect-gs20-manual
+  - automationdirect-gs30-manual
+  - automationdirect-gs4-manual
+  - danfoss-fc51-oi
+  - schneider-electric-atv320-comm
+  - schneider-electric-atv340-comm
+  - schneider-electric-atv600-comm
+  class-09:
+  - datakom-500-modbus
+  - deif-ml2-h2-h9
+  - smartgen-hgm9510
+  - smartgen-hgm9530n
+  - woodward-37528
+  - woodward-b37574
+  class-10:
+  - apogee-instruments-sp-422
+  - apogee-instruments-sp-522
+  - apogee-instruments-sp-722
+  - eko-instruments-ms-40s
+  - eko-instruments-ms-60s
+  - eko-instruments-ms-80s
+  - hukseflux-sr20-d2
+  - imt-technology-si-rs485-modbus
+  - kipp-zonen-smp-modbus
 sources:
   victron-cerbo-gx-system:
     publisher: Victron Energy
@@ -9,78 +76,2857 @@ sources:
     landing_url: https://www.victronenergy.com/live/ccgx:modbustcp_faq
     documentation_url: https://www.victronenergy.com/live/ccgx:modbustcp_faq
     download_urls:
-      - https://raw.githubusercontent.com/victronenergy/dbus_modbustcp/205bf75ecfc4e6263a3d36db5b5c1ee19f38f74d/attributes.csv
+    - https://raw.githubusercontent.com/victronenergy/dbus_modbustcp/205bf75ecfc4e6263a3d36db5b5c1ee19f38f74d/attributes.csv
     format: csv
     extractor: victron_gx_attributes
     contracts:
-      - path: devices/victron/cerbo-gx/system.omb.yaml
-        info:
-          id: victron/cerbo-gx/system
-          title: Victron Cerbo GX system battery telemetry
-          version: 0.1.0
-          description: >
-            Read-only pilot subset of the GX system service. Values depend on the battery
-            instrumentation connected to the GX device.
-          attribution: Derived from Victron Energy BV's GX Modbus-TCP register definitions.
-        device:
-          manufacturer: Victron Energy
-          family: GX
-          model: Cerbo GX
-          classes: [energy_storage, gateway]
-          transports: [{type: tcp}]
-          unitId:
-            mode: fixed
-            default: 100
-            notes: The GX system service also responds to unit ID 0.
-        defaults: {table: holding_register, access: r}
+    - path: devices/victron/cerbo-gx/system.omb.yaml
+      info:
+        id: victron/cerbo-gx/system
+        title: Victron Cerbo GX system battery telemetry
+        version: 0.1.0
+        description: >
+          Read-only pilot subset of the GX system service. Values depend on the battery instrumentation connected
+          to the GX device.
+        attribution: Derived from Victron Energy BV's GX Modbus-TCP register definitions.
+      device:
+        manufacturer: Victron Energy
+        family: GX
+        model: Cerbo GX
+        classes: [energy_storage, gateway]
+        transports: [{type: tcp}]
+        unitId:
+          mode: fixed
+          default: 100
+          notes: The GX system service also responds to unit ID 0.
+      defaults: {table: holding_register, access: r}
   eastron-sdm120-modbus:
     publisher: Eastron
     title: SDM120-Modbus RTU Protocol
     revision: '2.4'
     landing_url: https://www.eastrongroup.com/download/
     download_urls:
-      - https://www.eastroneurope.com/images/uploads/products/protocol/SDM120-MODBUS_Protocol.pdf
+    - https://www.eastroneurope.com/images/uploads/products/protocol/SDM120-MODBUS_Protocol.pdf
     format: pdf
     extractor: eastron_sdm120
     contracts:
-      - path: devices/eastron/sdm120-modbus/telemetry.omb.yaml
-        info:
-          id: eastron/sdm120-modbus/telemetry
-          title: Eastron SDM120-Modbus telemetry
-          version: 0.1.0
-          description: >
-            Pilot subset of the Modbus RTU input registers for the SDM120-Modbus.
-            Read each selected value as a complete two-register float.
-          attribution: Derived from Eastron's SDM120-Modbus RTU protocol.
-        device:
-          manufacturer: Eastron
-          model: SDM120-Modbus
-          classes: [energy_meter]
-          transports: [{type: rtu}]
-        defaults: {table: input_register, access: r, wordOrder: big, byteOrder: big}
+    - path: devices/eastron/sdm120-modbus/telemetry.omb.yaml
+      info:
+        id: eastron/sdm120-modbus/telemetry
+        title: Eastron SDM120-Modbus telemetry
+        version: 0.1.0
+        description: >
+          Pilot subset of the Modbus RTU input registers for the SDM120-Modbus. Read each selected value as a complete
+          two-register float.
+        attribution: Derived from Eastron's SDM120-Modbus RTU protocol.
+      device:
+        manufacturer: Eastron
+        model: SDM120-Modbus
+        classes: [energy_meter]
+        transports: [{type: rtu}]
+      defaults: {table: input_register, access: r, wordOrder: big, byteOrder: big}
   brainboxes-ed-tables:
     publisher: Brainboxes
     title: ED Modbus Product Data Tables
     landing_url: https://docs.brainboxes.com/reference/protocols/ed-modbus-product-data-tables
     download_urls:
-      - https://docs.brainboxes.com/reference/protocols/ed-modbus-product-data-tables
+    - https://docs.brainboxes.com/reference/protocols/ed-modbus-product-data-tables
     format: html
     extractor: brainboxes_ed_tables
     contracts:
-      - path: devices/brainboxes/ed-516/inputs.omb.yaml
-        selector: ed-516
-        info:
-          id: brainboxes/ed-516/inputs
-          title: Brainboxes ED-516 discrete inputs and 16-bit counters
-          version: 0.1.0
-          description: >
-            Read-only input states and counters. The counter mapping applies when
-            the device is configured for 16-bit counters or runs firmware with
-            only 16-bit counter support.
-          attribution: Derived from the Brainboxes ED-516 Modbus data table.
-        device:
-          manufacturer: Brainboxes
-          model: ED-516
-          classes: [remote_io]
-          transports: [{type: tcp}]
-        defaults: {access: r}
+    - path: devices/brainboxes/ed-516/inputs.omb.yaml
+      selector: ed-516
+      info:
+        id: brainboxes/ed-516/inputs
+        title: Brainboxes ED-516 discrete inputs and 16-bit counters
+        version: 0.1.0
+        description: >
+          Read-only input states and counters. The counter mapping applies when the device is configured for 16-bit
+          counters or runs firmware with only 16-bit counter support.
+        attribution: Derived from the Brainboxes ED-516 Modbus data table.
+      device:
+        manufacturer: Brainboxes
+        model: ED-516
+        classes: [remote_io]
+        transports: [{type: tcp}]
+      defaults: {access: r}
+    - path: devices/brainboxes/ed-538/io.omb.yaml
+      selector: {model: ed-538, rows: [di, do, counter]}
+      info:
+        id: brainboxes/ed-538/io
+        title: Brainboxes ED-538 digital inputs, outputs and 16-bit counters
+        version: 0.1.0
+        description: >
+          Read-only input states, output states read back with function code 1, and input counters. The counter
+          mapping applies when the device is configured for 16-bit counters or runs firmware with only 16-bit counter
+          support. The input and output polarity settings decide whether a 1 means voltage present. Output overload
+          flags are left out of this subset.
+        attribution: Derived from Brainboxes' ED Modbus Product Data Tables.
+      device:
+        manufacturer: Brainboxes
+        model: ED-538
+        classes: [remote_io]
+        transports: [{type: tcp}]
+      defaults: {access: r}
+    - path: devices/brainboxes/ed-588/io.omb.yaml
+      selector: {model: ed-588, rows: [di, do]}
+      info:
+        id: brainboxes/ed-588/io
+        title: Brainboxes ED-588 digital inputs and outputs
+        version: 0.1.0
+        description: >
+          Read-only input states and output states read back with function code 1. The input and output polarity
+          settings decide whether a 1 means voltage present. The input counters and output overload flags, laid
+          out as on the ED-538, are left out to keep the subset within 20 points.
+        attribution: Derived from Brainboxes' ED Modbus Product Data Tables.
+      device:
+        manufacturer: Brainboxes
+        model: ED-588
+        classes: [remote_io]
+        transports: [{type: tcp}]
+      defaults: {access: r}
+  abb-b21-manual:
+    publisher: ABB
+    title: B21 User Manual
+    revision: 2CMC485004M0201 Revision A (2013-06-20)
+    landing_url: https://library.e.abb.com/public/a5cc6ae47646bf15c1257c3f00472b35/B21_User_Manual.pdf.pdf
+    download_urls:
+    - https://library.e.abb.com/public/a5cc6ae47646bf15c1257c3f00472b35/B21_User_Manual.pdf.pdf
+    format: pdf
+    extractor: abb_b2x_manual
+    contracts:
+    - path: devices/abb/b21/telemetry.omb.yaml
+      selector: b21
+      info:
+        id: abb/b21/telemetry
+        title: ABB B21 telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the B21 Modbus mapping tables (function code 3). The B21 is a single-phase, direct-connected
+          meter; this applies to variants with RS-485 set to the Modbus protocol. Quantities that the meter variant
+          lacks read as the documented "invalid" value: FFFF in every register for unsigned quantities, the highest
+          positive value for signed ones.
+        attribution: Derived from ABB's B21 User Manual.
+      device:
+        manufacturer: ABB
+        model: B21
+        classes: [energy_meter]
+        transports:
+        - type: rtu
+          notes: RS-485 with the protocol set to Modbus; frames carry a CRC (manual chapter 9.1).
+      defaults: {table: holding_register, access: r}
+  abb-b23-b24-manual:
+    publisher: ABB
+    title: B23/B24 User Manual
+    revision: 2CMC485003M0201 Revision A (2013-06-20)
+    landing_url: https://library.e.abb.com/public/6d7783fdb45ace75c1257c3f00474022/B23_B24_User_Manual.pdf.pdf
+    download_urls:
+    - https://library.e.abb.com/public/6d7783fdb45ace75c1257c3f00474022/B23_B24_User_Manual.pdf.pdf
+    format: pdf
+    extractor: abb_b2x_manual
+    contracts:
+    - path: devices/abb/b23/telemetry.omb.yaml
+      selector: b23
+      info:
+        id: abb/b23/telemetry
+        title: ABB B23 telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the B23/B24 Modbus mapping tables (function code 3) for the B23, the direct-connected
+          three-phase meter; this applies to variants with RS-485 set to the Modbus protocol. Quantities that the
+          meter variant lacks read as the documented "invalid" value: FFFF in every register for unsigned quantities,
+          the highest positive value for signed ones.
+        attribution: Derived from ABB's B23/B24 User Manual.
+      device:
+        manufacturer: ABB
+        model: B23
+        classes: [energy_meter]
+        transports:
+        - type: rtu
+          notes: RS-485 with the protocol set to Modbus; frames carry a CRC (manual chapter 9.1).
+      defaults: {table: holding_register, access: r}
+    - path: devices/abb/b24/telemetry.omb.yaml
+      selector: b24
+      info:
+        id: abb/b24/telemetry
+        title: ABB B24 telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the B23/B24 Modbus mapping tables (function code 3) for the B24, the transformer-connected
+          three-phase meter; this applies to variants with RS-485 set to the Modbus protocol. Quantities that the
+          meter variant lacks read as the documented "invalid" value: FFFF in every register for unsigned quantities,
+          the highest positive value for signed ones.
+        attribution: Derived from ABB's B23/B24 User Manual.
+      device:
+        manufacturer: ABB
+        model: B24
+        classes: [energy_meter]
+        transports:
+        - type: rtu
+          notes: RS-485 with the protocol set to Modbus; frames carry a CRC (manual chapter 9.1).
+      defaults: {table: holding_register, access: r}
+  carlo-gavazzi-em511-protocol:
+    publisher: Carlo Gavazzi
+    title: EM511 Communication Protocol
+    revision: rev. 1.8 (2023-05-23)
+    landing_url: https://www.gavazziautomation.com/fileadmin/images/PIM/OTHERSTUFF/COMPRO/EM511%20CP%20Rev1.8.pdf
+    download_urls:
+    - https://www.gavazziautomation.com/fileadmin/images/PIM/OTHERSTUFF/COMPRO/EM511%20CP%20Rev1.8.pdf
+    format: pdf
+    extractor: carlo_gavazzi_em5xx_protocol
+    contracts:
+    - path: devices/carlo-gavazzi/em511/telemetry.omb.yaml
+      selector: em511
+      info:
+        id: carlo-gavazzi/em511/telemetry
+        title: Carlo Gavazzi EM511 telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the EM511 Modbus RTU map. Function codes 03 and 04 return the same values; the points
+          use the input-register (function 04) table. 32-bit values are least significant word first. The firmware
+          version and identification code registers must be read one word at a time.
+        attribution: Derived from Carlo Gavazzi's EM511 Communication Protocol.
+      device:
+        manufacturer: Carlo Gavazzi
+        model: EM511
+        classes: [energy_meter]
+        transports: [{type: rtu}]
+      defaults: {table: input_register, access: r}
+  carlo-gavazzi-em530-em540-protocol:
+    publisher: Carlo Gavazzi
+    title: EM530/EM540 Modbus Communication Protocol
+    revision: Version 1.3 (2024-02-13)
+    landing_url: https://www.gavazziautomation.com/fileadmin/images/PIM/OTHERSTUFF/COMPRO/EM500_CPP_Mod_V1.3_13022024.pdf
+    download_urls:
+    - https://www.gavazziautomation.com/fileadmin/images/PIM/OTHERSTUFF/COMPRO/EM500_CPP_Mod_V1.3_13022024.pdf
+    format: pdf
+    extractor: carlo_gavazzi_em5xx_protocol
+    contracts:
+    - path: devices/carlo-gavazzi/em530/telemetry.omb.yaml
+      selector: em530
+      info:
+        id: carlo-gavazzi/em530/telemetry
+        title: Carlo Gavazzi EM530 telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the EM530/EM540 Modbus RTU map (table grouped by phase). Function codes 03 and 04
+          return the same values; the points use the input-register (function 04) table. 32-bit values are least
+          significant word first. The firmware version and identification code registers must be read one word at
+          a time. The document marks overflow by an MSW of 7FFFh, which no `invalid` list here expresses.
+        attribution: Derived from Carlo Gavazzi's EM530/EM540 Modbus Communication Protocol.
+      device:
+        manufacturer: Carlo Gavazzi
+        model: EM530
+        classes: [energy_meter]
+        transports: [{type: rtu}]
+      defaults: {table: input_register, access: r}
+    - path: devices/carlo-gavazzi/em540/telemetry.omb.yaml
+      selector: em540
+      info:
+        id: carlo-gavazzi/em540/telemetry
+        title: Carlo Gavazzi EM540 telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the EM530/EM540 Modbus RTU map (table grouped by phase). Function codes 03 and 04
+          return the same values; the points use the input-register (function 04) table. 32-bit values are least
+          significant word first. The firmware version and identification code registers must be read one word at
+          a time. The document marks overflow by an MSW of 7FFFh, which no `invalid` list here expresses.
+        attribution: Derived from Carlo Gavazzi's EM530/EM540 Modbus Communication Protocol.
+      device:
+        manufacturer: Carlo Gavazzi
+        model: EM540
+        classes: [energy_meter]
+        transports: [{type: rtu}]
+      defaults: {table: input_register, access: r}
+  eastron-sdm230-modbus:
+    publisher: Eastron
+    title: SDM230Modbus Smart Meter Modbus Protocol Implementation
+    revision: '1.4'
+    landing_url: https://www.eastroneurope.com/images/uploads/products/protocol/Correct_SDM230_Protocol.pdf
+    download_urls:
+    - https://www.eastroneurope.com/images/uploads/products/protocol/Correct_SDM230_Protocol.pdf
+    format: pdf
+    extractor: eastron_sdm230_sdm630
+    contracts:
+    - path: devices/eastron/sdm230-modbus/telemetry.omb.yaml
+      selector: sdm230
+      info:
+        id: eastron/sdm230-modbus/telemetry
+        title: Eastron SDM230-Modbus telemetry
+        version: 0.1.0
+        description: >
+          Subset of the Modbus RTU input registers for the SDM230-Modbus. Read each selected value as a complete
+          two-register float. Floats are most significant register first by default; the meter's Register Order
+          setting can reverse that order, which this contract does not model.
+        attribution: Derived from Eastron's SDM230Modbus Smart Meter Modbus Protocol Implementation.
+      device:
+        manufacturer: Eastron
+        model: SDM230-Modbus
+        classes: [energy_meter]
+        transports: [{type: rtu}]
+      defaults: {table: input_register, access: r, wordOrder: big, byteOrder: big}
+  eastron-sdm630-modbus:
+    publisher: Eastron
+    title: SDM630Modbus Smart Meter Modbus Protocol Implementation
+    revision: '1.8'
+    landing_url: https://www.eastroneurope.com/images/uploads/products/protocol/SDM630_MODBUS_Protocol.pdf
+    download_urls:
+    - https://www.eastroneurope.com/images/uploads/products/protocol/SDM630_MODBUS_Protocol.pdf
+    format: pdf
+    extractor: eastron_sdm230_sdm630
+    contracts:
+    - path: devices/eastron/sdm630-modbus/telemetry.omb.yaml
+      selector: sdm630
+      info:
+        id: eastron/sdm630-modbus/telemetry
+        title: Eastron SDM630-Modbus telemetry
+        version: 0.1.0
+        description: >
+          Subset of the Modbus RTU input registers for the SDM630-Modbus. Read each selected value as a complete
+          two-register float. Floats are most significant register first by default; the meter's Register Order
+          setting can reverse that order, which this contract does not model. Which phase values are meaningful
+          depends on the configured wiring system; each point notes it.
+        attribution: Derived from Eastron's SDM630Modbus Smart Meter Modbus Protocol Implementation.
+      device:
+        manufacturer: Eastron
+        model: SDM630-Modbus
+        classes: [energy_meter]
+        transports: [{type: rtu}]
+      defaults: {table: input_register, access: r, wordOrder: big, byteOrder: big}
+  abb-m4m-modbus-map:
+    publisher: ABB
+    title: Modbus protocol map for M4M network analyzers
+    revision: 9AKK107492A7627 rev. F, map v1.3O
+    landing_url: https://www.abb.com/global/en/products/2csg239115r4051
+    documentation_url: https://search.abb.com/library/Download.aspx?DocumentID=9AKK107492A7627&LanguageCode=en&DocumentPartId=&Action=Launch
+    download_urls:
+    - https://library.e.abb.com/public/6a5dc1ea3fe5416da79f7532a578dd0f/9AKK107492A7627_en_F_M4M%20Modbus%20map.xlsx
+    - https://search.abb.com/library/Download.aspx?DocumentID=9AKK107492A7627&LanguageCode=en&DocumentPartId=&Action=Launch
+    format: xlsx
+    extractor: abb_m4m_modbus_map
+    evidence:
+    - id: abb-m4m-modbus-manual
+      publisher: ABB
+      title: Modbus manual, M4M network analyzers
+      revision: 2CSG445050D0201 v1.05
+      documentation_url: https://search.abb.com/library/Download.aspx?DocumentID=2CSG445050D0201&LanguageCode=en&DocumentPartId=&Action=Launch
+      download_urls:
+      - https://library.e.abb.com/public/ca20a071b8514cc484e55c46ac191436/Modbus%20manual%20v.%201.05.pdf
+      format: pdf
+      claims: >-
+        FC 3 reads the measurement values (section 2, p.8); FC 3 request example reads phase voltage L1 at start
+        address 0x5B02 (p.9); readable range, most significant byte in the high byte of the first register, invalid
+        values of unused registers (p.12); "Start Reg (Hex)" is the address exactly as sent on the bus (section
+        4, p.13).
+    contracts:
+    - path: devices/abb/m4m-20-modbus/telemetry.omb.yaml
+      selector: M4M 20 Modbus
+      info:
+        id: abb/m4m-20-modbus/telemetry
+        title: ABB M4M 20 Modbus telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the M4M Modbus map for product type 1 (M4M 20 Modbus). Read with FC 3; 32- and 64-bit
+          values put the most significant word first; unavailable quantities read all ones (unsigned) or the largest
+          positive value (signed). These conventions are stated in ABB's Modbus manual for M4M network analyzers,
+          2CSG445050D0201 v1.05, which defines the map's columns. The selected rows apply to all firmware versions.
+        attribution: Derived from ABB's Modbus protocol map for M4M network analyzers.
+      device:
+        manufacturer: ABB
+        family: M4M
+        model: M4M 20 Modbus
+        classes: [power_meter]
+        transports: [{type: rtu}]
+      defaults: {table: holding_register, access: r, wordOrder: big, byteOrder: big}
+    - path: devices/abb/m4m-30-modbus/telemetry.omb.yaml
+      selector: M4M 30 Modbus
+      info:
+        id: abb/m4m-30-modbus/telemetry
+        title: ABB M4M 30 Modbus telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the M4M Modbus map for product type 7 (M4M 30 Modbus). Read with FC 3; 32- and 64-bit
+          values put the most significant word first; unavailable quantities read all ones (unsigned) or the largest
+          positive value (signed). These conventions are stated in ABB's Modbus manual for M4M network analyzers,
+          2CSG445050D0201 v1.05, which defines the map's columns. The selected rows apply to all firmware versions.
+        attribution: Derived from ABB's Modbus protocol map for M4M network analyzers.
+      device:
+        manufacturer: ABB
+        family: M4M
+        model: M4M 30 Modbus
+        classes: [power_meter]
+        transports: [{type: rtu}]
+      defaults: {table: holding_register, access: r, wordOrder: big, byteOrder: big}
+    - path: devices/abb/m4m-2x-modbus/telemetry.omb.yaml
+      selector: M4M 2X RTU
+      info:
+        id: abb/m4m-2x-modbus/telemetry
+        title: ABB M4M 2X Modbus telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the M4M Modbus map for product type 15, which the map's Details sheet names "M4M 2X
+          RTU". Read with FC 3; 32- and 64-bit values put the most significant word first; unavailable quantities
+          read all ones (unsigned) or the largest positive value (signed). These conventions are stated in ABB's
+          Modbus manual for M4M network analyzers, 2CSG445050D0201 v1.05, which defines the map's columns. The PQ,
+          RTS and Rogowski variants of the M4M 2X have their own product type IDs and are not covered.
+        attribution: Derived from ABB's Modbus protocol map for M4M network analyzers.
+      device:
+        manufacturer: ABB
+        family: M4M
+        model: M4M 2X Modbus
+        classes: [power_meter]
+        transports: [{type: rtu}]
+      defaults: {table: holding_register, access: r, wordOrder: big, byteOrder: big}
+  janitza-umg96rm-modbus-de:
+    publisher: Janitza electronics GmbH
+    title: UMG 96RM Modbus-Adressenliste und Formelsammlung (ab Firmware Rel. 1.14)
+    revision: Dok. Nr. 1.040.033.u, 11/2023
+    landing_url: https://assets.janitza.com/ce18jq9ih0x6/84e474c2bb03ea1ac23190/049ae8165fa5627ffd074d79780a5514/janitza-mal-umg96rm-cbm-p-pn-de.pdf
+    download_urls:
+    - https://assets.janitza.com/ce18jq9ih0x6/84e474c2bb03ea1ac23190/049ae8165fa5627ffd074d79780a5514/janitza-mal-umg96rm-cbm-p-pn-de.pdf
+    format: pdf
+    extractor: janitza_umg96rm_modbus
+    contracts:
+    - path: devices/janitza/umg-96rm/telemetry.omb.yaml
+      selector: umg96rm
+      info:
+        id: janitza/umg-96rm/telemetry
+        title: Janitza UMG 96RM telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the UMG 96RM base-device address list, firmware 1.14 or later. Floats return big-endian
+          data at the listed addresses (the list mirrors them in little-endian at address + 32768). Float values
+          include the transformer ratios; the 16-bit short value does not. The document states neither the address
+          base nor the register table; the list is read as zero-based because it starts at address 0 and as holding
+          registers because read-only and writable (FC 06/16) rows share it.
+        attribution: Derived from Janitza's UMG 96RM Modbus-Adressenliste und Formelsammlung.
+      device:
+        manufacturer: Janitza electronics
+        family: UMG 96RM
+        model: UMG 96RM
+        classes: [power_meter]
+        transports: [{type: rtu, notes: RS-485.}]
+      defaults: {table: holding_register, access: r, wordOrder: big, byteOrder: big}
+    - path: devices/janitza/umg-96rm-pn/telemetry.omb.yaml
+      selector: umg96rm-pn
+      info:
+        id: janitza/umg-96rm-pn/telemetry
+        title: Janitza UMG 96RM-PN telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the UMG 96RM base-device address list, which the document applies to the UMG 96RM-PN
+          extension, firmware 1.14 or later, read over RS-485. Floats return big-endian data at the listed addresses
+          and include the transformer ratios; the 16-bit short value does not. The document notes that short-format
+          values cannot be read through the PROFINET module of the UMG 96RM-PN but can be read over RS-485. The
+          document states neither the address base nor the register table; the list is read as zero-based because
+          it starts at address 0 and as holding registers because read-only and writable (FC 06/16) rows share it.
+        attribution: Derived from Janitza's UMG 96RM Modbus-Adressenliste und Formelsammlung.
+      device:
+        manufacturer: Janitza electronics
+        family: UMG 96RM
+        model: UMG 96RM-PN
+        classes: [power_meter]
+        transports: [{type: rtu, notes: RS-485.}]
+      defaults: {table: holding_register, access: r, wordOrder: big, byteOrder: big}
+  janitza-umg96rm-e-modbus:
+    publisher: Janitza electronics GmbH
+    title: UMG 96RM-E Modbus-address list and Formulary
+    revision: Dok. Nr. 1.040.085.8.o, 07/2025
+    landing_url: https://assets.janitza.com/ce18jq9ih0x6/b80ca06dda38d37f864115/703a1d1d3014935a5c3327ed6b978d37/janitza-mal-umg96rme-en.pdf
+    download_urls:
+    - https://assets.janitza.com/ce18jq9ih0x6/b80ca06dda38d37f864115/703a1d1d3014935a5c3327ed6b978d37/janitza-mal-umg96rme-en.pdf
+    format: pdf
+    extractor: janitza_umg96rm_modbus
+    contracts:
+    - path: devices/janitza/umg-96rm-e/telemetry.omb.yaml
+      selector: umg96rm-e
+      info:
+        id: janitza/umg-96rm-e/telemetry
+        title: Janitza UMG 96RM-E telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the UMG 96RM-E address list, firmware 3.01 / hardware release 104 or later. Floats
+          return big-endian data at the listed addresses (the list mirrors them in little-endian at address + 32768).
+          Float values include the transformer ratios; the 16-bit short value does not. The document states neither
+          the address base nor the register table; the list is read as zero-based because it starts at address 0
+          and as holding registers because read-only and writable (FC 06/16) rows share it.
+        attribution: Derived from Janitza's UMG 96RM-E Modbus-address list and Formulary.
+      device:
+        manufacturer: Janitza electronics
+        family: UMG 96RM
+        model: UMG 96RM-E
+        classes: [power_meter]
+        transports: [{type: rtu, notes: RS-485.}]
+      defaults: {table: holding_register, access: r, wordOrder: big, byteOrder: big}
+  fronius-primo-sunspec-maps:
+    publisher: Fronius International
+    title: Modbus SunSpec Maps, State Codes and Events
+    revision: 1.1.7-0
+    landing_url: https://manuals.fronius.com/html/4204102049/en-US.html
+    download_urls:
+    - https://www.fronius.com/en/~/downloads/Solar%20Energy/Operating%20Instructions/SE_EI_Modbus_Sunspec_Maps_State_Codes_Events_EN.zip
+    - https://www.fronius.com/QR-link/0006
+    format: zip
+    extractor: fronius_primo_sunspec_intsf
+    evidence:
+    - id: fronius-datamanager-modbus-manual
+      publisher: Fronius International
+      title: Fronius Datamanager - Modbus TCP and RTU, Operating instructions
+      revision: 033-24022026
+      download_urls:
+      - https://manuals.fronius.com/html/4204102049/en-US.html
+      format: html
+      claims: >-
+        Register addresses: registers begin at 1, register 40001 is read at address 40000; Unavailable data records:
+        not-supported value per SunSpec type; Scale Factors: sunssf is a signed 16-bit integer; Changing the Data
+        Type: F_ModelType 1 = float (standard, models 111-113), 2 = int+SF (101-103); SunSpec and Fronius Operating
+        Codes tables.
+    contracts:
+    - path: devices/fronius/primo-3-0-1/sunspec-int-sf.omb.yaml
+      info:
+        id: fronius/primo-3-0-1/sunspec-int-sf
+        title: Fronius Primo 3.0-1 SunSpec inverter model (int+SF)
+        version: 0.1.0
+        description: >-
+          Read-only subset of the SunSpec Common block and integer inverter model (101, single phase) that the Fronius
+          Datamanager 2.0 serves for a Fronius Primo 3.0-1 inverter. Valid only while the Datamanager's SunSpec
+          model type is int+SF (sunspec_model_type = 2); with the default float setting the inverter model is 111
+          with a different layout. The vendor map numbers registers from 1; the Fronius Datamanager Modbus TCP &
+          RTU operating instructions (section Register addresses) state that register 40001 is read at address 40000,
+          and section Unavailable data records gives the not-available values used in invalid. The vendor recommends
+          locating SunSpec models by scanning; these addresses are the vendor's Complete Map for the first two blocks.
+          Scale factors are read from their registers and may change with firmware. AC lifetime energy and event
+          flags are 32-bit values and are left out because the documents do not state their word order. DC current
+          and voltage of the inverter model are not supported on inverters with several DC inputs and then read
+          as not available.
+        attribution: Derived from Fronius's Modbus SunSpec Maps, State Codes and Events.
+      device:
+        manufacturer: Fronius
+        family: Primo
+        model: Primo 3.0-1
+        classes: [pv_inverter]
+        transports:
+        - {type: tcp, notes: Served by the Fronius Datamanager 2.0.}
+        - type: rtu
+          notes: Served by the Fronius Datamanager 2.0 over RS-485.
+        unitId:
+          mode: configurable
+          notes: >-
+            The device ID equals the inverter number set on the inverter; inverter number 00 maps to device ID 100.
+      defaults: {table: holding_register, access: r}
+    - path: devices/fronius/primo-4-0-1/sunspec-int-sf.omb.yaml
+      info:
+        id: fronius/primo-4-0-1/sunspec-int-sf
+        title: Fronius Primo 4.0-1 SunSpec inverter model (int+SF)
+        version: 0.1.0
+        description: >-
+          Read-only subset of the SunSpec Common block and integer inverter model (101, single phase) that the Fronius
+          Datamanager 2.0 serves for a Fronius Primo 4.0-1 inverter. Valid only while the Datamanager's SunSpec
+          model type is int+SF (sunspec_model_type = 2); with the default float setting the inverter model is 111
+          with a different layout. The vendor map numbers registers from 1; the Fronius Datamanager Modbus TCP &
+          RTU operating instructions (section Register addresses) state that register 40001 is read at address 40000,
+          and section Unavailable data records gives the not-available values used in invalid. The vendor recommends
+          locating SunSpec models by scanning; these addresses are the vendor's Complete Map for the first two blocks.
+          Scale factors are read from their registers and may change with firmware. AC lifetime energy and event
+          flags are 32-bit values and are left out because the documents do not state their word order. DC current
+          and voltage of the inverter model are not supported on inverters with several DC inputs and then read
+          as not available.
+        attribution: Derived from Fronius's Modbus SunSpec Maps, State Codes and Events.
+      device:
+        manufacturer: Fronius
+        family: Primo
+        model: Primo 4.0-1
+        classes: [pv_inverter]
+        transports:
+        - {type: tcp, notes: Served by the Fronius Datamanager 2.0.}
+        - type: rtu
+          notes: Served by the Fronius Datamanager 2.0 over RS-485.
+        unitId:
+          mode: configurable
+          notes: >-
+            The device ID equals the inverter number set on the inverter; inverter number 00 maps to device ID 100.
+      defaults: {table: holding_register, access: r}
+    - path: devices/fronius/primo-5-0-1/sunspec-int-sf.omb.yaml
+      info:
+        id: fronius/primo-5-0-1/sunspec-int-sf
+        title: Fronius Primo 5.0-1 SunSpec inverter model (int+SF)
+        version: 0.1.0
+        description: >-
+          Read-only subset of the SunSpec Common block and integer inverter model (101, single phase) that the Fronius
+          Datamanager 2.0 serves for a Fronius Primo 5.0-1 inverter. Valid only while the Datamanager's SunSpec
+          model type is int+SF (sunspec_model_type = 2); with the default float setting the inverter model is 111
+          with a different layout. The vendor map numbers registers from 1; the Fronius Datamanager Modbus TCP &
+          RTU operating instructions (section Register addresses) state that register 40001 is read at address 40000,
+          and section Unavailable data records gives the not-available values used in invalid. The vendor recommends
+          locating SunSpec models by scanning; these addresses are the vendor's Complete Map for the first two blocks.
+          Scale factors are read from their registers and may change with firmware. AC lifetime energy and event
+          flags are 32-bit values and are left out because the documents do not state their word order. DC current
+          and voltage of the inverter model are not supported on inverters with several DC inputs and then read
+          as not available.
+        attribution: Derived from Fronius's Modbus SunSpec Maps, State Codes and Events.
+      device:
+        manufacturer: Fronius
+        family: Primo
+        model: Primo 5.0-1
+        classes: [pv_inverter]
+        transports:
+        - {type: tcp, notes: Served by the Fronius Datamanager 2.0.}
+        - type: rtu
+          notes: Served by the Fronius Datamanager 2.0 over RS-485.
+        unitId:
+          mode: configurable
+          notes: >-
+            The device ID equals the inverter number set on the inverter; inverter number 00 maps to device ID 100.
+      defaults: {table: holding_register, access: r}
+  solis-grid-rs485-modbus:
+    publisher: Solis
+    title: 'RS485_MODBUS Communication: Solis PV Grid-Connected Inverter'
+    revision: '3.7'
+    landing_url: https://solis-service.solisinverters.com/en/support/solutions/articles/44002663852-modus-table-for-grid-and-hybrid-inverters
+    download_urls:
+    - https://oss.soliscloud.com/templet/RS485_MODBUS%C2%A0Solis%20PV%C2%A0Grid-Connected%C2%A0Inverter.pdf
+    format: pdf
+    extractor: solis_grid_rs485_modbus
+    contracts:
+    - path: devices/solis/s6-gr1p4k/telemetry.omb.yaml
+      info:
+        id: solis/s6-gr1p4k/telemetry
+        title: Solis S6-GR1P4K telemetry
+        version: 0.1.0
+        description: >-
+          Read-only subset of the input registers (function code 04) of the Solis RS485 Modbus protocol for grid-connected
+          PV inverters. The vendor states that the protocol applies to Solis grid-connected inverters of all power
+          ranges manufactured after mid-2023; it does not name the S6-GR1P4K. Register numbers in the vendor table
+          are the PDU addresses, as the worked examples in section 6 show. Unimplemented registers read as 0 without
+          an exception. The vendor recommends at most 50 registers per frame. Inverter status (3043) is left out
+          because register 3029 subdivides its meaning.
+        attribution: >-
+          Derived from Solis's RS485_MODBUS Communication protocol for grid-connected inverters.
+      device:
+        manufacturer: Solis
+        model: S6-GR1P4K
+        classes: [pv_inverter]
+        transports: [{type: rtu}]
+        unitId: {mode: configurable, notes: Slave address 1-99.}
+      defaults: {table: input_register, access: r, wordOrder: big, byteOrder: big}
+    - path: devices/solis/s6-gr1p5k/telemetry.omb.yaml
+      info:
+        id: solis/s6-gr1p5k/telemetry
+        title: Solis S6-GR1P5K telemetry
+        version: 0.1.0
+        description: >-
+          Read-only subset of the input registers (function code 04) of the Solis RS485 Modbus protocol for grid-connected
+          PV inverters. The vendor states that the protocol applies to Solis grid-connected inverters of all power
+          ranges manufactured after mid-2023; it does not name the S6-GR1P5K. Register numbers in the vendor table
+          are the PDU addresses, as the worked examples in section 6 show. Unimplemented registers read as 0 without
+          an exception. The vendor recommends at most 50 registers per frame. Inverter status (3043) is left out
+          because register 3029 subdivides its meaning.
+        attribution: >-
+          Derived from Solis's RS485_MODBUS Communication protocol for grid-connected inverters.
+      device:
+        manufacturer: Solis
+        model: S6-GR1P5K
+        classes: [pv_inverter]
+        transports: [{type: rtu}]
+        unitId: {mode: configurable, notes: Slave address 1-99.}
+      defaults: {table: input_register, access: r, wordOrder: big, byteOrder: big}
+    - path: devices/solis/s6-gr1p6k/telemetry.omb.yaml
+      info:
+        id: solis/s6-gr1p6k/telemetry
+        title: Solis S6-GR1P6K telemetry
+        version: 0.1.0
+        description: >-
+          Read-only subset of the input registers (function code 04) of the Solis RS485 Modbus protocol for grid-connected
+          PV inverters. The vendor states that the protocol applies to Solis grid-connected inverters of all power
+          ranges manufactured after mid-2023; it does not name the S6-GR1P6K. Register numbers in the vendor table
+          are the PDU addresses, as the worked examples in section 6 show. Unimplemented registers read as 0 without
+          an exception. The vendor recommends at most 50 registers per frame. Inverter status (3043) is left out
+          because register 3029 subdivides its meaning.
+        attribution: >-
+          Derived from Solis's RS485_MODBUS Communication protocol for grid-connected inverters.
+      device:
+        manufacturer: Solis
+        model: S6-GR1P6K
+        classes: [pv_inverter]
+        transports: [{type: rtu}]
+        unitId: {mode: configurable, notes: Slave address 1-99.}
+      defaults: {table: input_register, access: r, wordOrder: big, byteOrder: big}
+  fronius-gen24-modbus:
+    publisher: Fronius International
+    title: GEN24 Plus Modbus SunSpec Maps
+    revision: 1.2.7-2
+    landing_url: https://manuals.fronius.com/html/4204102649/en-US.html
+    download_urls:
+    - https://www.fronius.com/de/~/downloads/Solar%20Energy/Operating%20Instructions/gen24-modbus-api-external-docs.zip
+    format: zip
+    extractor: fronius_gen24_storage_map
+    evidence:
+    - id: fronius-gen24-modbus-manual
+      publisher: Fronius International
+      title: Fronius GEN24 - Modbus TCP and RTU Operating instructions
+      revision: 034-28092026
+      download_urls:
+      - https://manuals.fronius.com/html/4204102649/en-US.html
+      format: html
+      claims: >-
+        Address = register number - 1 (General, Register addresses); values returned for unavailable data per type
+        (General, Unavailable data records); sunssf is a signed 16-bit integer; TCP unit ID always 1 and RTU slave
+        ID set in the web interface; int+SF start addresses of models 160 and 124; links this ZIP as the GEN24 Plus
+        register maps.
+    contracts:
+    - path: devices/fronius/symo-gen24-6-0-plus/storage.omb.yaml
+      selector: Symo GEN24 6.0
+      info:
+        id: fronius/symo-gen24-6-0-plus/storage
+        title: >-
+          Fronius Symo GEN24 6.0 Plus battery and AC telemetry (int+SF, battery configured)
+        version: 0.1.0
+        description: >
+          Read-only subset of the SunSpec map that the inverter serves when the Modbus setting "SunSpec Model Type"
+          is int+SF and a battery is configured (ROW map from the bundle 1.2.7-2 for GEN24 software 1.36.x). The
+          operating instructions state that register addresses depend on the composition of the SunSpec model chain:
+          check the model ID registers (register numbers 40003, 40070, 40254 and 40344 hold 1, the inverter model
+          ID 101 or 103, 160 and 124) before relying on these addresses. The map lists 1-based register numbers;
+          the operating instructions state that the address is the register number minus 1 and list the values returned
+          for unavailable data. MPPT modules 3 and 4 are the battery charge and discharge ports; from inverter software
+          1.31 module 3 reports the battery port voltage continuously. Scale factors can change at runtime. 32-bit
+          values are left out because the documents do not state their register order.
+        attribution: Derived from Fronius's GEN24 Plus Modbus SunSpec Maps.
+      device:
+        manufacturer: Fronius
+        family: GEN24 Plus
+        model: Symo GEN24 6.0 Plus
+        classes: [energy_storage, battery_inverter]
+        transports: [{type: tcp}, {type: rtu}]
+        unitId:
+          mode: configurable
+          notes: >-
+            Over Modbus TCP the inverter unit ID is always 1. Over Modbus RTU the slave ID is set in the inverter
+            web interface.
+      defaults: {table: holding_register, access: r}
+    - path: devices/fronius/symo-gen24-8-0-plus/storage.omb.yaml
+      selector: Symo GEN24 8.0
+      info:
+        id: fronius/symo-gen24-8-0-plus/storage
+        title: >-
+          Fronius Symo GEN24 8.0 Plus battery and AC telemetry (int+SF, battery configured)
+        version: 0.1.0
+        description: >
+          Read-only subset of the SunSpec map that the inverter serves when the Modbus setting "SunSpec Model Type"
+          is int+SF and a battery is configured (ROW map from the bundle 1.2.7-2 for GEN24 software 1.36.x). The
+          operating instructions state that register addresses depend on the composition of the SunSpec model chain:
+          check the model ID registers (register numbers 40003, 40070, 40254 and 40344 hold 1, the inverter model
+          ID 101 or 103, 160 and 124) before relying on these addresses. The map lists 1-based register numbers;
+          the operating instructions state that the address is the register number minus 1 and list the values returned
+          for unavailable data. MPPT modules 3 and 4 are the battery charge and discharge ports; from inverter software
+          1.31 module 3 reports the battery port voltage continuously. Scale factors can change at runtime. 32-bit
+          values are left out because the documents do not state their register order.
+        attribution: Derived from Fronius's GEN24 Plus Modbus SunSpec Maps.
+      device:
+        manufacturer: Fronius
+        family: GEN24 Plus
+        model: Symo GEN24 8.0 Plus
+        classes: [energy_storage, battery_inverter]
+        transports: [{type: tcp}, {type: rtu}]
+        unitId:
+          mode: configurable
+          notes: >-
+            Over Modbus TCP the inverter unit ID is always 1. Over Modbus RTU the slave ID is set in the inverter
+            web interface.
+      defaults: {table: holding_register, access: r}
+    - path: devices/fronius/symo-gen24-10-0-plus/storage.omb.yaml
+      selector: Symo GEN24 10.0
+      info:
+        id: fronius/symo-gen24-10-0-plus/storage
+        title: >-
+          Fronius Symo GEN24 10.0 Plus battery and AC telemetry (int+SF, battery configured)
+        version: 0.1.0
+        description: >
+          Read-only subset of the SunSpec map that the inverter serves when the Modbus setting "SunSpec Model Type"
+          is int+SF and a battery is configured (ROW map from the bundle 1.2.7-2 for GEN24 software 1.36.x). The
+          operating instructions state that register addresses depend on the composition of the SunSpec model chain:
+          check the model ID registers (register numbers 40003, 40070, 40254 and 40344 hold 1, the inverter model
+          ID 101 or 103, 160 and 124) before relying on these addresses. The map lists 1-based register numbers;
+          the operating instructions state that the address is the register number minus 1 and list the values returned
+          for unavailable data. MPPT modules 3 and 4 are the battery charge and discharge ports; from inverter software
+          1.31 module 3 reports the battery port voltage continuously. Scale factors can change at runtime. 32-bit
+          values are left out because the documents do not state their register order.
+        attribution: Derived from Fronius's GEN24 Plus Modbus SunSpec Maps.
+      device:
+        manufacturer: Fronius
+        family: GEN24 Plus
+        model: Symo GEN24 10.0 Plus
+        classes: [energy_storage, battery_inverter]
+        transports: [{type: tcp}, {type: rtu}]
+        unitId:
+          mode: configurable
+          notes: >-
+            Over Modbus TCP the inverter unit ID is always 1. Over Modbus RTU the slave ID is set in the inverter
+            web interface.
+      defaults: {table: holding_register, access: r}
+  schneider-electric-conext-modbus-maps-v4:
+    publisher: Schneider Electric
+    title: Conext Modbus Maps V4
+    revision: Modbus Map Conext SW Device 503-0244-01-01 Revision A.4
+    landing_url: https://www.se.com/us/en/download/document/Conext-Modbus-Maps-V4/
+    download_urls:
+    - https://download.se.com/files?p_Doc_Ref=Conext-Modbus-Maps-V4&p_enDocType=Application+Notes&p_File_Name=Conext-Modbus-Maps-V4.zip
+    format: zip
+    extractor: schneider_electric_conext_sw
+    evidence:
+    - id: schneider-electric-conext-combox-datasheet
+      publisher: Schneider Electric
+      title: Conext ComBox communication device datasheet
+      revision: DS20130702_ConextComBox
+      download_urls:
+      - https://download.se.com/files?p_Doc_Ref=DS20130702_ConextComBox
+      format: pdf
+      claims: >-
+        Page 2, Communication interfaces: the ComBox Ethernet port is a Modbus TCP/IP server and its Xanbus port
+        supports the Conext SW; page 2 lists SW 2524 230 (865-2524-61) and SW 4024 230 (865-4024-61) as compatible
+        products.
+    contracts:
+    - path: devices/schneider-electric/conext-sw-2524-230/status.omb.yaml
+      selector: Conext SW 2524-230
+      info:
+        id: schneider-electric/conext-sw-2524-230/status
+        title: Schneider Electric Conext SW 2524-230 status and battery temperature
+        version: 0.1.0
+        description: >
+          Read-only subset of the Conext SW device Modbus map (503-0244-01-01 Revision A.4). The inverter/charger
+          is read through a Conext ComBox, whose datasheet (DS20130702_ConextComBox) lists a Modbus TCP/IP server
+          on its Ethernet port and this model as a supported Xanbus device. The map names no function code, but
+          read-only and read/write rows share one register list and read/write rows can only be holding registers,
+          so the list is read as the holding-register table. Only single-register points are included: the map does
+          not state the register order of 32-bit values, so battery voltage, current and power are left out. Device
+          Present reports 0 when all data of the unit is invalid.
+        attribution: >-
+          Derived from Schneider Electric's Conext Modbus Maps V4 (Modbus Map Conext SW Device).
+      device:
+        manufacturer: Schneider Electric
+        family: Conext SW
+        model: Conext SW 2524-230
+        hardware: [865-2524-61]
+        classes: [energy_storage, battery_inverter]
+        transports:
+        - type: tcp
+          notes: >-
+            Through the Modbus TCP/IP server of a Conext ComBox; the inverter/charger connects to the ComBox over
+            Xanbus. The ComBox datasheet also lists an RS485 Modbus port (2-wire, 19200 bit/s) without naming its
+            framing, so no serial transport is listed.
+        unitId:
+          mode: configurable
+          notes: >-
+            Set in the read/write Modbus Address register (0x0028) of the device map, which warns not to assign
+            the same address to two Modbus devices.
+      defaults: {table: holding_register, access: r}
+    - path: devices/schneider-electric/conext-sw-4024-230/status.omb.yaml
+      selector: Conext SW 4024-230
+      info:
+        id: schneider-electric/conext-sw-4024-230/status
+        title: Schneider Electric Conext SW 4024-230 status and battery temperature
+        version: 0.1.0
+        description: >
+          Read-only subset of the Conext SW device Modbus map (503-0244-01-01 Revision A.4). The inverter/charger
+          is read through a Conext ComBox, whose datasheet (DS20130702_ConextComBox) lists a Modbus TCP/IP server
+          on its Ethernet port and this model as a supported Xanbus device. The map names no function code, but
+          read-only and read/write rows share one register list and read/write rows can only be holding registers,
+          so the list is read as the holding-register table. Only single-register points are included: the map does
+          not state the register order of 32-bit values, so battery voltage, current and power are left out. Device
+          Present reports 0 when all data of the unit is invalid.
+        attribution: >-
+          Derived from Schneider Electric's Conext Modbus Maps V4 (Modbus Map Conext SW Device).
+      device:
+        manufacturer: Schneider Electric
+        family: Conext SW
+        model: Conext SW 4024-230
+        hardware: [865-4024-61]
+        classes: [energy_storage, battery_inverter]
+        transports:
+        - type: tcp
+          notes: >-
+            Through the Modbus TCP/IP server of a Conext ComBox; the inverter/charger connects to the ComBox over
+            Xanbus. The ComBox datasheet also lists an RS485 Modbus port (2-wire, 19200 bit/s) without naming its
+            framing, so no serial transport is listed.
+        unitId:
+          mode: configurable
+          notes: >-
+            Set in the read/write Modbus Address register (0x0028) of the device map, which warns not to assign
+            the same address to two Modbus devices.
+      defaults: {table: holding_register, access: r}
+  victron-gx-vebus:
+    publisher: Victron Energy
+    title: GX Modbus-TCP register list
+    revision: 3.81 (document Rev 54)
+    landing_url: https://www.victronenergy.com/support-and-downloads/technical-information
+    download_urls:
+    - https://www.victronenergy.com/upload/documents/CCGX-Modbus-TCP-register-list-3.81.xlsx
+    format: xlsx
+    extractor: victron_gx_vebus
+    evidence:
+    - id: victron-gx-modbus-tcp-manual
+      publisher: Victron Energy
+      title: GX Modbus-TCP Manual
+      revision: wiki revision 1743181803 (2025-03-28 17:10 UTC)
+      documentation_url: https://www.victronenergy.com/live/ccgx:modbustcp_faq?rev=1743181803
+      download_urls:
+      - https://www.victronenergy.com/live/ccgx:modbustcp_faq?rev=1743181803&do=export_raw
+      format: txt
+      claims: >-
+        Section 5 mapping example: Address column = request data address, Scalefactor = divisor; section 3: function
+        codes 3 and 4 supported and equivalent; section 2: the GX device is a Modbus-TCP gateway selected by unit
+        ID, com.victronenergy.vebus covers Multis and Quattros.
+    contracts:
+    - path: devices/victron/multiplus-ii/vebus.omb.yaml
+      info:
+        id: victron/multiplus-ii/vebus
+        title: Victron MultiPlus-II VE.Bus telemetry through a GX device
+        version: 0.1.0
+        description: >
+          Read-only subset of the com.victronenergy.vebus service that a GX device serves for a VE.Bus inverter/charger
+          (GX Modbus-TCP register list 3.81, document Rev 54). The inverter/charger has no Modbus interface of its
+          own: the GX device is the Modbus TCP server and gateway, and the unit ID selects the VE.Bus system. Values
+          are those of the whole VE.Bus system; units in a parallel or three-phase system are not addressed one
+          by one. Addresses are request addresses and the Scalefactor column is a divisor, as the mapping example
+          of the GX Modbus-TCP Manual shows. Not every register is available on every product. VE.Bus state of charge
+          is writable on the GX; this contract only reads it. 32-bit registers are left out because the register
+          list does not state their word order.
+        attribution: Derived from Victron Energy's GX Modbus-TCP register list.
+      device:
+        manufacturer: Victron Energy
+        family: VE.Bus inverter/charger
+        model: MultiPlus-II
+        classes: [energy_storage, battery_inverter]
+        transports:
+        - type: tcp
+          notes: >-
+            Served by a GX device acting as Modbus TCP gateway; the inverter/charger connects to it over VE.Bus.
+        unitId:
+          notes: >-
+            Assigned by the GX device. Since Venus OS 2.60 unit IDs are dynamic and generally equal the VE.Bus device
+            instance; the GX lists them under Settings, Integrations, Modbus TCP server, Available services. Preferred
+            IDs for the VE.Bus port: 227 (Cerbo GX), 242 (Venus GX), 246 (CCGX).
+      defaults: {table: holding_register, access: r}
+    - path: devices/victron/quattro/vebus.omb.yaml
+      info:
+        id: victron/quattro/vebus
+        title: Victron Quattro VE.Bus telemetry through a GX device
+        version: 0.1.0
+        description: >
+          Read-only subset of the com.victronenergy.vebus service that a GX device serves for a VE.Bus inverter/charger
+          (GX Modbus-TCP register list 3.81, document Rev 54). The inverter/charger has no Modbus interface of its
+          own: the GX device is the Modbus TCP server and gateway, and the unit ID selects the VE.Bus system. Values
+          are those of the whole VE.Bus system; units in a parallel or three-phase system are not addressed one
+          by one. Addresses are request addresses and the Scalefactor column is a divisor, as the mapping example
+          of the GX Modbus-TCP Manual shows. Not every register is available on every product. VE.Bus state of charge
+          is writable on the GX; this contract only reads it. 32-bit registers are left out because the register
+          list does not state their word order.
+        attribution: Derived from Victron Energy's GX Modbus-TCP register list.
+      device:
+        manufacturer: Victron Energy
+        family: VE.Bus inverter/charger
+        model: Quattro
+        classes: [energy_storage, battery_inverter]
+        transports:
+        - type: tcp
+          notes: >-
+            Served by a GX device acting as Modbus TCP gateway; the inverter/charger connects to it over VE.Bus.
+        unitId:
+          notes: >-
+            Assigned by the GX device. Since Venus OS 2.60 unit IDs are dynamic and generally equal the VE.Bus device
+            instance; the GX lists them under Settings, Integrations, Modbus TCP server, Available services. Preferred
+            IDs for the VE.Bus port: 227 (Cerbo GX), 242 (Venus GX), 246 (CCGX).
+      defaults: {table: holding_register, access: r}
+    - path: devices/victron/easysolar-ii-gx/vebus.omb.yaml
+      info:
+        id: victron/easysolar-ii-gx/vebus
+        title: Victron EasySolar-II GX VE.Bus telemetry through its built-in GX device
+        version: 0.1.0
+        description: >
+          Read-only subset of the com.victronenergy.vebus service that a GX device serves for a VE.Bus inverter/charger
+          (GX Modbus-TCP register list 3.81, document Rev 54). The inverter/charger has no Modbus interface of its
+          own: the GX device is the Modbus TCP server and gateway, and the unit ID selects the VE.Bus system. Values
+          are those of the whole VE.Bus system; units in a parallel or three-phase system are not addressed one
+          by one. Addresses are request addresses and the Scalefactor column is a divisor, as the mapping example
+          of the GX Modbus-TCP Manual shows. Not every register is available on every product. VE.Bus state of charge
+          is writable on the GX; this contract only reads it. 32-bit registers are left out because the register
+          list does not state their word order.
+        attribution: Derived from Victron Energy's GX Modbus-TCP register list.
+      device:
+        manufacturer: Victron Energy
+        family: VE.Bus inverter/charger
+        model: EasySolar-II GX
+        classes: [energy_storage, battery_inverter]
+        transports:
+        - type: tcp
+          notes: >-
+            Served by the built-in GX device acting as Modbus TCP gateway for the internal VE.Bus inverter/charger.
+        unitId:
+          notes: >-
+            Assigned by the GX device. Since Venus OS 2.60 unit IDs are dynamic and generally equal the VE.Bus device
+            instance; the GX lists them under Settings, Integrations, Modbus TCP server, Available services. Preferred
+            ID for the built-in VE.Bus port: 228.
+      defaults: {table: holding_register, access: r}
+  vaisala-opt100:
+    publisher: Vaisala
+    title: Optimus DGA Monitor for power transformers OPT100 User Guide
+    revision: M211858EN-AC
+    landing_url: https://docs.vaisala.com/r/M211858EN-AC/en-US/GUID-E824E3DB-16EE-4BB4-80A0-57E39B595A65
+    documentation_url: https://docs.vaisala.com/r/M211858EN-AC/en-US/GUID-E824E3DB-16EE-4BB4-80A0-57E39B595A65
+    download_urls:
+    - https://docs.vaisala.com/api/khub/maps/A~oRHukQHEAwMUHPK6soGw/attachments/xYYefoRnGA~Pv18pS0hZ7Q-A~oRHukQHEAwMUHPK6soGw/content
+    format: pdf
+    extractor: vaisala_modbus_reference
+    contracts:
+    - path: devices/vaisala/opt100/telemetry.omb.yaml
+      selector: opt100
+      info:
+        id: vaisala/opt100/telemetry
+        title: Vaisala OPT100 DGA monitor telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the OPT100 Modbus registers (Appendix A): status bits, gas caution and alarm bit fields,
+          32-bit float gas, moisture, temperature and pressure values, and one 16-bit integer gas value. 32-bit
+          values are least significant word first; the user guide's own A.6 example contradicts that order, so read
+          test_value_u32 (expected 1234567890) to confirm the order on a real device. The 64-bit measurement timestamp
+          and the scaled 16-bit values are left out.
+        attribution: >-
+          Derived from Vaisala's Optimus DGA Monitor for power transformers OPT100 User Guide.
+      device:
+        manufacturer: Vaisala
+        family: Optimus DGA Monitor
+        model: OPT100
+        classes: [transformer_monitor]
+        transports:
+        - type: tcp
+          notes: Modbus TCP over the ETH0 interface, server port 502.
+        - type: rtu
+          notes: RS-485; default 19200 baud, 8 data bits, even parity, 1 stop bit.
+        unitId:
+          mode: configurable
+          default: 240
+          notes: Default Modbus RTU slave address 240 (Table 8).
+      defaults: {table: holding_register, access: r}
+  vaisala-mht410:
+    publisher: Vaisala
+    title: >-
+      Moisture, Hydrogen and Temperature Transmitter for Transformer Oil MHT410 User Guide
+    revision: M211737EN-J
+    landing_url: https://docs.vaisala.com/r/M211737EN-J/en-US/GUID-62C1849F-EF6E-4CF6-A5D2-C0D8706AF854
+    documentation_url: https://docs.vaisala.com/r/M211737EN-J/en-US/GUID-62C1849F-EF6E-4CF6-A5D2-C0D8706AF854
+    download_urls:
+    - https://docs.vaisala.com/api/khub/maps/370lotzzMiV6gnzk7~oa2Q/attachments/n~Tl1SAnEBsY8Ty3TWSwUw-370lotzzMiV6gnzk7~oa2Q/content
+    format: pdf
+    extractor: vaisala_modbus_reference
+    contracts:
+    - path: devices/vaisala/mht410/telemetry.omb.yaml
+      selector: mht410
+      info:
+        id: vaisala/mht410/telemetry
+        title: Vaisala MHT410 moisture, hydrogen and temperature telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the MHT410 Modbus registers (Appendix B): 32-bit float measurement registers (least
+          significant word first), the scaled 16-bit integer copies and the device status bits. The 16-bit integer
+          copies saturate at 7FFFhex and 8001hex when the value does not fit; that saturation is not expressed as
+          a quality state here.
+        attribution: >-
+          Derived from Vaisala's Moisture, Hydrogen and Temperature Transmitter for Transformer Oil MHT410 User
+          Guide.
+      device:
+        manufacturer: Vaisala
+        model: MHT410
+        classes: [transformer_monitor]
+        transports:
+        - type: rtu
+          notes: RS-485; default 19200 baud, 8 data bits, no parity, 1 stop bit.
+        unitId:
+          mode: configurable
+          default: 240
+          notes: Default Modbus device address 240 (Table 58).
+      defaults: {table: holding_register, access: r}
+  vaisala-mmt162:
+    publisher: Vaisala
+    title: HUMICAP Moisture and Temperature Transmitter for Oil MMT162 User's Guide
+    revision: M210934EN-G
+    landing_url: https://docs.vaisala.com/go/M210934EN-G/en-US
+    documentation_url: https://docs.vaisala.com/go/M210934EN-G/en-US
+    download_urls:
+    - https://docs.vaisala.com/api/khub/documents/2k2Z2TlyD14WDPkfxKF4cw/content
+    format: pdf
+    extractor: vaisala_modbus_reference
+    contracts:
+    - path: devices/vaisala/mmt162/telemetry.omb.yaml
+      selector: mmt162
+      info:
+        id: vaisala/mmt162/telemetry
+        title: Vaisala MMT162 moisture and temperature in oil telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the MMT162 Modbus registers (Appendix: Modbus reference): 32-bit float measurements
+          and oil coefficients (least significant word first), the fault status and the 32-bit error code. Moisture
+          in oil (ppm) is calculated from water activity and temperature with the oil coefficients A and B; the
+          default coefficients are for mineral transformer oil. The guide says to wait five seconds after power-up
+          before sending Modbus requests.
+        attribution: >-
+          Derived from Vaisala's HUMICAP Moisture and Temperature Transmitter for Oil MMT162 User's Guide.
+      device:
+        manufacturer: Vaisala
+        family: HUMICAP
+        model: MMT162
+        classes: [transformer_monitor]
+        transports:
+        - type: rtu
+          notes: >-
+            RS-485; factory Modbus default 19200 baud, 8 data bits, even parity, 1 stop bit (Table 17).
+        unitId:
+          mode: configurable
+          default: 240
+          notes: Default device address 240 (Table 17); also settable through register 1537.
+      defaults: {table: holding_register, access: r}
+  reinhausen-tapcon-230-avt:
+    publisher: Maschinenfabrik Reinhausen
+    title: TAPCON 230 AVT Supplement Device Profile Document MODBUS
+    revision: 2224208/00 EN
+    landing_url: https://www.reinhausen.com/downloadcenter
+    download_urls:
+    - https://www.reinhausen.com/fileadmin/downloadcenter/spannungsregler/tapcon230_previous_generation/2224208_00_en_tapcon230-avt_supplement-modbus_f0223000.pdf
+    format: pdf
+    extractor: reinhausen_tapcon_modbus
+    contracts:
+    - path: devices/reinhausen/tapcon-230-avt/status.omb.yaml
+      selector: tapcon-230-avt
+      info:
+        id: reinhausen/tapcon-230-avt/status
+        title: Reinhausen TAPCON 230 AVT voltage regulator status
+        version: 0.1.0
+        description: >
+          Read-only subset of the TAPCON 230 AVT MODBUS profile: discrete inputs for tap-change outputs, operating
+          mode and limit messages, the tap position and the 32-bit operation counter. Values the supplement scales
+          with a Multiplier column (voltages, currents, frequency) are left out because the document does not say
+          whether the factor multiplies or divides the raw value.
+        attribution: >-
+          Derived from Maschinenfabrik Reinhausen's TAPCON 230 AVT Supplement Device Profile Document MODBUS.
+      device:
+        manufacturer: Maschinenfabrik Reinhausen
+        family: TAPCON
+        model: TAPCON 230 AVT
+        classes: [tap_changer_controller]
+        transports:
+        - type: rtu
+          notes: RS-232, RS-485 or optical fibre; 9600 to 57600 baud.
+        - {type: ascii, notes: 'RS-232, RS-485 or optical fibre.'}
+        - type: rtu_over_tcp
+          notes: RJ45, TCP port 1234; the supplement states this is not Modbus TCP.
+        unitId:
+          mode: configurable
+          notes: Local SCADA address 1 to 255; 0 is broadcast.
+      defaults: {access: r}
+  reinhausen-tapcon-250:
+    publisher: Maschinenfabrik Reinhausen
+    title: >-
+      Digital OLTC Voltage Controller TAPCON 250 Implementation of MODBUS (ASCII/RTU) Protocol
+    revision: Supplement BB 2072201/02
+    landing_url: https://www.reinhausen.com/downloadcenter
+    download_urls:
+    - https://www.reinhausen.com/fileadmin/downloadcenter/spannungsregler/tapcon_250_previous_generation/bb2072201_en_tc250_modbus.pdf
+    format: pdf
+    extractor: reinhausen_tapcon_modbus
+    contracts:
+    - path: devices/reinhausen/tapcon-250/status.omb.yaml
+      selector: tapcon-250
+      info:
+        id: reinhausen/tapcon-250/status
+        title: Reinhausen TAPCON 250 voltage controller status
+        version: 0.1.0
+        description: >
+          Read-only subset of the TAPCON 250 MODBUS data points: input status bits for operating mode, limit and
+          parallel-control messages, the tap position and two documented parallel-control parameters. Values with
+          a Scale column other than 1 (voltages, currents, frequency) are left out because the document does not
+          say whether the factor multiplies or divides the raw value.
+        attribution: >-
+          Derived from Maschinenfabrik Reinhausen's Digital OLTC Voltage Controller TAPCON 250 Implementation of
+          MODBUS (ASCII/RTU) Protocol.
+      device:
+        manufacturer: Maschinenfabrik Reinhausen
+        family: TAPCON
+        model: TAPCON 250
+        classes: [tap_changer_controller]
+        transports:
+        - type: rtu
+          notes: >-
+            RS232 (default), RS485 or optional optical fibre; 9600 baud default, 8E1 default.
+        - type: ascii
+          notes: RS232 (default), RS485 or optional optical fibre.
+        unitId:
+          mode: configurable
+          default: 1
+          notes: Address 0 to 255, 1 is the default; address 0 is broadcast.
+      defaults: {access: r}
+  reinhausen-tapcon-260:
+    publisher: Maschinenfabrik Reinhausen
+    title: Voltage regulator TAPCON 260 Protocol description MODBUS
+    revision: Supplement 2531994/01 EN
+    landing_url: https://www.reinhausen.com/downloadcenter
+    download_urls:
+    - https://www.reinhausen.com/fileadmin/downloadcenter/products/voltage_regulators/discontinued_products/tapcon_260/protocol/modbus/2531994_01protokollbeschreibung_modbus_tc260_en.pdf
+    format: pdf
+    extractor: reinhausen_tapcon_modbus
+    contracts:
+    - path: devices/reinhausen/tapcon-260/status.omb.yaml
+      selector: tapcon-260
+      info:
+        id: reinhausen/tapcon-260/status
+        title: Reinhausen TAPCON 260 voltage regulator status
+        version: 0.1.0
+        description: >
+          Read-only subset of the TAPCON 260 MODBUS protocol description: discrete inputs for function monitoring,
+          limit, operating-mode and parallel-operation messages, and the tap position. Values with a Multiplier
+          column other than 1 (voltages, currents, frequency) are left out because the document does not say whether
+          the factor multiplies or divides the raw value.
+        attribution: >-
+          Derived from Maschinenfabrik Reinhausen's Voltage regulator TAPCON 260 Protocol description MODBUS.
+      device:
+        manufacturer: Maschinenfabrik Reinhausen
+        family: TAPCON
+        model: TAPCON 260
+        classes: [tap_changer_controller]
+        transports:
+        - {type: rtu, notes: 'RS-232, RS-485 or optical fibre; 8E1.'}
+        - {type: ascii, notes: 'RS-232, RS-485 or optical fibre.'}
+        - type: rtu_over_tcp
+          notes: >-
+            RJ45, TCP port 1234, fixed 19.2 kBaud; the supplement states this is not Modbus TCP.
+        unitId:
+          mode: configurable
+          notes: >-
+            Local SCADA address 1 to 255 (0 = broadcast) on RS232; the supplement gives 0 to 254 (255 = broadcast)
+            for RS485, FOC and RJ45.
+      defaults: {access: r}
+  tecsystem-nt935-ad:
+    publisher: TECSYSTEM
+    title: NT935 Instruction Manual
+    revision: 1MN0102 REV. 0, R. 2.2 21/05/26
+    landing_url: https://www.tecsystem.it/en/dry-type-transformer-temperature-control/nt935-ad.html
+    download_urls:
+    - https://www.tecsystem.it/docs/2026/img_a2c80980ca.pdf
+    format: pdf
+    extractor: tecsystem_mapping_table
+    contracts:
+    - path: devices/tecsystem/nt935-ad/telemetry.omb.yaml
+      selector: nt935-ad
+      info:
+        id: tecsystem/nt935-ad/telemetry
+        title: TECSYSTEM NT935 AD temperature monitor telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the NT935 AD Modbus mapping table: identification strings, CPU error and relay bits,
+          channel temperatures, the channel 1 maximum and set points, and the channel status and story bytes. The
+          manual also covers the NT935 BASIC, which has no Modbus output. The custom C03 version has different serial
+          defaults (address 13). Modbus is only answered in temperature control mode (Scan, Auto, Man and T.Max);
+          the manual recommends polling no faster than once a second.
+        attribution: Derived from TECSYSTEM's NT935 Instruction Manual.
+      device:
+        manufacturer: TECSYSTEM
+        family: NT935
+        model: NT935 AD
+        classes: [transformer_monitor]
+        transports: [{type: rtu, notes: 'RS485; default 19.2 kb/s, even parity.'}]
+        unitId:
+          mode: configurable
+          default: 1
+          notes: Modbus address 1 to 255, default 001; custom version C03 defaults to 13.
+      defaults: {table: holding_register, access: r}
+  tecsystem-nt935-eth:
+    publisher: TECSYSTEM
+    title: NT935 ETH Instruction Manual
+    revision: 1MN0121 REV. 0, R. 1.9 21/05/26
+    landing_url: https://www.tecsystem.it/en/connectivity-data-management/nt935-eth.html
+    download_urls:
+    - https://www.tecsystem.it/docs/2026/img_3c63f98b45.pdf
+    format: pdf
+    extractor: tecsystem_mapping_table
+    contracts:
+    - path: devices/tecsystem/nt935-eth/telemetry.omb.yaml
+      selector: nt935-eth
+      info:
+        id: tecsystem/nt935-eth/telemetry
+        title: TECSYSTEM NT935 ETH temperature monitor telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the NT935 ETH Modbus mapping table: identification strings, CPU error and relay bits,
+          channel temperatures, the channel 1 maximum and set points, and the channel status and story bytes. Modbus
+          TCP is only answered in temperature reading mode (Scan, Auto, Man and T.Max); the manual does not state
+          the Modbus TCP unit ID.
+        attribution: Derived from TECSYSTEM's NT935 ETH Instruction Manual.
+      device:
+        manufacturer: TECSYSTEM
+        family: NT935
+        model: NT935 ETH
+        classes: [transformer_monitor]
+        transports:
+        - type: tcp
+          notes: 10Base-T/100Base-TX Ethernet, Modbus TCP slave, at most 8 Modbus TCP nodes.
+      defaults: {table: holding_register, access: r}
+  tecsystem-t1048:
+    publisher: TECSYSTEM
+    title: T1048 Instruction Manual
+    revision: 1MN0124 REV.0, R. 1.7 17/06/26
+    landing_url: https://www.tecsystem.it/en/dry-type-transformer-temperature-control/t1048.html
+    download_urls:
+    - https://www.tecsystem.it/docs/2026/img_99730cbd18.pdf
+    format: pdf
+    extractor: tecsystem_mapping_table
+    contracts:
+    - path: devices/tecsystem/t1048/telemetry.omb.yaml
+      selector: t1048
+      info:
+        id: tecsystem/t1048/telemetry
+        title: TECSYSTEM T1048 temperature monitor telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the T1048 Modbus mapping table for units with the optional RS485 Modbus RTU or Ethernet
+          Modbus TCP output: identification strings, CPU error and relay bits, channel temperatures, the channel
+          1 maximum and set points, and the channel status and story bytes. Modbus is only answered in temperature
+          reading mode; the manual recommends polling no faster than once a second.
+        attribution: Derived from TECSYSTEM's T1048 Instruction Manual.
+      device:
+        manufacturer: TECSYSTEM
+        model: T1048
+        classes: [transformer_monitor]
+        transports:
+        - type: rtu
+          notes: Optional RS485 output; default 19.2 kb/s, even parity.
+        - type: tcp
+          notes: Optional Ethernet output, Modbus TCP slave.
+        unitId:
+          mode: configurable
+          default: 1
+          notes: Modbus address 1 to 255, default 001 (RS485 output).
+      defaults: {table: holding_register, access: r}
+  abb-ref615-modbus:
+    publisher: ABB
+    title: Relion 615 series REF615 Modbus Point List Manual
+    revision: 1MRS756581 rev. D, 2010-06-11, product version 3.0
+    landing_url: https://library.e.abb.com/public/6e6afc6bb11fa2bbc1257b0c00560230/REF615_modbuspoint_756581_ENd.pdf
+    download_urls:
+    - https://library.e.abb.com/public/6e6afc6bb11fa2bbc1257b0c00560230/REF615_modbuspoint_756581_ENd.pdf
+    format: pdf
+    extractor: abb_615_point_list
+    evidence:
+    - id: abb-615-modbus-protocol-manual
+      publisher: ABB
+      title: Relion 615 series Modbus Communication Protocol Manual
+      revision: 1MRS756468 rev. R, 2018-12-20, product series versions 1.0 to 5.0 FP1
+      download_urls:
+      - https://library.e.abb.com/public/f2366309b54747f9883753942c8f9d88/RE_615_modbusprot_756468_ENr.pdf
+      format: pdf
+      claims: >-
+        PLC addresses start from 1 and the traffic carries the PLC address minus one (2.1.4); documentation and
+        tools use base address 1 (3.4.2); bit address 16 is register 1, bit 0 (3.4.8.2); every register value is
+        value x scaleFactor + Offset, both configurable, with no default Offset stated (3.4.5), so the measurands
+        are left out.
+    contracts:
+    - path: devices/abb/ref615/protection.omb.yaml
+      selector: ref615
+      info:
+        id: abb/ref615/protection
+        title: ABB REF615 feeder protection indications
+        version: 0.1.0
+        description: >
+          Read-only subset of the point list for REF615 Ver. 3.0, standard configurations FE01 to FE08 (A to H):
+          indication bits only. Some points exist only in some standard configurations, as noted per point; unavailable
+          points always read 0. Measurands are left out because neither the point list nor the 615 series Modbus
+          communication protocol manual states the default offset of the register scaling. Point-list bit and register.bit
+          addresses are PLC addresses with base address 1; indication registers are listed for both 3X and 4X.
+        attribution: Derived from ABB's REF615 Modbus Point List Manual.
+      device:
+        manufacturer: ABB
+        family: Relion 615 series
+        model: REF615
+        classes: [protection_relay]
+      defaults: {table: holding_register, access: r}
+  abb-rem615-modbus:
+    publisher: ABB
+    title: Relion 615 series REM615 Modbus Point List Manual
+    revision: 1MRS756877 rev. A, 2009-07-03, product version 2.0
+    landing_url: https://library.e.abb.com/public/70d8ff196a5b4f6cc1257b0c00560c63/REM615_modbuspoint_756877_ENa.pdf
+    download_urls:
+    - https://library.e.abb.com/public/70d8ff196a5b4f6cc1257b0c00560c63/REM615_modbuspoint_756877_ENa.pdf
+    format: pdf
+    extractor: abb_615_point_list
+    evidence:
+    - id: abb-615-modbus-protocol-manual
+      publisher: ABB
+      title: Relion 615 series Modbus Communication Protocol Manual
+      revision: 1MRS756468 rev. R, 2018-12-20, product series versions 1.0 to 5.0 FP1
+      download_urls:
+      - https://library.e.abb.com/public/f2366309b54747f9883753942c8f9d88/RE_615_modbusprot_756468_ENr.pdf
+      format: pdf
+      claims: >-
+        PLC addresses start from 1 and the traffic carries the PLC address minus one (2.1.4); documentation and
+        tools use base address 1 (3.4.2); bit address 16 is register 1, bit 0 (3.4.8.2); every register value is
+        value x scaleFactor + Offset, both configurable, with no default Offset stated (3.4.5), so the measurands
+        are left out.
+    contracts:
+    - path: devices/abb/rem615/protection.omb.yaml
+      selector: rem615
+      info:
+        id: abb/rem615/protection
+        title: ABB REM615 motor protection indications
+        version: 0.1.0
+        description: >
+          Read-only subset of the point list for REM615 Ver. 2.0, standard configuration ME03 including the optional
+          functionality: indication bits only. Unavailable points always read 0. Measurands are left out because
+          neither the point list nor the 615 series Modbus communication protocol manual states the default offset
+          of the register scaling. Point-list bit and register.bit addresses are PLC addresses with base address
+          1; indication registers are listed for both 3X and 4X.
+        attribution: Derived from ABB's REM615 Modbus Point List Manual.
+      device:
+        manufacturer: ABB
+        family: Relion 615 series
+        model: REM615
+        classes: [protection_relay]
+      defaults: {table: holding_register, access: r}
+  abb-ret615-ansi-modbus:
+    publisher: ABB
+    title: Relion 615 series RET615 ANSI Modbus Point List Manual
+    revision: 1MAC203705-MB rev. B, 2019-06-07, product version 5.0 FP1
+    landing_url: https://library.e.abb.com/public/a1aa125c30c9473989a8e24a8873ffdd/RET615_ANSI_modbuspoint_203705_ENb.pdf
+    download_urls:
+    - https://library.e.abb.com/public/a1aa125c30c9473989a8e24a8873ffdd/RET615_ANSI_modbuspoint_203705_ENb.pdf
+    format: pdf
+    extractor: abb_615_point_list
+    evidence:
+    - id: abb-615-ansi-modbus-protocol-manual
+      publisher: ABB
+      title: Relion 615 series ANSI Modbus Communication Protocol Manual
+      revision: 1MAC057386-MB rev. A, 2018-02-26, product version 5.0 FP1
+      download_urls:
+      - https://library.e.abb.com/public/d3ef0d113e844c3cb30ec235e3d0471a/RE_615ANSI_modbusprot_057386_ENa.pdf
+      format: pdf
+      claims: >-
+        PLC addresses start from 1 and the traffic carries the PLC address minus one (2.1.4); documentation and
+        tools use base address 1 (3.4.2); register value = value x scaleFactor + offset (3.4.5), per-unit default
+        scaleFactor 1000 (3.4.5.2); 32-bit registers high word first by default (3.4.8.7); bit address 16 is register
+        1, bit 0 (3.4.8.2).
+    contracts:
+    - path: devices/abb/ret615/protection.omb.yaml
+      selector: ret615
+      info:
+        id: abb/ret615/protection
+        title: ABB RET615 ANSI transformer protection measurements and indications
+        version: 0.1.0
+        description: >
+          Read-only subset of the ANSI point list for RET615 Ver. 5.0 FP1. The point list describes a superset of
+          the data of standard configurations B (TA02) and F (TA06); the functions used here are listed for both.
+          Scale factors and the zero offset are the default settings, and the register holds the value multiplied
+          by the scale factor. Register and bit addresses are PLC addresses with base address 1, as the 615 series
+          ANSI Modbus communication protocol manual states; registers are listed for both 3X and 4X. HV and MV are
+          the high-voltage and medium-voltage sides.
+        attribution: Derived from ABB's RET615 ANSI Modbus Point List Manual.
+      device:
+        manufacturer: ABB
+        family: Relion 615 series
+        model: RET615
+        classes: [protection_relay]
+      defaults: {table: holding_register, access: r, wordOrder: big}
+  fanox-sil-a-modbus:
+    publisher: Fanox
+    title: SIL-A Feeder Relay Modbus Protocol Manual
+    revision: Rev. 05
+    landing_url: https://www.fanox.com/wp-content/uploads/documents/EN_FANOX_MODBUS_SILA_MANUAL_Protocol_R005.pdf
+    download_urls:
+    - https://www.fanox.com/wp-content/uploads/documents/EN_FANOX_MODBUS_SILA_MANUAL_Protocol_R005.pdf
+    format: pdf
+    extractor: fanox_relay_states
+    contracts:
+    - path: devices/fanox/sil-a/protection.omb.yaml
+      selector: sil-a
+      info:
+        id: fanox/sil-a/protection
+        title: Fanox SIL-A feeder relay states
+        version: 0.1.0
+        description: >
+          Read-only state words of the SIL-A, read as two registers with function 03. The same states are also listed
+          one register at a time (from firmware M05.03.04); this contract uses the two-register map. Measurements
+          are not included.
+        attribution: Derived from Fanox's SIL-A Feeder Relay Modbus Protocol Manual.
+      device:
+        manufacturer: Fanox
+        model: SIL-A
+        classes: [protection_relay]
+        transports: [{type: rtu}, {type: tcp}]
+      defaults: {table: holding_register, access: r, wordOrder: big, byteOrder: big}
+  fanox-sia-c-modbus:
+    publisher: Fanox
+    title: SIA C Self Power O/C & E/F Protection Relay Modbus RTU Protocol Manual
+    revision: Rev. 03
+    landing_url: https://www.fanox.com/wp-content/uploads/documents/EN_FANOX_MODBUS_SIAC_MANUAL_Protocol_R003.pdf
+    download_urls:
+    - https://www.fanox.com/wp-content/uploads/documents/EN_FANOX_MODBUS_SIAC_MANUAL_Protocol_R003.pdf
+    format: pdf
+    extractor: fanox_relay_states
+    contracts:
+    - path: devices/fanox/sia-c/protection.omb.yaml
+      selector: sia-c
+      info:
+        id: fanox/sia-c/protection
+        title: Fanox SIA-C protection relay states
+        version: 0.1.0
+        description: >
+          Read-only state words of the SIA-C, read as two registers with function 03. Words marked (*) depend on
+          the model. Measurements are not included.
+        attribution: Derived from Fanox's SIA C Modbus RTU Protocol Manual.
+      device:
+        manufacturer: Fanox
+        model: SIA-C
+        classes: [protection_relay]
+        transports: [{type: rtu}]
+      defaults: {table: holding_register, access: r, wordOrder: big, byteOrder: big}
+  fanox-sia-b-specific-ct-modbus:
+    publisher: Fanox
+    title: >-
+      SIA-B Specific CT's Self & Dual Powered Overcurrent & Earth Fault Protection Relay Modbus RTU Protocol Manual
+    revision: Rev. 02
+    landing_url: https://www.fanox.com/wp-content/uploads/documents/EN_FANOXTD_MANU_SIA_MODBUS_SIAB-SPECIFIC-CT_R002.pdf
+    download_urls:
+    - https://www.fanox.com/wp-content/uploads/documents/EN_FANOXTD_MANU_SIA_MODBUS_SIAB-SPECIFIC-CT_R002.pdf
+    format: pdf
+    extractor: fanox_relay_states
+    contracts:
+    - path: devices/fanox/sia-b-specific-ct/protection.omb.yaml
+      selector: sia-b
+      info:
+        id: fanox/sia-b-specific-ct/protection
+        title: Fanox SIA-B Specific CT protection relay states
+        version: 0.1.0
+        description: >
+          Read-only state words of the SIA-B for specific CTs, read as two registers with function 03. Measurements
+          are not included.
+        attribution: Derived from Fanox's SIA-B Specific CT's Modbus RTU Protocol Manual.
+      device:
+        manufacturer: Fanox
+        model: SIA-B Specific CT
+        classes: [protection_relay]
+        transports: [{type: rtu}]
+      defaults: {table: holding_register, access: r, wordOrder: big, byteOrder: big}
+  schneider-electric-sepam-series20-manual:
+    publisher: Schneider Electric
+    title: Sepam series 20 User's manual
+    revision: PCRED301005EN/14, 06/2025
+    landing_url: https://www.se.com/be/en/download/document/PCRED301005EN/
+    download_urls:
+    - https://download.se.com/files?p_Doc_Ref=PCRED301005EN&p_enDocType=User+guide&p_File_Name=PCRED301005EN_14.pdf
+    format: pdf
+    extractor: schneider_electric_sepam_series20
+    contracts:
+    - path: devices/schneider-electric/sepam-s20/protection.omb.yaml
+      selector: s20
+      info:
+        id: schneider-electric/sepam-s20/protection
+        title: Schneider Electric Sepam S20 status and measurements
+        version: 0.1.0
+        description: >
+          Read-only status and measurement zones of the Sepam series 20 substation application S20. Only the remote
+          annunciation bits (TS) and measurements marked for S20 are listed; measurements that do not apply read
+          zero.
+        attribution: Derived from Schneider Electric's Sepam series 20 User's manual.
+      device:
+        manufacturer: Schneider Electric
+        family: Sepam series 20
+        model: Sepam S20
+        classes: [protection_relay]
+        transports: [{type: rtu}]
+      defaults: {table: holding_register, access: r}
+    - path: devices/schneider-electric/sepam-t20/protection.omb.yaml
+      selector: t20
+      info:
+        id: schneider-electric/sepam-t20/protection
+        title: Schneider Electric Sepam T20 status and measurements
+        version: 0.1.0
+        description: >
+          Read-only status and measurement zones of the Sepam series 20 transformer application T20. Only the remote
+          annunciation bits (TS) and measurements marked for T20 are listed; measurements that do not apply read
+          zero. Temperatures need the MET148-2 module.
+        attribution: Derived from Schneider Electric's Sepam series 20 User's manual.
+      device:
+        manufacturer: Schneider Electric
+        family: Sepam series 20
+        model: Sepam T20
+        classes: [protection_relay]
+        transports: [{type: rtu}]
+      defaults: {table: holding_register, access: r}
+    - path: devices/schneider-electric/sepam-m20/protection.omb.yaml
+      selector: m20
+      info:
+        id: schneider-electric/sepam-m20/protection
+        title: Schneider Electric Sepam M20 status and measurements
+        version: 0.1.0
+        description: >
+          Read-only status and measurement zones of the Sepam series 20 motor application M20. Only the remote annunciation
+          bits (TS) and measurements marked for M20 are listed; measurements that do not apply read zero. Temperatures
+          need the MET148-2 module.
+        attribution: Derived from Schneider Electric's Sepam series 20 User's manual.
+      device:
+        manufacturer: Schneider Electric
+        family: Sepam series 20
+        model: Sepam M20
+        classes: [protection_relay]
+        transports: [{type: rtu}]
+      defaults: {table: holding_register, access: r}
+  siemens-siprotec-7sx80-modbus:
+    publisher: Siemens
+    title: SIPROTEC Communication Modules Modbus Bus mapping 7SJ80/7SK80/7RW80
+    revision: C53000-L2240-A320-3, edition September 2010
+    landing_url: https://cache.industry.siemens.com/dl/files/228/109743228/att_903021/v1/com_modbus_7sj80_7sk80_7rw80_us.pdf
+    download_urls:
+    - https://cache.industry.siemens.com/dl/files/228/109743228/att_903021/v1/com_modbus_7sj80_7sk80_7rw80_us.pdf
+    format: pdf
+    extractor: siemens_siprotec_7x80_bus_mapping
+    contracts:
+    - path: devices/siemens/7sj80/protection.omb.yaml
+      selector: 7sj80
+      info:
+        id: siemens/7sj80/protection
+        title: Siemens SIPROTEC 7SJ80 indications and measured values
+        version: 0.1.0
+        description: >
+          Read-only subset of Modbus standard mapping 3-1 for the 7SJ80 (firmware V4.60 or higher) with a Modbus
+          communication module (firmware 04.00.05 or higher, hardware version 4 or higher). Indications follow the
+          7SJ80 functional scope; measured values use the default scaling, which depends on the full-scale parameters
+          1101 and 1102 and can be changed.
+        attribution: >-
+          Derived from Siemens' SIPROTEC Communication Modules Modbus Bus mapping 7SJ80/7SK80/7RW80.
+      device:
+        manufacturer: Siemens
+        family: SIPROTEC
+        model: 7SJ80
+        classes: [protection_relay]
+      defaults: {access: r}
+    - path: devices/siemens/7sk80/protection.omb.yaml
+      selector: 7sk80
+      info:
+        id: siemens/7sk80/protection
+        title: Siemens SIPROTEC 7SK80 indications and measured values
+        version: 0.1.0
+        description: >
+          Read-only subset of Modbus standard mapping 3-1 for the 7SK80 (firmware V4.60 or higher) with a Modbus
+          communication module (firmware 04.00.05 or higher, hardware version 4 or higher). Indications follow the
+          7SK80 functional scope; measured values use the default scaling, which depends on the full-scale parameters
+          1101 and 1102 and can be changed.
+        attribution: >-
+          Derived from Siemens' SIPROTEC Communication Modules Modbus Bus mapping 7SJ80/7SK80/7RW80.
+      device:
+        manufacturer: Siemens
+        family: SIPROTEC
+        model: 7SK80
+        classes: [protection_relay]
+      defaults: {access: r}
+    - path: devices/siemens/7rw80/protection.omb.yaml
+      selector: 7rw80
+      info:
+        id: siemens/7rw80/protection
+        title: Siemens SIPROTEC 7RW80 indications and measured values
+        version: 0.1.0
+        description: >
+          Read-only subset of Modbus standard mapping 3-1 for the 7RW80 (firmware V4.60 or higher) with a Modbus
+          communication module (firmware 04.00.05 or higher, hardware version 4 or higher). Indications follow the
+          7RW80 functional scope; measured values use the default scaling, which depends on the full-scale parameter
+          1101 and can be changed.
+        attribution: >-
+          Derived from Siemens' SIPROTEC Communication Modules Modbus Bus mapping 7SJ80/7SK80/7RW80.
+      device:
+        manufacturer: Siemens
+        family: SIPROTEC
+        model: 7RW80
+        classes: [protection_relay]
+      defaults: {access: r}
+  automationdirect-sio-mb12cdr:
+    publisher: AutomationDirect
+    title: Stride Field I/O SIO-MB12CDR User Guide
+    revision: 1st Edition, Rev. B
+    landing_url: https://cdn.automationdirect.com/static/manuals/stridefio/siomb12cdrug.pdf
+    download_urls:
+    - https://cdn.automationdirect.com/static/manuals/stridefio/siomb12cdrug.pdf
+    format: pdf
+    extractor: automationdirect_stride_sio
+    contracts:
+    - path: devices/automationdirect/sio-mb12cdr/io.omb.yaml
+      selector: SIO-MB12CDR
+      info:
+        id: automationdirect/sio-mb12cdr/io
+        title: AutomationDirect Stride SIO-MB12CDR discrete I/O and input frequency
+        version: 0.1.0
+        description: >
+          Read-only input and relay output states from the coil table, system flags, input frequencies and firmware
+          registers. The guide writes references as 0xxxx and 4xxxx without stating the base; the bit diagrams that
+          mirror coils into registers only fit 1-based references, which the extractor checks. Writable coils and
+          registers are read-only in this contract.
+        attribution: Derived from AutomationDirect's Stride Field I/O SIO-MB12CDR User Guide.
+      device:
+        manufacturer: AutomationDirect
+        family: Stride Field I/O
+        model: SIO-MB12CDR
+        classes: [remote_io]
+        transports: [{type: tcp}]
+      defaults: {access: r}
+  automationdirect-sio-mb16cdd2:
+    publisher: AutomationDirect
+    title: Stride Field I/O SIO-MB16CDD2 User Guide
+    revision: 1st Edition, Rev. B
+    landing_url: https://cdn.automationdirect.com/static/manuals/stridefio/siomb16cdd2ug.pdf
+    download_urls:
+    - https://cdn.automationdirect.com/static/manuals/stridefio/siomb16cdd2ug.pdf
+    format: pdf
+    extractor: automationdirect_stride_sio
+    contracts:
+    - path: devices/automationdirect/sio-mb16cdd2/io.omb.yaml
+      selector: SIO-MB16CDD2
+      info:
+        id: automationdirect/sio-mb16cdd2/io
+        title: AutomationDirect Stride SIO-MB16CDD2 discrete I/O
+        version: 0.1.0
+        description: >
+          Read-only input and output states from the coil table, system flags and firmware registers. The guide
+          writes references as 0xxxx and 4xxxx without stating the base; the bit diagrams that mirror coils into
+          registers only fit 1-based references, which the extractor checks. The input frequency registers are left
+          out to keep the subset within 20 points. Writable coils and registers are read-only in this contract.
+        attribution: Derived from AutomationDirect's Stride Field I/O SIO-MB16CDD2 User Guide.
+      device:
+        manufacturer: AutomationDirect
+        family: Stride Field I/O
+        model: SIO-MB16CDD2
+        classes: [remote_io]
+        transports: [{type: tcp}]
+      defaults: {access: r}
+  automationdirect-sio-mb08thms:
+    publisher: AutomationDirect
+    title: Stride Field I/O SIO-MB08THMS User Guide
+    revision: 1st Edition, Rev. C
+    landing_url: https://cdn.automationdirect.com/static/manuals/stridefio/siomb08thmsug.pdf
+    download_urls:
+    - https://cdn.automationdirect.com/static/manuals/stridefio/siomb08thmsug.pdf
+    format: pdf
+    extractor: automationdirect_stride_sio
+    contracts:
+    - path: devices/automationdirect/sio-mb08thms/io.omb.yaml
+      selector: SIO-MB08THMS
+      info:
+        id: automationdirect/sio-mb08thms/io
+        title: AutomationDirect Stride SIO-MB08THMS thermocouple inputs
+        version: 0.1.0
+        description: >
+          Read-only temperatures, input types, break status, system flags and firmware registers. The temperature
+          scale of 0.1 Cel applies when a channel's input type is a thermocouple and its Degree Units register is
+          Celsius, the defaults; 250 mV inputs carry two implied decimals in mV, and the Fahrenheit and Kelvin settings
+          change the unit. Measurements are not updated while INIT mode is active. The guide writes references as
+          0xxxx and 4xxxx without stating the base; the system-flag bit diagram that mirrors coils into a register
+          only fits 1-based references, which the extractor checks. Writable registers are read-only in this contract.
+        attribution: Derived from AutomationDirect's Stride Field I/O SIO-MB08THMS User Guide.
+      device:
+        manufacturer: AutomationDirect
+        family: Stride Field I/O
+        model: SIO-MB08THMS
+        classes: [remote_io]
+        transports: [{type: tcp}]
+      defaults: {access: r}
+  icp-das-et-2200-manual:
+    publisher: ICP DAS
+    title: ET-2200 Series Ethernet I/O Modules User Manual
+    revision: Ver. 2.0, Apr. 2026
+    landing_url: https://www.icpdas.com/web/product/download/io_and_unit/ethernet/et2200/document/manual/ET-2200_user_manual_en.pdf
+    download_urls:
+    - https://www.icpdas.com/web/product/download/io_and_unit/ethernet/et2200/document/manual/ET-2200_user_manual_en.pdf
+    format: pdf
+    extractor: icp_das_et2200_dio
+    contracts:
+    - path: devices/icp-das/et-2251/io.omb.yaml
+      selector: ET-2251
+      info:
+        id: icp-das/et-2251/io
+        title: ICP DAS ET-2251 digital inputs, counters and status
+        version: 0.1.0
+        description: >
+          Read-only subset of the section 6.3 DIO tables for the 16-channel ET-2251, which the manual lists as (P)ET-2251
+          together with its PoE variant. Counter and frequency values are 32-bit, low word first. Configuration
+          coils and registers are read-only in this contract.
+        attribution: Derived from ICP DAS's ET-2200 Series Ethernet I/O Modules User Manual.
+      device:
+        manufacturer: ICP DAS
+        family: ET-2200
+        model: ET-2251
+        classes: [remote_io]
+        transports: [{type: tcp}, {type: udp}]
+        unitId: {default: 1}
+      defaults: {access: r}
+    - path: devices/icp-das/et-2268/io.omb.yaml
+      selector: ET-2268
+      info:
+        id: icp-das/et-2268/io
+        title: ICP DAS ET-2268 relay outputs and status
+        version: 0.1.0
+        description: >
+          Read-only subset of the section 6.3 DIO tables for the 8-channel ET-2268: output states read back, output
+          settings and module status. Configuration coils and registers are read-only in this contract.
+        attribution: Derived from ICP DAS's ET-2200 Series Ethernet I/O Modules User Manual.
+      device:
+        manufacturer: ICP DAS
+        family: ET-2200
+        model: ET-2268
+        classes: [remote_io]
+        transports: [{type: tcp}, {type: udp}]
+        unitId: {default: 1}
+      defaults: {access: r}
+  moxa-iologik-e1200-manual:
+    publisher: Moxa
+    title: ioLogik E1200 Series User's Manual
+    revision: Edition 15.2, February 2018
+    landing_url: https://www.moxa.com/Moxa/media/PDIM/S100000327/moxa-iologik-e1200-series-manual-v15.2.pdf
+    download_urls:
+    - https://www.moxa.com/Moxa/media/PDIM/S100000327/moxa-iologik-e1200-series-manual-v15.2.pdf
+    format: pdf
+    extractor: moxa_iologik_e1200
+    contracts:
+    - path: devices/moxa/iologik-e1210/io.omb.yaml
+      selector: E1210
+      info:
+        id: moxa/iologik-e1210/io
+        title: Moxa ioLogik E1210 digital inputs and counters
+        version: 0.1.0
+        description: >
+          Read-only subset of the Appendix A default Modbus/TCP map for the 16-input ioLogik E1210 and E1210-T:
+          input states, 32-bit counters (high word first), counter flags and identification registers. Writable
+          rows are read-only in this contract.
+        attribution: Derived from Moxa's ioLogik E1200 Series User's Manual.
+      device:
+        manufacturer: Moxa
+        family: ioLogik E1200
+        model: ioLogik E1210
+        classes: [remote_io]
+        transports: [{type: tcp}]
+        unitId: {default: 1}
+      defaults: {access: r}
+    - path: devices/moxa/iologik-e1212/io.omb.yaml
+      selector: E1212
+      info:
+        id: moxa/iologik-e1212/io
+        title: Moxa ioLogik E1212 digital inputs, outputs and counters
+        version: 0.1.0
+        description: >
+          Read-only subset of the Appendix A default Modbus/TCP map for the ioLogik E1212 and E1212-T (8 DIs and
+          8 DIOs): the DI rows cover 16 channels and the DO rows 8, as the map lists them; a DIO channel's direction
+          is set by jumper. Counters are 32-bit, high word first. Writable rows are read-only in this contract.
+        attribution: Derived from Moxa's ioLogik E1200 Series User's Manual.
+      device:
+        manufacturer: Moxa
+        family: ioLogik E1200
+        model: ioLogik E1212
+        classes: [remote_io]
+        transports: [{type: tcp}]
+        unitId: {default: 1}
+      defaults: {access: r}
+    - path: devices/moxa/iologik-e1240/io.omb.yaml
+      selector: E1240
+      info:
+        id: moxa/iologik-e1240/io
+        title: Moxa ioLogik E1240 analog inputs
+        version: 0.1.0
+        description: >
+          Read-only subset of the Appendix A default Modbus/TCP map for the 8-input ioLogik E1240 and E1240-T: raw
+          input values with their range codes (AI_mode) and status. The manual gives no formula from raw value to
+          volts or milliamps, and does not state the type of the two-word scaled values, which are left out. In
+          4-20 mA burnout mode a raw value of 0000h means burnout and FFFFh over range.
+        attribution: Derived from Moxa's ioLogik E1200 Series User's Manual.
+      device:
+        manufacturer: Moxa
+        family: ioLogik E1200
+        model: ioLogik E1240
+        classes: [remote_io]
+        transports: [{type: tcp}]
+        unitId: {default: 1}
+      defaults: {access: r}
+  automationdirect-gs20-manual:
+    publisher: AutomationDirect
+    title: DURApulse GS20 & GS20X AC Drive User Manual
+    revision: 1st Edition, Rev. F
+    landing_url: https://cdn.automationdirect.com/static/manuals/gs20m/gs20m.pdf
+    download_urls:
+    - https://cdn.automationdirect.com/static/manuals/gs20m/gs20m.pdf
+    format: pdf
+    extractor: automationdirect_durapulse_status
+    contracts:
+    - path: devices/automationdirect/gs20/status.omb.yaml
+      selector: gs20
+      info:
+        id: automationdirect/gs20/status
+        title: AutomationDirect DURApulse GS20 drive status
+        version: 0.1.0
+        description: >
+          Read-only subset of the serial Modbus status addresses (2100h block): fault and warning codes, run status,
+          frequencies, voltages, output power, drive state and the kWh display. Output current (2104h, 2200h) is
+          left out because its decimal place shifts above 655.35 A without a stated encoding; motor speed (210Ch)
+          and torque (210Bh) are left out because the list does not state their signedness. Fault and warning codes
+          are plain numbers; the manual's fault code list gives their meaning.
+        attribution: Derived from AutomationDirect's DURApulse GS20 & GS20X AC Drive User Manual.
+      device:
+        manufacturer: AutomationDirect
+        family: DURApulse
+        model: GS20
+        classes: [drive]
+        transports: [{type: rtu}, {type: ascii}]
+      defaults: {table: holding_register, access: r}
+  automationdirect-gs30-manual:
+    publisher: AutomationDirect
+    title: DURApulse GS30 AC Drive User Manual
+    revision: 1st Ed., Rev B
+    landing_url: https://cdn.automationdirect.com/static/manuals/gs30m/gs30m.pdf
+    download_urls:
+    - https://cdn.automationdirect.com/static/manuals/gs30m/gs30m.pdf
+    format: pdf
+    extractor: automationdirect_durapulse_status
+    contracts:
+    - path: devices/automationdirect/gs30/status.omb.yaml
+      selector: gs30
+      info:
+        id: automationdirect/gs30/status
+        title: AutomationDirect DURApulse GS30 drive status
+        version: 0.1.0
+        description: >
+          Read-only subset of the serial Modbus status addresses (2100h block): fault and warning codes, run status,
+          frequencies, voltages, output power, drive state and the kWh display. Output current (2104h, 2200h) is
+          left out because its decimal place shifts above 655.35 A without a stated encoding; motor speed (210Ch)
+          and torque (210Bh) are left out because the list does not state their signedness. Fault and warning codes
+          are plain numbers; the manual's fault code list gives their meaning.
+        attribution: Derived from AutomationDirect's DURApulse GS30 AC Drive User Manual.
+      device:
+        manufacturer: AutomationDirect
+        family: DURApulse
+        model: GS30
+        classes: [drive]
+        transports: [{type: rtu}, {type: ascii}]
+      defaults: {table: holding_register, access: r}
+  automationdirect-gs4-manual:
+    publisher: AutomationDirect
+    title: DURApulse GS4 AC Drive User Manual
+    revision: 1st Ed. Rev N, 04/02/2025
+    landing_url: https://cdn.automationdirect.com/static/manuals/gs4m/gs4umw.pdf
+    download_urls:
+    - https://cdn.automationdirect.com/static/manuals/gs4m/gs4umw.pdf
+    format: pdf
+    extractor: automationdirect_durapulse_status
+    contracts:
+    - path: devices/automationdirect/gs4/status.omb.yaml
+      selector: gs4
+      info:
+        id: automationdirect/gs4/status
+        title: AutomationDirect DURApulse GS4 drive status
+        version: 0.1.0
+        description: >
+          Read-only subset of the serial Modbus status addresses (2100h block): error code, run status, DC bus and
+          output voltage, active warning and error/warning bytes. Output frequency, output current and output power
+          are left out because the manual gives conflicting or no scales for them; motor speed (210Ch) is left out
+          because the list does not state its signedness. The manual limits a read to 12 registers.
+        attribution: Derived from AutomationDirect's DURApulse GS4 AC Drive User Manual.
+      device:
+        manufacturer: AutomationDirect
+        family: DURApulse
+        model: GS4
+        classes: [drive]
+        transports: [{type: rtu}, {type: ascii}]
+      defaults: {table: holding_register, access: r}
+  danfoss-fc51-oi:
+    publisher: Danfoss
+    title: VLT Micro Drive FC 51 Operating Instructions
+    revision: MG.02.A4.02
+    landing_url: https://assets.danfoss.com/documents/274690/AQ361180435097en-000501.pdf
+    download_urls:
+    - https://assets.danfoss.com/documents/274690/AQ361180435097en-000501.pdf
+    format: pdf
+    extractor: danfoss_vlt_fc51
+    contracts:
+    - path: devices/danfoss/fc-51/status.omb.yaml
+      info:
+        id: danfoss/fc-51/status
+        title: Danfoss VLT Micro Drive FC 51 drive status and readouts
+        version: 0.1.0
+        description: >
+          Read-only subset of the parameter readouts (groups 15 and 16) over Modbus RTU: FC profile status word,
+          power, motor voltage, frequency, motor current, DC link voltage, alarm and warning words, running hours
+          and kWh counter. Parameters are holding registers at 10 x parameter number - 1. The manual states no unit
+          for the DC link voltage (16-30). Written for software version 2.1x as stated in the manual.
+        attribution: Derived from Danfoss's VLT Micro Drive FC 51 Operating Instructions.
+      device:
+        manufacturer: Danfoss
+        family: VLT Micro Drive
+        model: FC 51
+        classes: [drive]
+        transports: [{type: rtu}]
+      defaults: {table: holding_register, access: r, wordOrder: big, byteOrder: big}
+  schneider-electric-atv320-comm:
+    publisher: Schneider Electric
+    title: ATV320 - Communication Parameters
+    revision: NVE41316 V3.5
+    landing_url: https://www.se.com/us/en/download/document/NVE41316/
+    documentation_url: https://www.se.com/us/en/download/document/NVE41316/
+    download_urls:
+    - https://download.se.com/files?p_Doc_Ref=NVE41316&p_enDocType=Software+-+Data+Library&p_File_Name=ATV320_CommunicationParameters_NVE41316_V3.5.xlsx
+    format: xlsx
+    extractor: schneider_electric_altivar_comm_xlsx
+    evidence:
+    - id: schneider-electric-atv320-modbus-manual
+      publisher: Schneider Electric
+      title: Altivar Machine 320 Modbus Serial Link Manual
+      revision: NVE41308.01, 04/2016
+      documentation_url: https://www.se.com/us/en/download/document/NVE41308/
+      download_urls:
+      - https://download.se.com/files?p_Doc_Ref=NVE41308&p_enDocType=User+guide&p_File_Name=ATV320_Modbus_manual_EN_NVE41308_01.pdf
+      format: pdf
+      claims: >-
+        Supported Modbus functions (pp. 13 and 18): Read Holding Registers (3) is the only read function; read request
+        quantity 1 to 63 registers; related documents list NVE41316.
+    contracts:
+    - path: devices/schneider-electric/atv320/status.omb.yaml
+      selector: atv320
+      info:
+        id: schneider-electric/atv320/status
+        title: Schneider Electric Altivar ATV320 drive status and actual values
+        version: 0.1.0
+        description: >
+          Read-only subset of the ATV320 communication parameters: CiA402 status word, drive state, last fault and
+          actual values. Parameters are read with Read Holding Registers (function 3), the only read function the
+          ATV320 Modbus Serial Link Manual (NVE41308) lists. The output frequency scale assumes bit 9 of the extended
+          control word CMI is 0.
+        attribution: Derived from Schneider Electric's ATV320 - Communication Parameters (NVE41316).
+      device:
+        manufacturer: Schneider Electric
+        family: Altivar Machine
+        model: ATV320
+        classes: [drive]
+      defaults: {table: holding_register, access: r}
+  schneider-electric-atv340-comm:
+    publisher: Schneider Electric
+    title: ATV340 - Communication Parameters
+    revision: NVE61728 v4.6
+    landing_url: https://www.se.com/us/en/download/document/NVE61728/
+    documentation_url: https://www.se.com/us/en/download/document/NVE61728/
+    download_urls:
+    - https://download.se.com/files?p_Doc_Ref=NVE61728&p_enDocType=Software+-+Data+Library&p_File_Name=ATV340_Communication_parameters_NVE61728_V4.6.xlsx
+    format: xlsx
+    extractor: schneider_electric_altivar_comm_xlsx
+    evidence:
+    - id: schneider-electric-atv340-modbus-manual
+      publisher: Schneider Electric
+      title: Altivar Machine ATV340 Modbus Serial Line Manual
+      revision: NVE61654.01, 06/2016
+      documentation_url: https://www.se.com/us/en/download/document/NVE61654/
+      download_urls:
+      - https://download.se.com/files?p_Doc_Ref=NVE61654&p_enDocType=User+guide&p_File_Name=ATV340_Modbus_Serial_Manual_EN_NVE61654_01.pdf
+      format: pdf
+      claims: >-
+        Supported Modbus functions (pp. 13 and 18): Read Holding Registers (3) is the only read function; read request
+        quantity 1 to 63 registers; related documents list NVE61728.
+    contracts:
+    - path: devices/schneider-electric/atv340/status.omb.yaml
+      selector: atv340
+      info:
+        id: schneider-electric/atv340/status
+        title: Schneider Electric Altivar ATV340 drive status and actual values
+        version: 0.1.0
+        description: >
+          Read-only subset of the ATV340 communication parameters: CiA402 status word, drive state, last fault,
+          actual values and the input energy counter. Parameters are read with Read Holding Registers (function
+          3), the only read function the ATV340 Modbus Serial Line Manual (NVE61654) lists. The output frequency
+          scale assumes bit 9 of the extended control word CMI is 0. The workbook gives no fixed scale for motor
+          current (LCR), so it is left out. Input energy is split over five registers (Wh, kWh, MWh, GWh, TWh),
+          each counting 0 to 999.
+        attribution: Derived from Schneider Electric's ATV340 - Communication Parameters (NVE61728).
+      device:
+        manufacturer: Schneider Electric
+        family: Altivar Machine
+        model: ATV340
+        classes: [drive]
+      defaults: {table: holding_register, access: r}
+  schneider-electric-atv600-comm:
+    publisher: Schneider Electric
+    title: ATV600 - Communication Parameters
+    revision: EAV64332 V4.6
+    landing_url: https://www.se.com/us/en/download/document/EAV64332/
+    documentation_url: https://www.se.com/us/en/download/document/EAV64332/
+    download_urls:
+    - https://download.se.com/files?p_Doc_Ref=EAV64332&p_enDocType=Software+-+Data+Library&p_File_Name=ATV600-Communication-parameters-EAV64332-V4.6.xlsx
+    format: xlsx
+    extractor: schneider_electric_altivar_comm_xlsx
+    evidence:
+    - id: schneider-electric-atv600-modbus-manual
+      publisher: Schneider Electric
+      title: Altivar Process Modbus Serial Link Manual (Embedded)
+      revision: EAV64325.01, 11/2014
+      documentation_url: https://www.se.com/us/en/download/document/EAV64325/
+      download_urls:
+      - https://download.se.com/files?p_Doc_Ref=EAV64325&p_enDocType=User+guide&p_File_Name=ATV600_Modbus_manual_EN_EAV64325_01.pdf
+      format: pdf
+      claims: >-
+        Supported Modbus functions (pp. 13 and 36): Read Holding Registers (3) is the only read function; read request
+        quantity 1 to 63 registers; related documents list EAV64332.
+    - id: schneider-electric-atv600-programming-manual
+      publisher: Schneider Electric
+      title: Altivar Process ATV600 Programming Manual
+      revision: EAV64318.14, 05/2026
+      documentation_url: https://www.se.com/us/en/download/document/EAV64318/
+      download_urls:
+      - https://download.se.com/files?p_Doc_Ref=EAV64318&p_enDocType=User+guide&p_File_Name=ATV600-Programming-Manual-EN-EAV64318-14.pdf
+      format: pdf
+      claims: >-
+        Model scope: the validity note (p. 11) names ATV630 among the Altivar Process drives, and the related documents
+        (p. 16) list ATV600 Communication Parameters EAV64332.
+    contracts:
+    - path: devices/schneider-electric/atv630/status.omb.yaml
+      selector: atv600
+      info:
+        id: schneider-electric/atv630/status
+        title: Schneider Electric Altivar Process ATV630 drive status and actual values
+        version: 0.1.0
+        description: >
+          Read-only subset of the ATV600 communication parameters, applied to the ATV630: the ATV600 Programming
+          Manual (EAV64318) is valid for the ATV630 and lists this workbook. CiA402 status word, drive state, last
+          fault, actual values and the input energy counter. Parameters are read with Read Holding Registers (function
+          3), the only read function the Altivar Process Modbus Serial Link Manual (EAV64325) lists. The output
+          frequency scale assumes bit 9 of the extended control word CMI is 0. The workbook gives no fixed scale
+          for motor current (LCR), so it is left out. Input energy is split over five registers (Wh, kWh, MWh, GWh,
+          TWh), each counting 0 to 999.
+        attribution: Derived from Schneider Electric's ATV600 - Communication Parameters (EAV64332).
+      device:
+        manufacturer: Schneider Electric
+        family: Altivar Process
+        model: ATV630
+        classes: [drive]
+      defaults: {table: holding_register, access: r}
+  datakom-500-modbus:
+    publisher: Datakom
+    title: D-300 / 500 / 700 Modbus Application Manual
+    revision: V5.6 (25.04.2016)
+    landing_url: https://www.datakom.com.tr/upload/Files/500_MODBUS.pdf
+    download_urls:
+    - https://www.datakom.com.tr/upload/Files/500_MODBUS.pdf
+    format: pdf
+    extractor: datakom_dx00_modbus
+    contracts:
+    - path: devices/datakom/d-300/telemetry.omb.yaml
+      selector: d-300
+      info:
+        id: datakom/d-300/telemetry
+        title: Datakom D-300 engine, status and alarm registers
+        version: 0.1.0
+        description: >
+          Read-only subset of the register definitions and the list of alarm bits (function 3) of the D-300 / 500
+          / 700 Modbus Application Manual V5.6. The manual states both register orders for 32-bit values, so no
+          32-bit value is mapped: generator voltages, currents and power, engine hours, the start counter and the
+          energy counters are left out. It does not state signedness, so only quantities that cannot be negative
+          are mapped, as unsigned. The COEFF column is read as register = value x COEFF. Unit mode value 2 is documented
+          only for the D-500 and D-700.
+        attribution: Derived from Datakom's D-300 / 500 / 700 Modbus Application Manual.
+      device:
+        manufacturer: Datakom
+        family: D-series
+        model: D-300
+        classes: [genset_controller]
+        transports:
+        - {type: rtu, notes: RS-485 or RS-232 serial port.}
+        - type: tcp
+          notes: Ethernet port or GSM-GPRS modem; the manual does not say which models have them.
+        unitId:
+          mode: configurable
+          default: 1
+          notes: Modbus slave address 1 to 240.
+      defaults: {table: holding_register, access: r}
+    - path: devices/datakom/d-500/telemetry.omb.yaml
+      selector: d-500
+      info:
+        id: datakom/d-500/telemetry
+        title: Datakom D-500 engine, status and alarm registers
+        version: 0.1.0
+        description: >
+          Read-only subset of the register definitions and the list of alarm bits (function 3) of the D-300 / 500
+          / 700 Modbus Application Manual V5.6. The manual states both register orders for 32-bit values, so no
+          32-bit value is mapped: generator voltages, currents and power, engine hours, the start counter and the
+          energy counters are left out. It does not state signedness, so only quantities that cannot be negative
+          are mapped, as unsigned. The COEFF column is read as register = value x COEFF.
+        attribution: Derived from Datakom's D-300 / 500 / 700 Modbus Application Manual.
+      device:
+        manufacturer: Datakom
+        family: D-series
+        model: D-500
+        classes: [genset_controller]
+        transports:
+        - {type: rtu, notes: RS-485 or RS-232 serial port.}
+        - type: tcp
+          notes: Ethernet port or GSM-GPRS modem; the manual does not say which models have them.
+        unitId:
+          mode: configurable
+          default: 1
+          notes: Modbus slave address 1 to 240.
+      defaults: {table: holding_register, access: r}
+    - path: devices/datakom/d-700/telemetry.omb.yaml
+      selector: d-700
+      info:
+        id: datakom/d-700/telemetry
+        title: Datakom D-700 engine, status and alarm registers
+        version: 0.1.0
+        description: >
+          Read-only subset of the register definitions and the list of alarm bits (function 3) of the D-300 / 500
+          / 700 Modbus Application Manual V5.6. The manual states both register orders for 32-bit values, so no
+          32-bit value is mapped: generator voltages, currents and power, engine hours, the start counter and the
+          energy counters are left out. It does not state signedness, so only quantities that cannot be negative
+          are mapped, as unsigned. The COEFF column is read as register = value x COEFF.
+        attribution: Derived from Datakom's D-300 / 500 / 700 Modbus Application Manual.
+      device:
+        manufacturer: Datakom
+        family: D-series
+        model: D-700
+        classes: [genset_controller]
+        transports:
+        - {type: rtu, notes: RS-485 or RS-232 serial port.}
+        - type: tcp
+          notes: Ethernet port or GSM-GPRS modem; the manual does not say which models have them.
+        unitId:
+          mode: configurable
+          default: 1
+          notes: Modbus slave address 1 to 240.
+      defaults: {table: holding_register, access: r}
+  deif-ml2-h2-h9:
+    publisher: DEIF
+    title: Multi-line 2 Description of options, Options H2 and H9 Modbus communication
+    revision: 4189340442Z
+    landing_url: https://www.deif.com/media/qmtcw1ih/option-h2-and-h9-modbus-communication-4189340442-uk.pdf
+    download_urls:
+    - https://www.deif.com/media/qmtcw1ih/option-h2-and-h9-modbus-communication-4189340442-uk.pdf
+    format: pdf
+    extractor: deif_ml2_h2_h9
+    contracts:
+    - path: devices/deif/agc-3/telemetry.omb.yaml
+      selector: AGC-3
+      info:
+        id: deif/agc-3/telemetry
+        title: DEIF AGC-3 generator, engine and status registers
+        version: 0.1.0
+        description: >
+          Read-only subset of the measurement table and the alarm and status table (function code 04h) for AGC-3
+          software version 3.6x.x or later with the Modbus RS-485 option H2. Only rows the document marks as standard
+          (X) for AGC-3 are included. The document does not state signedness, so only quantities that cannot be
+          negative are mapped, as unsigned.
+        attribution: >-
+          Derived from DEIF's Multi-line 2 Description of options, Options H2 and H9 Modbus communication.
+      device:
+        manufacturer: DEIF
+        family: Multi-line 2
+        model: AGC-3
+        classes: [genset_controller]
+        transports: [{type: rtu, notes: RS-485 with hardware option H2.}]
+      defaults: {table: input_register, access: r}
+    - path: devices/deif/agc-111/telemetry.omb.yaml
+      selector: AGC 111
+      info:
+        id: deif/agc-111/telemetry
+        title: DEIF AGC 111 generator, engine and status registers
+        version: 0.1.0
+        description: >
+          Read-only subset of the measurement table and the alarm and status table (function code 04h) for AGC 100
+          series software version 4.0x.x or later with the Modbus RS-485 option H2. Only rows the document marks
+          as standard (X) for AGC 111 are included. The document does not state signedness, so only quantities that
+          cannot be negative are mapped, as unsigned.
+        attribution: >-
+          Derived from DEIF's Multi-line 2 Description of options, Options H2 and H9 Modbus communication.
+      device:
+        manufacturer: DEIF
+        family: Multi-line 2
+        model: AGC 111
+        classes: [genset_controller]
+        transports: [{type: rtu, notes: RS-485 with hardware option H2.}]
+      defaults: {table: input_register, access: r}
+    - path: devices/deif/agc-110/telemetry.omb.yaml
+      selector: AGC 110
+      info:
+        id: deif/agc-110/telemetry
+        title: DEIF AGC 110 engine and status registers
+        version: 0.1.0
+        description: >
+          Read-only subset of the measurement table and the alarm and status table (function code 04h) for AGC 100
+          series software version 4.0x.x or later with the Modbus RS-485 option H2. Only rows the document marks
+          as standard (X) for AGC 110 are included; the document marks no generator voltage, current, frequency,
+          power, run-hour or start counter rows for AGC 110 in the measurement table. The document does not state
+          signedness, so only quantities that cannot be negative are mapped, as unsigned.
+        attribution: >-
+          Derived from DEIF's Multi-line 2 Description of options, Options H2 and H9 Modbus communication.
+      device:
+        manufacturer: DEIF
+        family: Multi-line 2
+        model: AGC 110
+        classes: [genset_controller]
+        transports: [{type: rtu, notes: RS-485 with hardware option H2.}]
+      defaults: {table: input_register, access: r}
+  smartgen-hgm9510:
+    publisher: SmartGen
+    title: HGM9510 Genset Controller Communication Protocol
+    revision: 1.1 (2021-10-21)
+    landing_url: https://www.smartgen.cn/yun/data/download/HGM9510_Protocol_en.pdf
+    download_urls:
+    - https://www.smartgen.cn/yun/data/download/HGM9510_Protocol_en.pdf
+    format: pdf
+    extractor: smartgen_hgm9510
+    contracts:
+    - path: devices/smartgen/hgm9510/telemetry.omb.yaml
+      info:
+        id: smartgen/hgm9510/telemetry
+        title: SmartGen HGM9510 generator, alarm and status registers
+        version: 0.1.0
+        description: >
+          Read-only subset of Table 2 (alarm and status bits) and Table 6 (value data field) of the HGM9510 Genset
+          Controller Communication Protocol version 1.1, read with function code 03H. Rows with a blank Ratio cell
+          are left out because the document gives no scale for them; among them are the generator frequency, the
+          active power values, engine speed, battery voltage and the accumulated start counter.
+        attribution: Derived from SmartGen's HGM9510 Genset Controller Communication Protocol.
+      device:
+        manufacturer: SmartGen
+        model: HGM9510
+        classes: [genset_controller]
+        transports: [{type: rtu, notes: Two RS485 ports with the same protocol.}]
+        unitId:
+          mode: configurable
+          default: 1
+          notes: Communication address 1 to 254.
+      defaults: {table: holding_register, access: r}
+  smartgen-hgm9530n:
+    publisher: SmartGen
+    title: HGM9530N Genset Controller Communication Protocol
+    revision: 1.0 (2018-12-21)
+    landing_url: https://www.smartgen.cn/yun/data/download/HGM9530N_Protocol_en.pdf
+    download_urls:
+    - https://www.smartgen.cn/yun/data/download/HGM9530N_Protocol_en.pdf
+    format: pdf
+    extractor: smartgen_hgm9530n
+    contracts:
+    - path: devices/smartgen/hgm9530n/telemetry.omb.yaml
+      info:
+        id: smartgen/hgm9530n/telemetry
+        title: SmartGen HGM9530N generator, engine and status registers
+        version: 0.1.0
+        description: >
+          Read-only subset of the function code 03H map data field of the HGM9530N Genset Controller Communication
+          Protocol version 1.0. The document has no unit column, so units are given only where the item text names
+          one. The (*10), (*100) and (*1000) marks are read as register = value x N, and rows not marked Signed
+          as unsigned. The alarm areas that refer to the alarm data form are not mapped; the common alarm register
+          0000 is.
+        attribution: Derived from SmartGen's HGM9530N Genset Controller Communication Protocol.
+      device:
+        manufacturer: SmartGen
+        model: HGM9530N
+        classes: [genset_controller]
+        transports:
+        - type: rtu
+          notes: Serial Modbus with CRC-16 framing; the document does not name the port.
+        unitId:
+          mode: configurable
+          notes: Slave address 1 to 255; the document states no default.
+      defaults: {table: holding_register, access: r}
+  woodward-37528:
+    publisher: Woodward
+    title: easYgen-3000 Series Manual Genset Control, easYgen-3400/3500-P1/P2
+    revision: 37528J
+    landing_url: https://www.woodward.com/products/wp-content/uploads/sites/3/2024/08/37528_J.pdf
+    download_urls:
+    - https://www.woodward.com/products/wp-content/uploads/sites/3/2024/08/37528_J.pdf
+    format: pdf
+    extractor: woodward_easygen_3400_3500
+    contracts:
+    - path: devices/woodward/easygen-3400/telemetry.omb.yaml
+      info:
+        id: woodward/easygen-3400/telemetry
+        title: Woodward easYgen-3400 generator, engine and status registers
+        version: 0.1.0
+        description: >
+          Read-only subset of the Modbus data protocol 5010 (basic visualization) for easYgen-3400-P1/P2 with software
+          version 1.211 or higher. The protocol is served when parameter 3184 (Modbus protocol number) is 5010,
+          the default. The manual gives Modicon references (450001 may become bus address 50000) but no data types,
+          signedness or register order: 32-bit values and quantities whose sign the manual leaves open (power, reactive
+          power, power factor) are left out, and non-negative values are read as unsigned. Voltages and currents
+          use the exponent registers (parameters 3182 and 3183). J1939 values need an engine control unit on the
+          CAN bus.
+        attribution: >-
+          Derived from Woodward's easYgen-3000 Series Manual Genset Control, easYgen-3400/3500-P1/P2.
+      device:
+        manufacturer: Woodward
+        family: easYgen-3000 Series
+        model: easYgen-3400
+        classes: [genset_controller]
+        transports: [{type: rtu, notes: RS-485 serial interface.}]
+        unitId:
+          mode: configurable
+          default: 1
+          notes: Parameter 3188 (ModBus Slave ID, 0 to 255). 0 disables Modbus.
+      defaults: {table: holding_register, access: r}
+    - path: devices/woodward/easygen-3500/telemetry.omb.yaml
+      info:
+        id: woodward/easygen-3500/telemetry
+        title: Woodward easYgen-3500 generator, engine and status registers
+        version: 0.1.0
+        description: >
+          Read-only subset of the Modbus data protocol 5010 (basic visualization) for easYgen-3500-P1/P2 with software
+          version 1.211 or higher. The protocol is served when parameter 3184 (Modbus protocol number) is 5010,
+          the default. The manual gives Modicon references (450001 may become bus address 50000) but no data types,
+          signedness or register order: 32-bit values and quantities whose sign the manual leaves open (power, reactive
+          power, power factor) are left out, and non-negative values are read as unsigned. Voltages and currents
+          use the exponent registers (parameters 3182 and 3183). J1939 values need an engine control unit on the
+          CAN bus.
+        attribution: >-
+          Derived from Woodward's easYgen-3000 Series Manual Genset Control, easYgen-3400/3500-P1/P2.
+      device:
+        manufacturer: Woodward
+        family: easYgen-3000 Series
+        model: easYgen-3500
+        classes: [genset_controller]
+        transports: [{type: rtu, notes: RS-485 serial interface.}]
+        unitId:
+          mode: configurable
+          default: 1
+          notes: Parameter 3188 (ModBus Slave ID, 0 to 255). 0 disables Modbus.
+      defaults: {table: holding_register, access: r}
+  woodward-b37574:
+    publisher: Woodward
+    title: >-
+      easYgen-3000XT Series Manual Genset Control, easYgen-3100XT-P1 / 3200XT-P1 / 3200XT-P1-LT
+    revision: B37574 Revision U, Release 2.17-0
+    landing_url: https://www.woodward.com/products/publication-asset/b37574
+    download_urls:
+    - https://www.woodward.com/products/wp-content/uploads/sites/3/2025/04/B37574_U.pdf
+    format: pdf
+    extractor: woodward_easygen_3000xt
+    contracts:
+    - path: devices/woodward/easygen-3200xt/telemetry.omb.yaml
+      info:
+        id: woodward/easygen-3200xt/telemetry
+        title: Woodward easYgen-3200XT generator, engine and status registers
+        version: 0.1.0
+        description: >
+          Read-only subset of the Modbus data protocol 5010 (basic visualization) for easYgen-3200XT-P1 and 3200XT-P1-LT
+          with software release 2.17 or higher. The protocol is served when parameter 3184 (Modbus protocol number)
+          is 5010, the default. Only rows whose model column reads "All" are included. The manual lists bus addresses
+          (Modicon reference 450001 = 50000), states big-endian registers and writes the high word of a 32-bit value
+          to the lower address. The scale column ("*100") is read as raw = value x 100; the manual does not define
+          it. 16-bit voltages, currents and power use the exponent registers (parameters 3181 to 3183). J1939 values
+          need an engine control unit on the CAN bus.
+        attribution: >-
+          Derived from Woodward's easYgen-3000XT Series Manual Genset Control, easYgen-3100XT-P1 / 3200XT-P1 / 3200XT-P1-LT.
+      device:
+        manufacturer: Woodward
+        family: easYgen-3000XT Series
+        model: easYgen-3200XT
+        classes: [genset_controller]
+        transports:
+        - {type: rtu, notes: RS-485 serial interface.}
+        - {type: tcp, notes: Ethernet; up to 5 Modbus/TCP channels.}
+        unitId:
+          mode: configurable
+          default: 1
+          notes: >
+            RS-485 slave ID is parameter 3188 (0 to 255, 0 disables Modbus); the Modbus/TCP slave ID is parameter
+            7485 (1 to 255).
+      defaults: {table: holding_register, access: r}
+  apogee-instruments-sp-422:
+    publisher: Apogee Instruments
+    title: Owner's manual, pyranometer models SP-422
+    revision: 11-March-2026
+    landing_url: https://www.apogeeinstruments.com/content/SP-422-manual.pdf
+    download_urls:
+    - https://www.apogeeinstruments.com/content/SP-422-manual.pdf
+    format: pdf
+    extractor: apogee_instruments_sp_modbus
+    contracts:
+    - path: devices/apogee-instruments/sp-422/telemetry.omb.yaml
+      selector: SP-422
+      info:
+        id: apogee-instruments/sp-422/telemetry
+        title: Apogee Instruments SP-422 pyranometer telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the SP-422 Modbus RTU holding registers: irradiance and detector voltage as floats
+          and as decimal-shifted 16-bit integers, device status and identification. Model and serial number are
+          read here only; the manual documents them in the read/write table.
+        attribution: Derived from Apogee Instruments' Owner's manual, pyranometer models SP-422.
+      device:
+        manufacturer: Apogee Instruments
+        model: SP-422
+        classes: [irradiance_sensor]
+        transports:
+        - type: rtu
+          notes: >-
+            RS-232 or RS-485. Factory default 19200 baud, 8 data bits, even parity, 1 stop bit.
+        unitId: {mode: configurable, default: 1, notes: Valid addresses are 1 to 247.}
+      defaults: {table: holding_register, access: r, wordOrder: big, byteOrder: big}
+  apogee-instruments-sp-522:
+    publisher: Apogee Instruments
+    title: Owner's manual, pyranometer models SP-522
+    revision: 11-March-2026
+    landing_url: https://www.apogeeinstruments.com/content/SP-522-manual.pdf
+    download_urls:
+    - https://www.apogeeinstruments.com/content/SP-522-manual.pdf
+    format: pdf
+    extractor: apogee_instruments_sp_modbus
+    contracts:
+    - path: devices/apogee-instruments/sp-522/telemetry.omb.yaml
+      selector: SP-522
+      info:
+        id: apogee-instruments/sp-522/telemetry
+        title: Apogee Instruments SP-522 heated pyranometer telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the SP-522 Modbus RTU holding registers: irradiance and detector voltage as floats
+          and as decimal-shifted 16-bit integers, heater status, device status and identification. Model number,
+          serial number and heater status are read here only; the manual documents them in the read/write table.
+        attribution: Derived from Apogee Instruments' Owner's manual, pyranometer models SP-522.
+      device:
+        manufacturer: Apogee Instruments
+        model: SP-522
+        classes: [irradiance_sensor]
+        transports:
+        - type: rtu
+          notes: >-
+            RS-232 or RS-485. Factory default 19200 baud, 8 data bits, even parity, 1 stop bit.
+        unitId: {mode: configurable, default: 1, notes: Valid addresses are 1 to 247.}
+      defaults: {table: holding_register, access: r, wordOrder: big, byteOrder: big}
+  apogee-instruments-sp-722:
+    publisher: Apogee Instruments
+    title: Owner's manual, albedometer model SP-722-SS
+    revision: 11-March-2026
+    landing_url: https://www.apogeeinstruments.com/content/SP-722-manual.pdf
+    download_urls:
+    - https://www.apogeeinstruments.com/content/SP-722-manual.pdf
+    format: pdf
+    extractor: apogee_instruments_sp_modbus
+    contracts:
+    - path: devices/apogee-instruments/sp-722/telemetry.omb.yaml
+      selector: SP-722
+      info:
+        id: apogee-instruments/sp-722/telemetry
+        title: Apogee Instruments SP-722 albedometer telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the SP-722 Modbus RTU holding registers: incident and reflected irradiance, detector
+          voltages and albedo as floats, heater state, device status and identification. The decimal-shifted integer
+          copies are left out because the manual does not state the shift direction unambiguously.
+        attribution: Derived from Apogee Instruments' Owner's manual, albedometer model SP-722-SS.
+      device:
+        manufacturer: Apogee Instruments
+        model: SP-722
+        classes: [irradiance_sensor]
+        transports:
+        - type: rtu
+          notes: >-
+            RS-232 or RS-485. Factory default 19200 baud, 8 data bits, even parity, 1 stop bit.
+        unitId: {mode: configurable, default: 1, notes: Valid addresses are 1 to 247.}
+      defaults: {table: holding_register, access: r, wordOrder: big, byteOrder: big}
+  eko-instruments-ms-40s:
+    publisher: EKO Instruments
+    title: Pyranometer MS-40/MS-40S Instruction Manual
+    revision: Ver. 8 (2023-10-13)
+    landing_url: https://eko-instruments.com/wp-content/uploads/2024/08/ms-40_40s_manual20231013v8.pdf
+    download_urls:
+    - https://eko-instruments.com/wp-content/uploads/2024/08/ms-40_40s_manual20231013v8.pdf
+    format: pdf
+    extractor: eko_instruments_ms_s_series
+    contracts:
+    - path: devices/eko-instruments/ms-40s/s-series.omb.yaml
+      selector: MS-40S
+      info:
+        id: eko-instruments/ms-40s/s-series
+        title: EKO Instruments MS-40S telemetry, S-series register map
+        version: 0.1.0
+        description: >
+          Read-only subset of the MS-40S Modbus RTU registers with the register type set to S-series, the factory
+          default; the M-series, SMP-series and SRD-series maps are not covered. The sensor refreshes its values
+          about every 110 ms.
+        attribution: Derived from EKO Instruments' Pyranometer MS-40/MS-40S Instruction Manual.
+      device:
+        manufacturer: EKO Instruments
+        model: MS-40S
+        classes: [irradiance_sensor]
+        transports:
+        - type: rtu
+          notes: RS-485. Factory default 19200 baud, even parity.
+        unitId:
+          mode: configurable
+          notes: >
+            Configurable from 1 to 247. The factory default is the last two digits of the serial number, or 100
+            when those are 00.
+      defaults: {table: input_register, access: r, wordOrder: big, byteOrder: big}
+  eko-instruments-ms-60s:
+    publisher: EKO Instruments
+    title: Pyranometer MS-60/MS-60S Instruction Manual
+    revision: Ver. 5 (2021-06)
+    landing_url: https://eko-instruments.com/us/wp-content/uploads/sites/15/2024/08/ms-60-60s-manual.pdf
+    download_urls:
+    - https://eko-instruments.com/us/wp-content/uploads/sites/15/2024/08/ms-60-60s-manual.pdf
+    format: pdf
+    extractor: eko_instruments_ms_s_series
+    contracts:
+    - path: devices/eko-instruments/ms-60s/s-series.omb.yaml
+      selector: MS-60S
+      info:
+        id: eko-instruments/ms-60s/s-series
+        title: EKO Instruments MS-60S telemetry, S-series register map
+        version: 0.1.0
+        description: >
+          Read-only subset of the MS-60S Modbus RTU registers with the register type set to S-series, the factory
+          default; the M-series, SMP-series and SRD-series maps are not covered. The internal temperature unit follows
+          the sensor's temperature unit setting. The sensor refreshes its values about every 110 ms.
+        attribution: Derived from EKO Instruments' Pyranometer MS-60/MS-60S Instruction Manual.
+      device:
+        manufacturer: EKO Instruments
+        model: MS-60S
+        classes: [irradiance_sensor]
+        transports:
+        - type: rtu
+          notes: RS-485. Factory default 19200 baud, even parity.
+        unitId:
+          mode: configurable
+          notes: >
+            Configurable from 1 to 247. The factory default is the last two digits of the serial number, or 100
+            when those are 00.
+      defaults: {table: input_register, access: r, wordOrder: big, byteOrder: big}
+  eko-instruments-ms-80s:
+    publisher: EKO Instruments
+    title: Pyranometer MS-80/80S/80U Instruction Manual
+    revision: Ver. 8 (2023-10-13)
+    landing_url: https://eko-instruments.com/wp-content/uploads/2024/08/ms-80_80s_80u_manual20231013v8.pdf
+    download_urls:
+    - https://eko-instruments.com/wp-content/uploads/2024/08/ms-80_80s_80u_manual20231013v8.pdf
+    format: pdf
+    extractor: eko_instruments_ms_s_series
+    contracts:
+    - path: devices/eko-instruments/ms-80s/s-series.omb.yaml
+      selector: MS-80S
+      info:
+        id: eko-instruments/ms-80s/s-series
+        title: EKO Instruments MS-80S telemetry, S-series register map
+        version: 0.1.0
+        description: >
+          Read-only subset of the MS-80S Modbus RTU registers with the register type set to S-series, the factory
+          default; the M-series, SMP-series and SRD-series maps are not covered. The sensor refreshes its values
+          about every 110 ms.
+        attribution: Derived from EKO Instruments' Pyranometer MS-80/80S/80U Instruction Manual.
+      device:
+        manufacturer: EKO Instruments
+        model: MS-80S
+        classes: [irradiance_sensor]
+        transports:
+        - type: rtu
+          notes: RS-485. Factory default 19200 baud, even parity.
+        unitId:
+          mode: configurable
+          notes: >
+            Configurable from 1 to 247. The factory default is the last two digits of the serial number, or 100
+            when those are 00.
+      defaults: {table: input_register, access: r, wordOrder: big, byteOrder: big}
+  hukseflux-sr20-d2:
+    publisher: Hukseflux
+    title: SR20-D2 Digital Class A pyranometer user manual
+    revision: v2404
+    landing_url: https://www.hukx.com/solar-radiation-sensors/pyranometers
+    download_urls:
+    - https://www.hukx.com/uploads/SR20-D2_manual_v2404.pdf
+    format: pdf
+    extractor: hukseflux_sr_digital
+    contracts:
+    - path: devices/hukseflux/sr20-d2/telemetry.omb.yaml
+      selector: SR20-D2
+      info:
+        id: hukseflux/sr20-d2/telemetry
+        title: Hukseflux SR20-D2 pyranometer telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the SR20-D2 Modbus RTU registers: irradiance with and without temperature compensation,
+          body temperature, thermopile resistance and voltage, and calibration and identification data. The sensor
+          does not respond to a request for six or more registers; read the two registers of a 32-bit value in one
+          request.
+        attribution: Derived from Hukseflux's SR20-D2 Digital Class A pyranometer user manual.
+      device:
+        manufacturer: Hukseflux
+        model: SR20-D2
+        classes: [irradiance_sensor]
+        transports:
+        - type: rtu
+          notes: 2-wire RS-485. Factory default 19200 baud, 8 data bits, even parity, 1 stop bit.
+        unitId:
+          mode: configurable
+          default: 1
+          notes: Configurable from 1 to 247 in register 0; a change takes effect after a restart.
+      defaults: {table: holding_register, access: r, wordOrder: big, byteOrder: big}
+  imt-technology-si-rs485-modbus:
+    publisher: IMT Technology
+    title: Modbus Specification for Irradiance Sensors Si-RS485…-MB
+    revision: January 2026 (firmware 2.03)
+    landing_url: https://imt-technology.com/fileadmin/docs/en/products/Specification_Si-RS485_MODBUS.pdf
+    download_urls:
+    - https://imt-technology.com/fileadmin/docs/en/products/Si-RS485_Modbus_SPEC_EN.pdf
+    format: pdf
+    extractor: imt_technology_si_rs485
+    contracts:
+    - path: devices/imt-technology/si-rs485tc-t-mb/telemetry.omb.yaml
+      selector: Si-RS485TC-T-MB
+      info:
+        id: imt-technology/si-rs485tc-t-mb/telemetry
+        title: IMT Technology Si-RS485TC-T-MB irradiance sensor telemetry
+        version: 0.1.0
+        description: >
+          All registers of the Si-RS485TC-T-MB that the specification lists as active for this sensor type, plus
+          the two cell-temperature compatibility registers, for firmware 2.03. Serial number, firmware version and
+          bus parameters are only available through the vendor-specific function code 0x46 and are not covered.
+          The addresses are taken as zero-based because the register list starts at register 0, which one-based
+          numbering cannot contain; the specification does not state the base. The register tables are listed under
+          the supported read functions 0x03 and 0x04 and are mapped as input registers.
+        attribution: >-
+          Derived from IMT Technology's Modbus Specification for Irradiance Sensors Si-RS485…-MB.
+      device:
+        manufacturer: IMT Technology
+        model: Si-RS485TC-T-MB
+        classes: [irradiance_sensor]
+        transports:
+        - type: rtu
+          notes: RS-485. Factory default 9600 baud, 8 data bits, no parity, 1 stop bit.
+        unitId:
+          mode: configurable
+          default: 1
+          notes: Set through the vendor-specific function code 0x46.
+      defaults: {table: input_register, access: r}
+    - path: devices/imt-technology/si-rs485tc-2t-mb/telemetry.omb.yaml
+      selector: Si-RS485TC-2T-MB
+      info:
+        id: imt-technology/si-rs485tc-2t-mb/telemetry
+        title: IMT Technology Si-RS485TC-2T-MB irradiance sensor telemetry
+        version: 0.1.0
+        description: >
+          All registers of the Si-RS485TC-2T-MB that the specification lists as active for this sensor type, plus
+          the two cell-temperature compatibility registers, for firmware 2.03. On this type the external temperature
+          input is an ambient temperature sensor. Serial number, firmware version and bus parameters are only available
+          through the vendor-specific function code 0x46 and are not covered. The addresses are taken as zero-based
+          because the register list starts at register 0, which one-based numbering cannot contain; the specification
+          does not state the base. The register tables are listed under the supported read functions 0x03 and 0x04
+          and are mapped as input registers.
+        attribution: >-
+          Derived from IMT Technology's Modbus Specification for Irradiance Sensors Si-RS485…-MB.
+      device:
+        manufacturer: IMT Technology
+        model: Si-RS485TC-2T-MB
+        classes: [irradiance_sensor]
+        transports:
+        - type: rtu
+          notes: RS-485. Factory default 9600 baud, 8 data bits, no parity, 1 stop bit.
+        unitId:
+          mode: configurable
+          default: 1
+          notes: Set through the vendor-specific function code 0x46.
+      defaults: {table: input_register, access: r}
+    - path: devices/imt-technology/si-rs485tc-t-tm-mb/telemetry.omb.yaml
+      selector: Si-RS485TC-T-Tm-MB
+      info:
+        id: imt-technology/si-rs485tc-t-tm-mb/telemetry
+        title: IMT Technology Si-RS485TC-T-Tm-MB irradiance sensor telemetry
+        version: 0.1.0
+        description: >
+          All registers of the Si-RS485TC-T-Tm-MB that the specification lists as active for this sensor type, plus
+          the two cell-temperature compatibility registers, for firmware 2.03. On this type the external temperature
+          input is a PV module temperature sensor. Serial number, firmware version and bus parameters are only available
+          through the vendor-specific function code 0x46 and are not covered. The addresses are taken as zero-based
+          because the register list starts at register 0, which one-based numbering cannot contain; the specification
+          does not state the base. The register tables are listed under the supported read functions 0x03 and 0x04
+          and are mapped as input registers.
+        attribution: >-
+          Derived from IMT Technology's Modbus Specification for Irradiance Sensors Si-RS485…-MB.
+      device:
+        manufacturer: IMT Technology
+        model: Si-RS485TC-T-Tm-MB
+        classes: [irradiance_sensor]
+        transports:
+        - type: rtu
+          notes: RS-485. Factory default 9600 baud, 8 data bits, no parity, 1 stop bit.
+        unitId:
+          mode: configurable
+          default: 1
+          notes: Set through the vendor-specific function code 0x46.
+      defaults: {table: input_register, access: r}
+  kipp-zonen-smp-modbus:
+    publisher: OTT HydroMet
+    title: Smart Pyranometer Modbus® Communication Manual
+    revision: 0426210 | 01-0324
+    landing_url: https://www.kippzonen.com/products/smp3-pyranometer
+    download_urls:
+    - https://cdn.hach.com/1XMCM0ZF/at/j8rsw3f2f9b7s3wtzkqs9ch/SO-KZ-RE-mn-Communications_Modbus-EN-GL-240320.pdf
+    format: pdf
+    extractor: kipp_zonen_smp_modbus
+    contracts:
+    - path: devices/kipp-zonen/smp3/telemetry.omb.yaml
+      selector: SMP3
+      info:
+        id: kipp-zonen/smp3/telemetry
+        title: Kipp & Zonen SMP3 smart pyranometer telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the SMP3 Modbus RTU registers (data model version 107). The irradiance registers are
+          left unconverted: the manual scales them by the scale factor register as a divisor, which this draft cannot
+          express. The 32-bit float registers are left out because the manual does not state their word order.
+        attribution: Derived from OTT HydroMet's Smart Pyranometer Modbus® Communication Manual.
+      device:
+        manufacturer: OTT HydroMet
+        brand: Kipp & Zonen
+        family: SMP series
+        model: SMP3
+        classes: [irradiance_sensor]
+        transports: [{type: rtu, notes: RS-485.}]
+        unitId:
+          notes: >-
+            Input register 45 (IO_NODE_ID) reports the device address; the manual does not state a default.
+      defaults: {table: input_register, access: r, wordOrder: big, byteOrder: big}
+    - path: devices/kipp-zonen/smp6/telemetry.omb.yaml
+      selector: SMP6
+      info:
+        id: kipp-zonen/smp6/telemetry
+        title: Kipp & Zonen SMP6 smart pyranometer telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the SMP6 Modbus RTU registers (data model version 107). The irradiance registers are
+          left unconverted: the manual scales them by the scale factor register as a divisor, which this draft cannot
+          express. The 32-bit float registers are left out because the manual does not state their word order.
+        attribution: Derived from OTT HydroMet's Smart Pyranometer Modbus® Communication Manual.
+      device:
+        manufacturer: OTT HydroMet
+        brand: Kipp & Zonen
+        family: SMP series
+        model: SMP6
+        classes: [irradiance_sensor]
+        transports: [{type: rtu, notes: RS-485.}]
+        unitId:
+          notes: >-
+            Input register 45 (IO_NODE_ID) reports the device address; the manual does not state a default.
+      defaults: {table: input_register, access: r, wordOrder: big, byteOrder: big}
+    - path: devices/kipp-zonen/smp10/telemetry.omb.yaml
+      selector: SMP10
+      info:
+        id: kipp-zonen/smp10/telemetry
+        title: Kipp & Zonen SMP10 smart pyranometer telemetry
+        version: 0.1.0
+        description: >
+          Read-only subset of the SMP10 Modbus RTU registers (data model version 107). The irradiance registers
+          are left unconverted: the manual scales them by the scale factor register as a divisor, which this draft
+          cannot express. The 32-bit float registers are left out because the manual does not state their word order.
+        attribution: Derived from OTT HydroMet's Smart Pyranometer Modbus® Communication Manual.
+      device:
+        manufacturer: OTT HydroMet
+        brand: Kipp & Zonen
+        family: SMP series
+        model: SMP10
+        classes: [irradiance_sensor]
+        transports: [{type: rtu, notes: RS-485.}]
+        unitId:
+          notes: >-
+            Input register 45 (IO_NODE_ID) reports the device address; the manual does not state a default.
+      defaults: {table: input_register, access: r, wordOrder: big, byteOrder: big}

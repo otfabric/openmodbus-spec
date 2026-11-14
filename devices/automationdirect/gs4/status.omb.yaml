@@ -1,0 +1,372 @@
+openmodbus: 0.1.0
+info:
+  id: automationdirect/gs4/status
+  title: AutomationDirect DURApulse GS4 drive status
+  version: 0.1.0
+  description: 'Read-only subset of the serial Modbus status addresses (2100h block):
+    error code, run status, DC bus and output voltage, active warning and error/warning
+    bytes. Output frequency, output current and output power are left out because
+    the manual gives conflicting or no scales for them; motor speed (210Ch) is left
+    out because the list does not state its signedness. The manual limits a read to
+    12 registers.
+
+    '
+  attribution: Derived from AutomationDirect's DURApulse GS4 AC Drive User Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: automationdirect-gs4-manual
+device:
+  manufacturer: AutomationDirect
+  family: DURApulse
+  model: GS4
+  classes:
+  - drive
+  transports:
+  - type: rtu
+  - type: ascii
+  documentation:
+  - title: DURApulse GS4 AC Drive User Manual
+    url: https://cdn.automationdirect.com/static/manuals/gs4m/gs4umw.pdf
+    revision: 1st Ed. Rev N, 04/02/2025
+defaults:
+  table: holding_register
+  access: r
+constraints:
+  maxReadRegisters: 12
+points:
+- id: error_code
+  label: Status Monitor 1 error code
+  address: 8448
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: no_error
+      label: No Error
+    - value: 1
+      name: overcurrent_during_accel
+      label: Overcurrent during Accel (ocA)
+    - value: 2
+      name: overcurrent_during_decel
+      label: Overcurrent during Decel (ocd)
+    - value: 3
+      name: overcurrent_during_normal_speed
+      label: Overcurrent during normal speed (ocn)
+    - value: 4
+      name: ground_fault
+      label: Ground Fault (GFF)
+    - value: 5
+      name: igbt_short_circuit
+      label: IGBT short circuit (occ)
+    - value: 6
+      name: overcurrent_during_stop
+      label: Overcurrent during Stop (ocS)
+    - value: 7
+      name: overvoltage_during_accel
+      label: Overvoltage during Accel (ovA)
+    - value: 8
+      name: overvoltage_during_decel
+      label: Overvoltage during Decel (ovd)
+    - value: 9
+      name: overvoltage_during_normal_speed
+      label: Overvoltage during normal speed (ovn)
+    - value: 10
+      name: overvoltage_during_stop
+      label: Overvoltage during Stop (ovS)
+    - value: 11
+      name: low_voltage_during_accel
+      label: Low voltage during Accel (LvA)
+    - value: 12
+      name: low_voltage_during_decel
+      label: Low voltage during Decel (Lvd)
+    - value: 13
+      name: low_voltage_during_normal_speed
+      label: Low voltage during normal speed (Lvn)
+    - value: 14
+      name: low_voltage_during_stop
+      label: Low voltage during Stop (LvS)
+    - value: 15
+      name: input_phase_loss
+      label: Input phase loss (OrP)
+    - value: 16
+      name: igbt_overheat_1
+      label: IGBT Overheat 1 (oH1)
+    - value: 17
+      name: cap_overheat_2
+      label: Cap Overheat 2 (oH2)
+    - value: 18
+      name: thermister_1_open
+      label: Thermister 1 open (tH1o)
+    - value: 19
+      name: thermister_2_open
+      label: Thermister 2 open (tH2o)
+    - value: 20
+      name: power_reset_off
+      label: Power Reset Off (PWR)
+    - value: 21
+      name: overload
+      label: Overload (oL) (150% 1Min, Inverter)
+    - value: 22
+      name: motor1_thermal_overload
+      label: Motor1 Thermal Overload (EoL1)
+    - value: 23
+      name: motor2_thermal_overload
+      label: Motor2 Thermal Overload (EoL2)
+    - value: 24
+      name: motor_overheat_ptc
+      label: Motor Overheat-PTC (oH3)
+    - value: 26
+      name: over_torque_1
+      label: Over Torque 1 (ot1)
+    - value: 27
+      name: over_torque_2
+      label: Over Torque 2 (ot2)
+    - value: 28
+      name: under_current
+      label: Under current (uc)
+    - value: 30
+      name: eeprom_write_error
+      label: EEPROM write error (cF1)
+    - value: 31
+      name: eeprom_read_error
+      label: EEPROM read error (cF2)
+    - value: 33
+      name: u_phase_current_sensor_detection_error
+      label: U phase current sensor detection error (cd1)
+    - value: 34
+      name: v_phase_current_sensor_detection_error
+      label: V phase current sensor detection error (cd2)
+    - value: 35
+      name: w_phase_current_sensor_detection_error
+      label: W phase current sensor detection error (cd3)
+    - value: 36
+      name: cc_hardware_logic_error_0
+      label: CC Hardware Logic error 0 (Hd0)
+    - value: 37
+      name: oc_hardware_logic_error_1
+      label: OC Hardware Logic error 1 (Hd1)
+    - value: 38
+      name: ov_hardware_logic_error_2
+      label: OV Hardware Logic error 2 (Hd2)
+    - value: 39
+      name: occ_hardware_logic_error_3
+      label: OCC Hardware Logic error 3 (Hd3)
+    - value: 40
+      name: motor_auto_tune_error
+      label: Motor auto tune error (AuE)
+    - value: 41
+      name: pid_feedback_loss
+      label: PID Feedback loss (AFE)
+    - value: 48
+      name: analog_input_signal_loss
+      label: Analog input signal loss (ACE)
+    - value: 49
+      name: external_fault
+      label: External Fault (EF)
+    - value: 50
+      name: emergency_stop
+      label: Emergency Stop (EF1)
+    - value: 51
+      name: base_block
+      label: Base Block (bb)
+    - value: 52
+      name: password_error
+      label: Password Error (Pcod)
+    - value: 53
+      name: software_code_lock
+      label: Software Code lock (ccod)
+    - value: 54
+      name: pc_command_error
+      label: PC Command error (CE1)
+    - value: 55
+      name: pc_address_error
+      label: PC Address error (CE2)
+    - value: 56
+      name: pc_data_error
+      label: PC Data error (CE3)
+    - value: 57
+      name: pc_slave_error
+      label: PC Slave error (CE4)
+    - value: 58
+      name: pc_communication_time_out
+      label: PC Communication Time Out (CE10)
+    - value: 59
+      name: pc_keypad_time_out
+      label: PC Keypad Time out (CP10)
+    - value: 60
+      name: braking_transistor_fault
+      label: Braking Transistor Fault (bf)
+    - value: 61
+      name: y_delta_connection_error
+      label: Y-Delta connection Error (ydc)
+    - value: 62
+      name: decel_energy_backup_error
+      label: Decel Energy Backup Error (dEb)
+    - value: 63
+      name: over_slip_error
+      label: Over Slip Error (oSL)
+    - value: 64
+      name: electromagnet_switch_error
+      label: Electromagnet switch error (ryF)
+    - value: 72
+      name: sto_loss1
+      label: STO Loss1 (STL1) STO1~SCM1 internal hardware detect error
+    - value: 73
+      name: es1_emergency_stop
+      label: ES1 Emergency Stop (S1)
+    - value: 74
+      name: in_fire_mode
+      label: In Fire Mode (Fire)
+    - value: 76
+      name: safety_torque_off_function_active
+      label: Safety Torque Off function active (STO)
+    - value: 77
+      name: sto_loss2
+      label: STO Loss2 (STL2) STO2~SCM2 internal hardware detect error
+    - value: 78
+      name: sto_loss3
+      label: STO Loss3 (STL3) – STO1~SCM1 and STO2~SCM2 internal hardware detect errors
+    - value: 79
+      name: u_phase_short
+      label: U Phase Short (Uoc)
+    - value: 80
+      name: v_phase_short
+      label: V Phase Short (Voc)
+    - value: 81
+      name: w_phase_short
+      label: W Phase Short (Woc)
+    - value: 82
+      name: u_phase_loss
+      label: U Phase Loss (UPHL)
+    - value: 83
+      name: v_phase_loss
+      label: V Phase Loss (VPHL)
+    - value: 84
+      name: w_phase_loss
+      label: W Phase Loss (WPHL)
+    - value: 90
+      name: plc_force_stop
+      label: PLC Force Stop (FStp)
+    - value: 99
+      name: cpu_command_error
+      label: CPU Command error (TRAP)
+    - value: 111
+      name: inrcom_time_out
+      label: InrCom Time Out (ictE)
+  source:
+    address: 2100h
+    page: 312
+    reference: Status Addresses (Read Only), Status Monitor 1
+- id: operation_status
+  address: 8449
+  type: u16
+  mask: 3
+  enum:
+    values:
+    - value: 0
+      name: stop
+      label: Stop
+    - value: 1
+      name: decelerating
+      label: Decelerate during the drive stopping
+    - value: 2
+      name: standby
+      label: The drive standby
+    - value: 3
+      name: run
+      label: Run
+  description: Bit 0,1 of status monitor 2 (2101h).
+  source:
+    address: 2101h
+    page: 313
+    reference: Status Addresses (Read Only), Status Monitor 2
+- id: operation_direction
+  address: 8449
+  type: u16
+  mask: 24
+  enum:
+    values:
+    - value: 0
+      name: forward
+      label: FWD
+    - value: 1
+      name: reverse_to_forward
+      label: REV to FWD
+    - value: 2
+      name: forward_to_reverse
+      label: FWD to REV
+    - value: 3
+      name: reverse
+      label: REV
+  description: Bit 3,4 of status monitor 2 (2101h).
+  source:
+    address: 2101h
+    page: 313
+    reference: Status Addresses (Read Only), Status Monitor 2
+- id: running
+  address: 8449
+  type: u16
+  mask: 4096
+  enum:
+    values:
+    - value: 0
+      name: stopped
+      label: Drive stopped
+    - value: 1
+      name: running
+      label: Drive running (including Standby)
+  description: 'Bit 12 of status monitor 2 (2101h): running status.'
+  source:
+    address: 2101h
+    page: 313
+    reference: Status Addresses (Read Only), Status Monitor 2
+- id: dc_bus_voltage
+  label: DC-BUS Voltage U (xxx.x)
+  address: 8453
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: V
+  source:
+    address: 2105h
+    page: 313
+    reference: Status Addresses (Read Only)
+- id: output_voltage
+  label: Output Voltage E (xxx.x)
+  address: 8454
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: V
+  source:
+    address: 2106h
+    page: 313
+    reference: Status Addresses (Read Only)
+- id: active_warning
+  label: Active Warning
+  address: 8456
+  type: u16
+  source:
+    address: 2108h
+    page: 313
+    reference: Status Addresses (Read Only)
+- id: active_error_low_byte
+  address: 8472
+  type: u16
+  mask: 255
+  description: 'Low byte of status address 2118h: Low Byte Active Error [2100h = Active
+    Error/Fault].'
+  source:
+    address: 2118h
+    page: 313
+    reference: Status Addresses (Read Only)
+- id: active_warning_high_byte
+  address: 8472
+  type: u16
+  mask: 65280
+  description: 'High byte of status address 2118h: High Byte Active Warning [2108h
+    = Active Warning].'
+  source:
+    address: 2118h
+    page: 313
+    reference: Status Addresses (Read Only)

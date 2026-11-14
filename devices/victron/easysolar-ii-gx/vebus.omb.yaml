@@ -1,0 +1,348 @@
+openmodbus: 0.1.0
+info:
+  id: victron/easysolar-ii-gx/vebus
+  title: Victron EasySolar-II GX VE.Bus telemetry through its built-in GX device
+  version: 0.1.0
+  description: 'Read-only subset of the com.victronenergy.vebus service that a GX
+    device serves for a VE.Bus inverter/charger (GX Modbus-TCP register list 3.81,
+    document Rev 54). The inverter/charger has no Modbus interface of its own: the
+    GX device is the Modbus TCP server and gateway, and the unit ID selects the VE.Bus
+    system. Values are those of the whole VE.Bus system; units in a parallel or three-phase
+    system are not addressed one by one. Addresses are request addresses and the Scalefactor
+    column is a divisor, as the mapping example of the GX Modbus-TCP Manual shows.
+    Not every register is available on every product. VE.Bus state of charge is writable
+    on the GX; this contract only reads it. 32-bit registers are left out because
+    the register list does not state their word order.
+
+    '
+  attribution: Derived from Victron Energy's GX Modbus-TCP register list.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: victron-gx-vebus
+device:
+  manufacturer: Victron Energy
+  family: VE.Bus inverter/charger
+  model: EasySolar-II GX
+  classes:
+  - energy_storage
+  - battery_inverter
+  transports:
+  - type: tcp
+    notes: Served by the built-in GX device acting as Modbus TCP gateway for the internal
+      VE.Bus inverter/charger.
+  unitId:
+    notes: 'Assigned by the GX device. Since Venus OS 2.60 unit IDs are dynamic and
+      generally equal the VE.Bus device instance; the GX lists them under Settings,
+      Integrations, Modbus TCP server, Available services. Preferred ID for the built-in
+      VE.Bus port: 228.'
+  documentation:
+  - title: GX Modbus-TCP register list
+    url: https://www.victronenergy.com/upload/documents/CCGX-Modbus-TCP-register-list-3.81.xlsx
+    revision: 3.81 (document Rev 54)
+  - title: GX Modbus-TCP Manual
+    url: https://www.victronenergy.com/live/ccgx:modbustcp_faq?rev=1743181803
+    revision: wiki revision 1743181803 (2025-03-28 17:10 UTC)
+defaults:
+  table: holding_register
+  access: r
+points:
+- id: ac_input_power_l1
+  address: 12
+  type: i16
+  unit: W
+  conversion:
+    exponent10: 1
+  description: Sign meaning equal to Input current
+  aliases:
+  - Input power 1
+  - com.victronenergy.vebus/Ac/ActiveIn/L1/P
+  source:
+    address: '12'
+    reference: Field list!C87
+- id: ac_output_voltage_l1
+  address: 15
+  type: u16
+  unit: V
+  conversion:
+    exponent10: -1
+  aliases:
+  - Output voltage phase 1
+  - com.victronenergy.vebus/Ac/Out/L1/V
+  source:
+    address: '15'
+    reference: Field list!C90
+- id: ac_output_frequency
+  address: 21
+  type: i16
+  unit: Hz
+  conversion:
+    exponent10: -2
+  aliases:
+  - Output frequency
+  - com.victronenergy.vebus/Ac/Out/L1/F
+  source:
+    address: '21'
+    reference: Field list!C96
+- id: ac_output_power_l1
+  address: 23
+  type: i16
+  unit: W
+  conversion:
+    exponent10: 1
+  description: Sign meaning equal to Output current
+  aliases:
+  - Output power 1
+  - com.victronenergy.vebus/Ac/Out/L1/P
+  source:
+    address: '23'
+    reference: Field list!C98
+- id: battery_voltage
+  address: 26
+  type: u16
+  unit: V
+  conversion:
+    exponent10: -2
+  aliases:
+  - Battery voltage
+  - com.victronenergy.vebus/Dc/0/Voltage
+  source:
+    address: '26'
+    reference: Field list!C101
+- id: battery_current
+  address: 27
+  type: i16
+  unit: A
+  conversion:
+    exponent10: -1
+  description: 'Positive: current flowing from the Multi to the dc system. Negative:
+    the other way around.'
+  aliases:
+  - Battery current
+  - com.victronenergy.vebus/Dc/0/Current
+  source:
+    address: '27'
+    reference: Field list!C102
+- id: battery_state_of_charge
+  address: 30
+  type: u16
+  unit: '%'
+  conversion:
+    exponent10: -1
+  aliases:
+  - VE.Bus state of charge
+  - com.victronenergy.vebus/Soc
+  source:
+    address: '30'
+    reference: Field list!C105
+- id: vebus_state
+  address: 31
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: 'off'
+      label: 'Off'
+    - value: 1
+      name: low_power
+      label: Low Power
+    - value: 2
+      name: fault
+      label: Fault
+    - value: 3
+      name: bulk
+      label: Bulk
+    - value: 4
+      name: absorption
+      label: Absorption
+    - value: 5
+      name: float
+      label: Float
+    - value: 6
+      name: storage
+      label: Storage
+    - value: 7
+      name: equalize
+      label: Equalize
+    - value: 8
+      name: passthru
+      label: Passthru
+    - value: 9
+      name: inverting
+      label: Inverting
+    - value: 10
+      name: power_assist
+      label: Power assist
+    - value: 11
+      name: power_supply
+      label: Power supply
+    - value: 244
+      name: sustain
+      label: Sustain
+    - value: 252
+      name: external_control
+      label: External control
+  aliases:
+  - VE.Bus state
+  - com.victronenergy.vebus/State
+  source:
+    address: '31'
+    reference: Field list!C106
+- id: temperature_alarm
+  address: 34
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: ok
+      label: Ok
+    - value: 1
+      name: warning
+      label: Warning
+    - value: 2
+      name: alarm
+      label: Alarm
+  aliases:
+  - Temperature alarm
+  - com.victronenergy.vebus/Alarms/HighTemperature
+  source:
+    address: '34'
+    reference: Field list!C109
+- id: low_battery_alarm
+  address: 35
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: ok
+      label: Ok
+    - value: 1
+      name: warning
+      label: Warning
+    - value: 2
+      name: alarm
+      label: Alarm
+  aliases:
+  - Low battery alarm
+  - com.victronenergy.vebus/Alarms/LowBattery
+  source:
+    address: '35'
+    reference: Field list!C110
+- id: overload_alarm
+  address: 36
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: ok
+      label: Ok
+    - value: 1
+      name: warning
+      label: Warning
+    - value: 2
+      name: alarm
+      label: Alarm
+  aliases:
+  - Overload alarm
+  - com.victronenergy.vebus/Alarms/Overload
+  source:
+    address: '36'
+    reference: Field list!C111
+- id: bms_allows_charge
+  address: 57
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: 'no'
+      label: 'No'
+    - value: 1
+      name: 'yes'
+      label: 'Yes'
+  description: VE.Bus BMS allows the battery to be charged
+  aliases:
+  - VE.Bus BMS allows battery to be charged
+  - com.victronenergy.vebus/Bms/AllowToCharge
+  source:
+    address: '57'
+    reference: Field list!C132
+- id: bms_allows_discharge
+  address: 58
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: 'no'
+      label: 'No'
+    - value: 1
+      name: 'yes'
+      label: 'Yes'
+  description: VE.Bus BMS allows the battery to be discharged
+  aliases:
+  - VE.Bus BMS allows battery to be discharged
+  - com.victronenergy.vebus/Bms/AllowToDischarge
+  source:
+    address: '58'
+    reference: Field list!C133
+- id: battery_temperature
+  address: 61
+  type: i16
+  unit: Cel
+  conversion:
+    exponent10: -1
+  aliases:
+  - Battery temperature
+  - com.victronenergy.vebus/Dc/0/Temperature
+  source:
+    address: '61'
+    reference: Field list!C136
+- id: charge_state
+  address: 95
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: initialising
+      label: Initialising
+    - value: 1
+      name: bulk
+      label: Bulk
+    - value: 2
+      name: absorption
+      label: Absorption
+    - value: 3
+      name: float
+      label: Float
+    - value: 4
+      name: storage
+      label: Storage
+    - value: 5
+      name: absorb_repeat
+      label: Absorb repeat
+    - value: 6
+      name: forced_absorb
+      label: Forced absorb
+    - value: 7
+      name: equalise
+      label: Equalise
+    - value: 8
+      name: bulk_stopped
+      label: Bulk stopped
+    - value: 9
+      name: unknown
+      label: Unknown
+  aliases:
+  - Charge state
+  - com.victronenergy.vebus/VebusChargeState
+  source:
+    address: '95'
+    reference: Field list!C160
+- id: custom_name
+  address: 140
+  type: string
+  registers: 8
+  aliases:
+  - Custom Name
+  - com.victronenergy.vebus/CustomName
+  source:
+    address: '140'
+    reference: Field list!C191

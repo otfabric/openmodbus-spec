@@ -1,0 +1,476 @@
+openmodbus: 0.1.0
+info:
+  id: datakom/d-300/telemetry
+  title: Datakom D-300 engine, status and alarm registers
+  version: 0.1.0
+  description: 'Read-only subset of the register definitions and the list of alarm
+    bits (function 3) of the D-300 / 500 / 700 Modbus Application Manual V5.6. The
+    manual states both register orders for 32-bit values, so no 32-bit value is mapped:
+    generator voltages, currents and power, engine hours, the start counter and the
+    energy counters are left out. It does not state signedness, so only quantities
+    that cannot be negative are mapped, as unsigned. The COEFF column is read as register
+    = value x COEFF. Unit mode value 2 is documented only for the D-500 and D-700.
+
+    '
+  attribution: Derived from Datakom's D-300 / 500 / 700 Modbus Application Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: datakom-500-modbus
+device:
+  manufacturer: Datakom
+  family: D-series
+  model: D-300
+  classes:
+  - genset_controller
+  transports:
+  - type: rtu
+    notes: RS-485 or RS-232 serial port.
+  - type: tcp
+    notes: Ethernet port or GSM-GPRS modem; the manual does not say which models have
+      them.
+  unitId:
+    mode: configurable
+    default: 1
+    notes: Modbus slave address 1 to 240.
+  documentation:
+  - title: D-300 / 500 / 700 Modbus Application Manual
+    url: https://www.datakom.com.tr/upload/Files/500_MODBUS.pdf
+    revision: V5.6 (25.04.2016)
+defaults:
+  table: holding_register
+  access: r
+constraints:
+  maxReadRegisters: 16
+points:
+- id: generator_frequency
+  aliases:
+  - Genset frequency
+  address: 10339
+  type: u16
+  conversion:
+    exponent10: -2
+  description: The document states no unit for this register.
+  source:
+    address: '10339'
+    page: 12
+    reference: Register definitions
+- id: battery_voltage
+  aliases:
+  - Battery voltage
+  address: 10341
+  type: u16
+  conversion:
+    exponent10: -2
+  description: The document states no unit for this register.
+  source:
+    address: '10341'
+    page: 12
+    reference: Register definitions
+- id: oil_pressure
+  aliases:
+  - Oil pressure in bars (multiply by 14.50 to for psi)
+  address: 10361
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: bar
+  source:
+    address: '10361'
+    page: 13
+    reference: Register definitions
+- id: fuel_level
+  aliases:
+  - Fuel level in %
+  address: 10363
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: '%'
+  source:
+    address: '10363'
+    page: 13
+    reference: Register definitions
+- id: magnetic_pickup_speed
+  aliases:
+  - Magnetic pickup input reading (rpm)
+  address: 10375
+  type: u16
+  unit: /min
+  source:
+    address: '10375'
+    page: 13
+    reference: Register definitions
+- id: engine_speed
+  aliases:
+  - Engine rpm
+  address: 10376
+  type: u16
+  unit: /min
+  source:
+    address: '10376'
+    page: 13
+    reference: Register definitions
+- id: shutdown_alarms_48_63
+  label: Shutdown alarm bits 048-063
+  address: 10507
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: genset_low_frequency
+      label: Genset Low Frequency
+    - bit: 1
+      name: genset_high_frequency
+      label: Genset High Frequency
+    - bit: 2
+      name: genset_low_rpm
+      label: Genset Low RPM
+    - bit: 3
+      name: genset_high_rpm
+      label: Genset High RPM
+    - bit: 4
+      name: genset_low_voltage
+      label: Genset Low Voltage
+    - bit: 5
+      name: genset_high_voltage
+      label: Genset High Voltage
+    - bit: 6
+      name: low_oil_pressure
+      label: Low Oil Pressure
+    - bit: 7
+      name: high_oil_pressure
+      label: High Oil Pressure
+    - bit: 8
+      name: low_engine_temp
+      label: Low Engine Temp.
+    - bit: 9
+      name: high_engine_temp
+      label: High Engine Temp.
+    - bit: 10
+      name: low_fuel_level
+      label: Low Fuel Level
+    - bit: 11
+      name: high_fuel_level
+      label: High Fuel Level
+    - bit: 12
+      name: low_oil_temp
+      label: Low Oil Temp
+    - bit: 13
+      name: high_oil_temp
+      label: High Oil Temp
+    - bit: 14
+      name: low_canopy_temp
+      label: Low Canopy Temp
+    - bit: 15
+      name: high_canopy_temp
+      label: High Canopy Temp
+  source:
+    address: 10504-10519 (register 10507)
+    page: 14
+    reference: Register definitions; list of alarm bits (page 17)
+- id: shutdown_alarms_96_111
+  label: Shutdown alarm bits 096-111
+  address: 10510
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: low_battery_voltage
+      label: Low Battery Voltage
+    - bit: 1
+      name: high_battery_voltage
+      label: High Battery Voltage
+    - bit: 2
+      name: fail_to_start
+      label: Fail To Start
+    - bit: 3
+      name: fail_to_stop
+      label: Fail To Stop
+    - bit: 4
+      name: low_charge_volt
+      label: Low Charge Volt
+    - bit: 5
+      name: j1939_ecu_error
+      label: J1939 ECU Error
+    - bit: 6
+      name: high_air_inlet_temp
+      label: High Air Inlet Temp
+    - bit: 7
+      name: low_coolant_level
+      label: Low Coolant Level
+    - bit: 8
+      name: voltage_unbalance
+      label: Voltage Unbalance
+    - bit: 9
+      name: current_unbalance
+      label: Current Unbalance
+    - bit: 10
+      name: over_current
+      label: Over Current
+    - bit: 11
+      name: over_load
+      label: Over Load
+    - bit: 12
+      name: reverse_power
+      label: Reverse Power
+    - bit: 13
+      name: gen_phase_order_fail
+      label: Gen Phase Order Fail
+    - bit: 14
+      name: mains_phase_order_fail
+      label: Mains Phase Order Fail
+    - bit: 15
+      name: gen_cb_fail_to_close
+      label: Gen CB Fail To Close
+  source:
+    address: 10504-10519 (register 10510)
+    page: 14
+    reference: Register definitions; list of alarm bits (page 17)
+- id: warning_alarms_48_63
+  label: Warning alarm bits 048-063
+  address: 10539
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: genset_low_frequency
+      label: Genset Low Frequency
+    - bit: 1
+      name: genset_high_frequency
+      label: Genset High Frequency
+    - bit: 2
+      name: genset_low_rpm
+      label: Genset Low RPM
+    - bit: 3
+      name: genset_high_rpm
+      label: Genset High RPM
+    - bit: 4
+      name: genset_low_voltage
+      label: Genset Low Voltage
+    - bit: 5
+      name: genset_high_voltage
+      label: Genset High Voltage
+    - bit: 6
+      name: low_oil_pressure
+      label: Low Oil Pressure
+    - bit: 7
+      name: high_oil_pressure
+      label: High Oil Pressure
+    - bit: 8
+      name: low_engine_temp
+      label: Low Engine Temp.
+    - bit: 9
+      name: high_engine_temp
+      label: High Engine Temp.
+    - bit: 10
+      name: low_fuel_level
+      label: Low Fuel Level
+    - bit: 11
+      name: high_fuel_level
+      label: High Fuel Level
+    - bit: 12
+      name: low_oil_temp
+      label: Low Oil Temp
+    - bit: 13
+      name: high_oil_temp
+      label: High Oil Temp
+    - bit: 14
+      name: low_canopy_temp
+      label: Low Canopy Temp
+    - bit: 15
+      name: high_canopy_temp
+      label: High Canopy Temp
+  source:
+    address: 10536-10551 (register 10539)
+    page: 14
+    reference: Register definitions; list of alarm bits (page 17)
+- id: warning_alarms_96_111
+  label: Warning alarm bits 096-111
+  address: 10542
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: low_battery_voltage
+      label: Low Battery Voltage
+    - bit: 1
+      name: high_battery_voltage
+      label: High Battery Voltage
+    - bit: 2
+      name: fail_to_start
+      label: Fail To Start
+    - bit: 3
+      name: fail_to_stop
+      label: Fail To Stop
+    - bit: 4
+      name: low_charge_volt
+      label: Low Charge Volt
+    - bit: 5
+      name: j1939_ecu_error
+      label: J1939 ECU Error
+    - bit: 6
+      name: high_air_inlet_temp
+      label: High Air Inlet Temp
+    - bit: 7
+      name: low_coolant_level
+      label: Low Coolant Level
+    - bit: 8
+      name: voltage_unbalance
+      label: Voltage Unbalance
+    - bit: 9
+      name: current_unbalance
+      label: Current Unbalance
+    - bit: 10
+      name: over_current
+      label: Over Current
+    - bit: 11
+      name: over_load
+      label: Over Load
+    - bit: 12
+      name: reverse_power
+      label: Reverse Power
+    - bit: 13
+      name: gen_phase_order_fail
+      label: Gen Phase Order Fail
+    - bit: 14
+      name: mains_phase_order_fail
+      label: Mains Phase Order Fail
+    - bit: 15
+      name: gen_cb_fail_to_close
+      label: Gen CB Fail To Close
+  source:
+    address: 10536-10551 (register 10542)
+    page: 14
+    reference: Register definitions; list of alarm bits (page 17)
+- id: operation_status
+  aliases:
+  - Unit operation status
+  address: 10604
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: genset_at_rest
+      label: genset at rest
+    - value: 1
+      name: wait_before_fuel
+      label: wait before fuel
+    - value: 2
+      name: engine_preheat
+      label: engine preheat
+    - value: 3
+      name: wait_oil_flash_off
+      label: wait oil flash off
+    - value: 4
+      name: crank_rest
+      label: crank rest
+    - value: 5
+      name: cranking
+      label: cranking
+    - value: 6
+      name: engine_run_idle_speed
+      label: engine run idle speed
+    - value: 7
+      name: engine_heating
+      label: engine heating
+    - value: 8
+      name: running_off_load
+      label: running off load
+    - value: 9
+      name: synchronizing_to_mains
+      label: synchronizing to mains
+    - value: 10
+      name: load_transfer_to_genset
+      label: load transfer to genset
+    - value: 11
+      name: gen_cb_activation
+      label: gen cb activation
+    - value: 12
+      name: genset_cb_timer
+      label: genset cb timer
+    - value: 13
+      name: master_genset_on_load
+      label: master genset on load
+    - value: 14
+      name: peak_lopping
+      label: peak lopping
+    - value: 15
+      name: power_exporting
+      label: power exporting
+    - value: 16
+      name: slave_genset_on_load
+      label: slave genset on load
+    - value: 17
+      name: synchronizing_back_to_mains
+      label: synchronizing back to mains
+    - value: 18
+      name: load_transfer_to_mains
+      label: load transfer to mains
+    - value: 19
+      name: mains_cb_activation
+      label: mains cb activation
+    - value: 20
+      name: mains_cb_timer
+      label: mains cb timer
+    - value: 21
+      name: stop_with_cooldown
+      label: stop with cooldown
+    - value: 22
+      name: cooling_down
+      label: cooling down
+    - value: 23
+      name: engine_stop_idle_speed
+      label: engine stop idle speed
+    - value: 24
+      name: immediate_stop
+      label: immediate stop
+    - value: 25
+      name: engine_stopping
+      label: engine stopping
+  source:
+    address: '10604'
+    page: 14
+    reference: Register definitions
+- id: unit_mode
+  aliases:
+  - Unit mode
+  address: 10605
+  type: u16
+  enum:
+    values:
+    - value: 1
+      name: stop
+      label: STOP mode
+    - value: 4
+      name: auto
+      label: AUTO mode
+    - value: 8
+      name: test
+      label: TEST mode
+  description: Value 2 is documented only for the D-500 (RUN mode) and the D-700 (MANUAL
+    mode); it is left unnamed for the D-300.
+  source:
+    address: '10605'
+    page: 14
+    reference: Register definitions
+- id: device_identity
+  aliases:
+  - Device identity information. (0xD300, 0xD500, 0xD700....)
+  address: 10609
+  type: u16
+  enum:
+    values:
+    - value: 54016
+      name: d_300
+      label: D-300
+    - value: 54528
+      name: d_500
+      label: D-500
+    - value: 55040
+      name: d_700
+      label: D-700
+  stability: constant
+  source:
+    address: '10609'
+    page: 14
+    reference: Register definitions

@@ -1,0 +1,152 @@
+openmodbus: 0.1.0
+info:
+  id: apogee-instruments/sp-722/telemetry
+  title: Apogee Instruments SP-722 albedometer telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the SP-722 Modbus RTU holding registers: incident
+    and reflected irradiance, detector voltages and albedo as floats, heater state,
+    device status and identification. The decimal-shifted integer copies are left
+    out because the manual does not state the shift direction unambiguously.
+
+    '
+  attribution: Derived from Apogee Instruments' Owner's manual, albedometer model
+    SP-722-SS.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: apogee-instruments-sp-722
+device:
+  manufacturer: Apogee Instruments
+  model: SP-722
+  classes:
+  - irradiance_sensor
+  transports:
+  - type: rtu
+    notes: RS-232 or RS-485. Factory default 19200 baud, 8 data bits, even parity,
+      1 stop bit.
+  unitId:
+    mode: configurable
+    default: 1
+    notes: Valid addresses are 1 to 247.
+  documentation:
+  - title: Owner's manual, albedometer model SP-722-SS
+    url: https://www.apogeeinstruments.com/content/SP-722-manual.pdf
+    revision: 11-March-2026
+defaults:
+  table: holding_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+points:
+- id: irradiance_incident
+  address: 0
+  type: f32
+  aliases:
+  - Incident calibrated output watts
+  unit: W/m2
+  description: Calibrated output of the upward-looking pyranometer (incident).
+  source:
+    address: 0-1
+    page: 13
+    reference: 'Read only float registers: Incident calibrated output watts'
+- id: irradiance_reflected
+  address: 2
+  type: f32
+  aliases:
+  - Reflected calibrated output watts
+  unit: W/m2
+  description: Calibrated output of the downward-looking pyranometer (reflected).
+  source:
+    address: 2-3
+    page: 13
+    reference: 'Read only float registers: Reflected calibrated output watts'
+- id: detector_voltage_incident
+  address: 4
+  type: f32
+  aliases:
+  - Incident detector millivolts
+  unit: mV
+  description: Detector voltage of the upward-looking pyranometer.
+  source:
+    address: 4-5
+    page: 13
+    reference: 'Read only float registers: Incident detector millivolts'
+- id: detector_voltage_reflected
+  address: 6
+  type: f32
+  aliases:
+  - Reflected detector millivolts
+  unit: mV
+  description: Detector voltage of the downward-looking pyranometer.
+  source:
+    address: 6-7
+    page: 13
+    reference: 'Read only float registers: Reflected detector millivolts'
+- id: albedo
+  address: 8
+  type: f32
+  aliases:
+  - Albedo (reflected/incident)
+  description: Albedo, the ratio reflected/incident.
+  source:
+    address: 8-9
+    page: 13
+    reference: 'Read only float registers: Albedo (reflected/incident)'
+- id: firmware_version
+  address: 14
+  type: f32
+  aliases:
+  - firmware version
+  description: Firmware version.
+  source:
+    address: 14-15
+    page: 13
+    reference: 'Read only float registers: firmware version'
+- id: model_number
+  address: 22
+  type: f32
+  aliases:
+  - model number*
+  stability: constant
+  description: Model number.
+  source:
+    address: 22-23
+    page: 14
+    reference: 'Read/Write float registers: model number*'
+- id: serial_number
+  address: 24
+  type: f32
+  aliases:
+  - serial number*
+  stability: constant
+  description: Serial number.
+  source:
+    address: 24-25
+    page: 14
+    reference: 'Read/Write float registers: serial number*'
+- id: device_status
+  address: 50
+  type: i16
+  aliases:
+  - device status (1 means device is busy, 0 otherwise)
+  enum:
+    values:
+    - value: 1
+      name: busy
+    - value: 0
+      name: not_busy
+  description: Device status.
+  source:
+    address: '50'
+    page: 13
+    reference: 'Read only integer registers: device status (1 means device is busy,
+      0 otherwise)'
+- id: heater_on_off
+  address: 65
+  type: i16
+  aliases:
+  - Heater on/off
+  description: Heater on/off; the manual does not list its values.
+  source:
+    address: '65'
+    page: 14
+    reference: 'Read/Write integer registers: Heater on/off'

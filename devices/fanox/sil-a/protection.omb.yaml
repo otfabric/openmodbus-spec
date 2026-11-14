@@ -1,0 +1,203 @@
+openmodbus: 0.1.0
+info:
+  id: fanox/sil-a/protection
+  title: Fanox SIL-A feeder relay states
+  version: 0.1.0
+  description: 'Read-only state words of the SIL-A, read as two registers with function
+    03. The same states are also listed one register at a time (from firmware M05.03.04);
+    this contract uses the two-register map. Measurements are not included.
+
+    '
+  attribution: Derived from Fanox's SIL-A Feeder Relay Modbus Protocol Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: fanox-sil-a-modbus
+device:
+  manufacturer: Fanox
+  model: SIL-A
+  classes:
+  - protection_relay
+  transports:
+  - type: rtu
+  - type: tcp
+  documentation:
+  - title: SIL-A Feeder Relay Modbus Protocol Manual
+    url: https://www.fanox.com/wp-content/uploads/documents/EN_FANOX_MODBUS_SILA_MANUAL_Protocol_R005.pdf
+    revision: Rev. 05
+defaults:
+  table: holding_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+points:
+- id: model_and_version
+  address: 100
+  type: string
+  registers: 44
+  aliases:
+  - Read of Model and Version
+  description: 'ASCII88: character string ended by a NUL character.'
+  source:
+    address: '100'
+    page: 7
+    reference: General Memory Map
+- id: self_diagnosis
+  address: 608
+  type: u32
+  flags:
+    flags:
+    - bit: 0
+      name: model_error
+      label: Model Error
+    - bit: 1
+      name: hardware_error
+      label: Hardware Error
+    - bit: 12
+      name: com_error
+      label: COM Error
+    - bit: 13
+      name: test_state
+      label: Test State
+    - bit: 15
+      name: settings_error
+      label: Settings Error
+    - bit: 17
+      name: configuration_error
+      label: Configuration Error
+  aliases:
+  - Self-diagnosis
+  source:
+    address: '608'
+    page: 9
+    reference: States Map, Self-diagnosis
+- id: general
+  address: 610
+  type: u32
+  flags:
+    flags:
+    - bit: 0
+      name: trip
+      label: Trip
+    - bit: 1
+      name: ready
+      label: Ready
+    - bit: 15
+      name: phase_trip
+      label: Phase Trip
+    - bit: 16
+      name: trip_block
+      label: Trip Block
+    - bit: 17
+      name: pickup
+      label: Pickup
+    - bit: 18
+      name: phase_a_pickup
+      label: Phase A pickup
+    - bit: 19
+      name: phase_b_pickup
+      label: Phase B Pickup
+    - bit: 20
+      name: phase_c_pickup
+      label: Phase C Pickup
+    - bit: 21
+      name: neutral_pickup
+      label: Neutral Pickup
+    - bit: 22
+      name: phase_a_trip
+      label: Phase A Trip
+    - bit: 23
+      name: phase_b_trip
+      label: Phase B Trip
+    - bit: 24
+      name: phase_c_trip
+      label: Phase C Trip
+    - bit: 25
+      name: neutral_trip
+      label: Neutral Trip
+  aliases:
+  - General
+  source:
+    address: '610'
+    page: 9
+    reference: States Map, General
+- id: overcurrent_50_1
+  address: 640
+  type: u32
+  flags:
+    flags:
+    - bit: 3
+      name: pickup
+      label: Pickup
+    - bit: 11
+      name: trip
+      label: Phase Trip
+  aliases:
+  - 50-1
+  source:
+    address: '640'
+    page: 13
+    reference: States Map, 50-1
+- id: earth_overcurrent_50g_1
+  address: 648
+  type: u32
+  flags:
+    flags:
+    - bit: 4
+      name: pickup
+      label: Neutral Pickup
+    - bit: 12
+      name: trip
+      label: Neutral Trip
+  aliases:
+  - 50G-1
+  source:
+    address: '648'
+    page: 13
+    reference: States Map, 50G-1
+- id: thermal_49
+  address: 670
+  type: u32
+  flags:
+    flags:
+    - bit: 3
+      name: alarm
+      label: Alarm
+    - bit: 11
+      name: trip
+      label: Trip
+  aliases:
+  - '49'
+  source:
+    address: '670'
+    page: 15
+    reference: States Map, 49
+- id: cb_error
+  address: 676
+  type: u32
+  mask: 2
+  aliases:
+  - 52 Error
+  source:
+    address: 676 bit 01
+    page: 15
+    reference: States Map, 52
+- id: cb_open
+  address: 676
+  type: u32
+  mask: 4
+  aliases:
+  - 52 Open
+  source:
+    address: 676 bit 02
+    page: 15
+    reference: States Map, 52
+- id: cb_closed
+  address: 676
+  type: u32
+  mask: 32
+  aliases:
+  - 52 Closed
+  source:
+    address: 676 bit 05
+    page: 15
+    reference: States Map, 52

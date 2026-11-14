@@ -1,0 +1,185 @@
+openmodbus: 0.1.0
+info:
+  id: hukseflux/sr20-d2/telemetry
+  title: Hukseflux SR20-D2 pyranometer telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the SR20-D2 Modbus RTU registers: irradiance with
+    and without temperature compensation, body temperature, thermopile resistance
+    and voltage, and calibration and identification data. The sensor does not respond
+    to a request for six or more registers; read the two registers of a 32-bit value
+    in one request.
+
+    '
+  attribution: Derived from Hukseflux's SR20-D2 Digital Class A pyranometer user manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: hukseflux-sr20-d2
+device:
+  manufacturer: Hukseflux
+  model: SR20-D2
+  classes:
+  - irradiance_sensor
+  transports:
+  - type: rtu
+    notes: 2-wire RS-485. Factory default 19200 baud, 8 data bits, even parity, 1
+      stop bit.
+  unitId:
+    mode: configurable
+    default: 1
+    notes: Configurable from 1 to 247 in register 0; a change takes effect after a
+      restart.
+  documentation:
+  - title: SR20-D2 Digital Class A pyranometer user manual
+    url: https://www.hukx.com/uploads/SR20-D2_manual_v2404.pdf
+    revision: v2404
+defaults:
+  table: holding_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+constraints:
+  maxReadRegisters: 5
+points:
+- id: irradiance
+  address: 2
+  type: i32
+  aliases:
+  - Irradiance (temperature compensated signal)
+  conversion:
+    exponent10: -2
+  unit: W/m2
+  description: Temperature-compensated irradiance.
+  source:
+    address: 2+3
+    page: 34
+    reference: 'Modbus registers table: Irradiance (temperature compensated signal)'
+- id: irradiance_uncompensated
+  address: 4
+  type: i32
+  aliases:
+  - Irradiance (uncompensated signal)
+  conversion:
+    exponent10: -2
+  unit: W/m2
+  description: Irradiance not compensated for temperature; for comparison only.
+  source:
+    address: 4+5
+    page: 34
+    reference: 'Modbus registers table: Irradiance (uncompensated signal)'
+- id: body_temperature
+  address: 6
+  type: i16
+  aliases:
+  - Sensor body temperature
+  conversion:
+    exponent10: -2
+  unit: Cel
+  description: Instrument body temperature.
+  source:
+    address: '6'
+    page: 34
+    reference: 'Modbus registers table: Sensor body temperature'
+- id: sensor_resistance
+  address: 7
+  type: u16
+  aliases:
+  - Sensor electrical resistance
+  conversion:
+    exponent10: -1
+  unit: Ohm
+  invalid:
+  - 0
+  description: Thermopile electrical resistance; 0 until a measurement is triggered.
+  source:
+    address: '7'
+    page: 34
+    reference: 'Modbus registers table: Sensor electrical resistance'
+- id: irradiance_scaling_factor
+  address: 8
+  type: u16
+  aliases:
+  - Scaling factor irradiance
+  description: Irradiance scaling factor, default 100. The manual does not state its
+    relation to the irradiance registers, which it gives in 0.01 W/m2.
+  source:
+    address: '8'
+    page: 34
+    reference: 'Modbus registers table: Scaling factor irradiance'
+- id: sensor_voltage
+  address: 10
+  type: i32
+  aliases:
+  - Sensor voltage output
+  conversion:
+    exponent10: -9
+  unit: V
+  description: Thermopile voltage output.
+  source:
+    address: 10 + 11
+    page: 34
+    reference: 'Modbus registers table: Sensor voltage output'
+- id: serial_number
+  address: 40
+  type: u16
+  aliases:
+  - Sensor serial number
+  stability: constant
+  description: Sensor serial number.
+  source:
+    address: '40'
+    page: 36
+    reference: 'Modbus registers table: Sensor serial number'
+- id: sensitivity
+  address: 41
+  type: f32
+  aliases:
+  - Sensor sensitivity
+  unit: uV.m2/W
+  description: Sensitivity from the last calibration.
+  source:
+    address: 41 + 42
+    page: 36
+    reference: 'Modbus registers table: Sensor sensitivity'
+- id: response_time
+  address: 43
+  type: u16
+  aliases:
+  - Response time
+  conversion:
+    exponent10: -1
+  unit: s
+  description: Response time measured during calibration.
+  source:
+    address: '43'
+    page: 36
+    reference: 'Modbus registers table: Response time'
+- id: calibration_date
+  address: 46
+  type: u32
+  aliases:
+  - Sensor calibration date
+  description: Last calibration date as the decimal number YYYYMMDD.
+  source:
+    address: 46 + 47
+    page: 36
+    reference: 'Modbus registers table: Sensor calibration date'
+- id: firmware_version
+  address: 61
+  type: u16
+  aliases:
+  - Firmware version
+  description: Firmware version.
+  source:
+    address: '61'
+    page: 36
+    reference: 'Modbus registers table: Firmware version'
+- id: hardware_version
+  address: 62
+  type: u16
+  aliases:
+  - Hardware version
+  description: Hardware version.
+  source:
+    address: '62'
+    page: 36
+    reference: 'Modbus registers table: Hardware version'

@@ -28,9 +28,10 @@ fmt-check: $(VENV_STAMP) ## Fail on CR, trailing whitespace or a missing final n
 lint: $(VENV_STAMP) ## Check the schema against JSON Schema 2020-12 and parse the YAML files
 	$(VENV_PY) scripts/validate.py lint
 
-test: $(VENV_STAMP) ## Validate examples and catalog contracts; check the corpus manifest offline
+test: $(VENV_STAMP) ## Validate examples and catalog contracts; check the corpus manifest and roster offline
 	$(VENV_PY) scripts/validate.py test
 	$(VENV_PY) corpus/run.py --check-manifest
+	$(VENV_PY) corpus/roster.py --check
 
 corpus: $(VENV_STAMP) ## Extract and verify catalog mappings from pinned vendor sources
 	$(VENV_PY) corpus/run.py --set "$(CORPUS_SET)" $(CORPUS_ARGS)

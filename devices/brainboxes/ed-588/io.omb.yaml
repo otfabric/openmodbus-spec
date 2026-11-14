@@ -1,0 +1,148 @@
+openmodbus: 0.1.0
+info:
+  id: brainboxes/ed-588/io
+  title: Brainboxes ED-588 digital inputs and outputs
+  version: 0.1.0
+  description: 'Read-only input states and output states read back with function code
+    1. The input and output polarity settings decide whether a 1 means voltage present.
+    The input counters and output overload flags, laid out as on the ED-538, are left
+    out to keep the subset within 20 points.
+
+    '
+  attribution: Derived from Brainboxes' ED Modbus Product Data Tables.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: brainboxes-ed-tables
+device:
+  manufacturer: Brainboxes
+  model: ED-588
+  classes:
+  - remote_io
+  transports:
+  - type: tcp
+  documentation:
+  - title: ED Modbus Product Data Tables
+    url: https://docs.brainboxes.com/reference/protocols/ed-modbus-product-data-tables
+defaults:
+  access: r
+points:
+- id: di_0
+  table: discrete_input
+  address: 0
+  type: bool
+  source:
+    address: '0x0000'
+    reference: ED-588 product data table
+- id: di_1
+  table: discrete_input
+  address: 1
+  type: bool
+  source:
+    address: '0x0001'
+    reference: ED-588 product data table
+- id: di_2
+  table: discrete_input
+  address: 2
+  type: bool
+  source:
+    address: '0x0002'
+    reference: ED-588 product data table
+- id: di_3
+  table: discrete_input
+  address: 3
+  type: bool
+  source:
+    address: '0x0003'
+    reference: ED-588 product data table
+- id: di_4
+  table: discrete_input
+  address: 4
+  type: bool
+  source:
+    address: '0x0004'
+    reference: ED-588 product data table
+- id: di_5
+  table: discrete_input
+  address: 5
+  type: bool
+  source:
+    address: '0x0005'
+    reference: ED-588 product data table
+- id: di_6
+  table: discrete_input
+  address: 6
+  type: bool
+  source:
+    address: '0x0006'
+    reference: ED-588 product data table
+- id: di_7
+  table: discrete_input
+  address: 7
+  type: bool
+  source:
+    address: '0x0007'
+    reference: ED-588 product data table
+- id: do_0
+  table: coil
+  address: 0
+  type: bool
+  description: Vendor function codes 1, 5, 15; read-only in this contract.
+  source:
+    address: '0x0000'
+    reference: ED-588 product data table
+- id: do_1
+  table: coil
+  address: 1
+  type: bool
+  description: Vendor function codes 1, 5, 15; read-only in this contract.
+  source:
+    address: '0x0001'
+    reference: ED-588 product data table
+- id: do_2
+  table: coil
+  address: 2
+  type: bool
+  description: Vendor function codes 1, 5, 15; read-only in this contract.
+  source:
+    address: '0x0002'
+    reference: ED-588 product data table
+- id: do_3
+  table: coil
+  address: 3
+  type: bool
+  description: Vendor function codes 1, 5, 15; read-only in this contract.
+  source:
+    address: '0x0003'
+    reference: ED-588 product data table
+- id: do_4
+  table: coil
+  address: 4
+  type: bool
+  description: Vendor function codes 1, 5, 15; read-only in this contract.
+  source:
+    address: '0x0004'
+    reference: ED-588 product data table
+- id: do_5
+  table: coil
+  address: 5
+  type: bool
+  description: Vendor function codes 1, 5, 15; read-only in this contract.
+  source:
+    address: '0x0005'
+    reference: ED-588 product data table
+- id: do_6
+  table: coil
+  address: 6
+  type: bool
+  description: Vendor function codes 1, 5, 15; read-only in this contract.
+  source:
+    address: '0x0006'
+    reference: ED-588 product data table
+- id: do_7
+  table: coil
+  address: 7
+  type: bool
+  description: Vendor function codes 1, 5, 15; read-only in this contract.
+  source:
+    address: '0x0007'
+    reference: ED-588 product data table

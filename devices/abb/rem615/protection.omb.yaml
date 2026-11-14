@@ -1,0 +1,181 @@
+openmodbus: 0.1.0
+info:
+  id: abb/rem615/protection
+  title: ABB REM615 motor protection indications
+  version: 0.1.0
+  description: 'Read-only subset of the point list for REM615 Ver. 2.0, standard configuration
+    ME03 including the optional functionality: indication bits only. Unavailable points
+    always read 0. Measurands are left out because neither the point list nor the
+    615 series Modbus communication protocol manual states the default offset of the
+    register scaling. Point-list bit and register.bit addresses are PLC addresses
+    with base address 1; indication registers are listed for both 3X and 4X.
+
+    '
+  attribution: Derived from ABB's REM615 Modbus Point List Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: abb-rem615-modbus
+device:
+  manufacturer: ABB
+  family: Relion 615 series
+  model: REM615
+  classes:
+  - protection_relay
+  documentation:
+  - title: Relion 615 series REM615 Modbus Point List Manual
+    url: https://library.e.abb.com/public/70d8ff196a5b4f6cc1257b0c00560c63/REM615_modbuspoint_756877_ENa.pdf
+    revision: 1MRS756877 rev. A, 2009-07-03, product version 2.0
+  - title: Relion 615 series Modbus Communication Protocol Manual
+    url: https://library.e.abb.com/public/f2366309b54747f9883753942c8f9d88/RE_615_modbusprot_756468_ENr.pdf
+    revision: 1MRS756468 rev. R, 2018-12-20, product series versions 1.0 to 5.0 FP1
+defaults:
+  table: holding_register
+  access: r
+points:
+- id: protection_conditioning
+  address: 170
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: start
+      description: LD0.LEDPTRC1.Str.general
+    - bit: 2
+      name: operate
+      description: LD0.LEDPTRC1.Op.general
+    - bit: 4
+      name: master_trip_1_input
+      description: LD0.TRPPTRC1.Op.general
+    - bit: 6
+      name: master_trip_1_output
+      description: LD0.TRPPTRC1.Tr.general
+    - bit: 8
+      name: master_trip_2_input
+      description: LD0.TRPPTRC2.Op.general
+    - bit: 10
+      name: master_trip_2_output
+      description: LD0.TRPPTRC2.Tr.general
+  description: Momentary start, operate and master trip bits; each odd bit is the
+    change-detect (MCD) copy of the bit below it.
+  source:
+    address: '171'
+    page: 25
+    reference: Table 3 Indications
+- id: limit_supervision
+  address: 171
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: phase_current_high_alarm
+      description: LD0.CMMXU1.HiAlm.stVal
+    - bit: 2
+      name: phase_current_high_warning
+      description: LD0.CMMXU1.HiWrn.stVal
+    - bit: 8
+      name: residual_current_high_alarm
+      description: LD0.RESCMMXU1.HiAlm.stVal
+    - bit: 10
+      name: residual_current_high_warning
+      description: LD0.RESCMMXU1.HiWrn.stVal
+  description: Momentary high alarm and high warning bits of the phase current and
+    residual current limit supervision; each odd bit is the change-detect (MCD) copy
+    of the bit below it.
+  source:
+    address: '172'
+    page: 26
+    reference: Table 3 Indications
+- id: trip_circuit_1_alarm
+  address: 172
+  type: u16
+  mask: 4096
+  aliases:
+  - LD0.TCSSCBR1.CirAlm.stVal
+  source:
+    address: '173.12'
+    page: 26
+    reference: Table 3 Indications
+- id: trip_circuit_2_alarm
+  address: 172
+  type: u16
+  mask: 16384
+  aliases:
+  - LD0.TCSSCBR2.CirAlm.stVal
+  source:
+    address: '173.14'
+    page: 26
+    reference: Table 3 Indications
+- id: cb_position
+  address: 174
+  type: u16
+  flags:
+    flags:
+    - bit: 4
+      name: closed
+      description: CTRL.CBCSWI1.Pos.stVal.Close
+    - bit: 5
+      name: open
+      description: CTRL.CBCSWI1.Pos.stVal.Open
+    - bit: 6
+      name: faulty_or_intermediate
+      description: CTRL.CBCSWI1.Pos.stVal.Fault
+  description: Momentary circuit breaker position bits (close, open, faulty or intermediate).
+  source:
+    address: '175'
+    page: 27
+    reference: Table 3 Indications
+- id: cb_condition_monitoring
+  address: 177
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: open_travel_time_alarm
+      description: LD0.SSCBR1.OpnAlm.stVal
+    - bit: 1
+      name: close_travel_time_alarm
+      description: LD0.SSCBR1.ClsAlm.stVal
+    - bit: 2
+      name: spring_charging_time_alarm
+      description: LD0.SSCBR1.SprChaAlm.stVal
+    - bit: 3
+      name: operations_alarm
+      description: LD0.SSCBR1.OpNumAlm.stVal
+    - bit: 4
+      name: operations_lockout
+      description: LD0.SSCBR1.OpNumLO.stVal
+    - bit: 5
+      name: inactivity_alarm
+      description: LD0.SSCBR1.LonTmAlm.stVal
+    - bit: 6
+      name: pressure_alarm
+      description: LD0.SSCBR1.PresAlm.stVal
+    - bit: 7
+      name: pressure_lockout
+      description: LD0.SSCBR1.PresLO.stVal
+    - bit: 8
+      name: iyt_alarm
+      description: LD0.SSCBR1.APwrAlm.stVal
+    - bit: 9
+      name: iyt_lockout
+      description: LD0.SSCBR1.APwrLO.stVal
+    - bit: 10
+      name: cb_life_alarm
+      description: LD0.SSCBR1.CBLifAlm.stVal
+  description: Momentary circuit breaker condition monitoring alarm and lockout bits.
+  source:
+    address: '178'
+    page: 29
+    reference: Table 3 Indications
+- id: cb_closed_input
+  table: discrete_input
+  address: 2803
+  type: bool
+  aliases:
+  - CTRL.CBCSWI1.Pos.stVal.Close
+  description: Circuit breaker closed, read as a 1X bit; the same bit is mirrored
+    in the indication registers.
+  source:
+    address: '2804'
+    page: 27
+    reference: Table 3 Indications, Bit addr

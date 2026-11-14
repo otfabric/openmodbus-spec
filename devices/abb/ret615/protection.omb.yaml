@@ -1,0 +1,300 @@
+openmodbus: 0.1.0
+info:
+  id: abb/ret615/protection
+  title: ABB RET615 ANSI transformer protection measurements and indications
+  version: 0.1.0
+  description: 'Read-only subset of the ANSI point list for RET615 Ver. 5.0 FP1. The
+    point list describes a superset of the data of standard configurations B (TA02)
+    and F (TA06); the functions used here are listed for both. Scale factors and the
+    zero offset are the default settings, and the register holds the value multiplied
+    by the scale factor. Register and bit addresses are PLC addresses with base address
+    1, as the 615 series ANSI Modbus communication protocol manual states; registers
+    are listed for both 3X and 4X. HV and MV are the high-voltage and medium-voltage
+    sides.
+
+    '
+  attribution: Derived from ABB's RET615 ANSI Modbus Point List Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: abb-ret615-ansi-modbus
+device:
+  manufacturer: ABB
+  family: Relion 615 series
+  model: RET615
+  classes:
+  - protection_relay
+  documentation:
+  - title: Relion 615 series RET615 ANSI Modbus Point List Manual
+    url: https://library.e.abb.com/public/a1aa125c30c9473989a8e24a8873ffdd/RET615_ANSI_modbuspoint_203705_ENb.pdf
+    revision: 1MAC203705-MB rev. B, 2019-06-07, product version 5.0 FP1
+  - title: Relion 615 series ANSI Modbus Communication Protocol Manual
+    url: https://library.e.abb.com/public/d3ef0d113e844c3cb30ec235e3d0471a/RE_615ANSI_modbusprot_057386_ENa.pdf
+    revision: 1MAC057386-MB rev. A, 2018-02-26, product version 5.0 FP1
+defaults:
+  table: holding_register
+  access: r
+  wordOrder: big
+points:
+- id: hv_current_a
+  address: 137
+  type: u16
+  aliases:
+  - LD0.CMMXU1.A.phsA.instCVal.mag
+  conversion:
+    exponent10: -3
+  description: Phase A current on the high-voltage side (IA (1)) in multiples of the
+    rated current In.
+  source:
+    address: '138'
+    page: 91
+    reference: Table 140, scale 1000
+- id: hv_current_b
+  address: 138
+  type: u16
+  aliases:
+  - LD0.CMMXU1.A.phsB.instCVal.mag
+  conversion:
+    exponent10: -3
+  description: Phase B current on the high-voltage side (IB (1)) in multiples of the
+    rated current In.
+  source:
+    address: '139'
+    page: 91
+    reference: Table 140, scale 1000
+- id: hv_current_c
+  address: 139
+  type: u16
+  aliases:
+  - LD0.CMMXU1.A.phsC.instCVal.mag
+  conversion:
+    exponent10: -3
+  description: Phase C current on the high-voltage side (IC (1)) in multiples of the
+    rated current In.
+  source:
+    address: '140'
+    page: 91
+    reference: Table 140, scale 1000
+- id: protected_object_temperature
+  address: 145
+  type: i16
+  aliases:
+  - LD0.T2PTTR1.Tmp.mag
+  unit: Cel
+  description: Object temperature of the thermal overload protection with two time
+    constants (49T), range -100.0...9999.9; the point list writes the unit as [C].
+    It gives scale 1, so the register carries whole degrees only.
+  source:
+    address: '146'
+    page: 97
+    reference: Table 154, scale 1
+- id: tap_position
+  address: 150
+  type: i16
+  aliases:
+  - LD0.TPOSYLTC1.TapPos.valWTr.posVal
+  description: Tap changer position (84T), range -64...63.
+  source:
+    address: '151'
+    page: 98
+    reference: Table 155, scale 1
+- id: mv_current_a
+  address: 151
+  type: u16
+  aliases:
+  - LD0.CMMXU2.A.phsA.instCVal.mag
+  conversion:
+    exponent10: -3
+  description: Phase A current on the medium-voltage side (IA (2)) in multiples of
+    the rated current In.
+  source:
+    address: '152'
+    page: 92
+    reference: Table 142, scale 1000
+- id: mv_current_b
+  address: 152
+  type: u16
+  aliases:
+  - LD0.CMMXU2.A.phsB.instCVal.mag
+  conversion:
+    exponent10: -3
+  description: Phase B current on the medium-voltage side (IB (2)) in multiples of
+    the rated current In.
+  source:
+    address: '153'
+    page: 92
+    reference: Table 142, scale 1000
+- id: mv_current_c
+  address: 153
+  type: u16
+  aliases:
+  - LD0.CMMXU2.A.phsC.instCVal.mag
+  conversion:
+    exponent10: -3
+  description: Phase C current on the medium-voltage side (IC (2)) in multiples of
+    the rated current In.
+  source:
+    address: '154'
+    page: 92
+    reference: Table 142, scale 1000
+- id: protection_conditioning
+  address: 170
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: pickup
+      description: LD0.LEDPTRC1.Str.general
+    - bit: 2
+      name: trip
+      description: LD0.LEDPTRC1.Op.general
+    - bit: 4
+      name: master_trip_1_input
+      description: LD0.TRPPTRC1.Op.general
+    - bit: 6
+      name: master_trip_1_output
+      description: LD0.TRPPTRC1.Tr.general
+    - bit: 8
+      name: master_trip_2_input
+      description: LD0.TRPPTRC2.Op.general
+    - bit: 10
+      name: master_trip_2_output
+      description: LD0.TRPPTRC2.Tr.general
+  description: Momentary global pickup, global trip and master trip bits; each odd
+    bit is the change-detect (MCD) copy of the bit below it.
+  source:
+    address: '171'
+    page: 38
+    reference: Table 32, Table 70, Table 71
+- id: trip_circuit_1_alarm
+  address: 172
+  type: u16
+  mask: 4096
+  aliases:
+  - LD0.TCSSCBR1.CircAlm.stVal
+  source:
+    address: '173.12'
+    page: 53
+    reference: Table 67
+- id: trip_circuit_2_alarm
+  address: 172
+  type: u16
+  mask: 16384
+  aliases:
+  - LD0.TCSSCBR2.CircAlm.stVal
+  source:
+    address: '173.14'
+    page: 53
+    reference: Table 68
+- id: cb_position
+  address: 174
+  type: u16
+  flags:
+    flags:
+    - bit: 4
+      name: closed
+      description: CTRL.CBCSWI1.Pos.stVal.Close
+    - bit: 5
+      name: open
+      description: CTRL.CBCSWI1.Pos.stVal.Open
+    - bit: 6
+      name: faulty_or_intermediate
+      description: CTRL.CBCSWI1.Pos.stVal.Fault
+  description: Momentary circuit breaker position bits (close, open, faulty or intermediate).
+  source:
+    address: '175'
+    page: 27
+    reference: Table 6
+- id: differential_protection
+  address: 186
+  type: u16
+  flags:
+    flags:
+    - bit: 8
+      name: trip
+      description: LD0.TR2PTDF1.Op.general
+    - bit: 10
+      name: trip_phase_a
+      description: LD0.TR2PTDF1.Op.phsA
+    - bit: 12
+      name: trip_phase_b
+      description: LD0.TR2PTDF1.Op.phsB
+    - bit: 14
+      name: trip_phase_c
+      description: LD0.TR2PTDF1.Op.phsC
+  description: Momentary trip bits of the transformer differential protection (87T);
+    each odd bit is the change-detect (MCD) copy of the bit below it.
+  source:
+    address: '187'
+    page: 53
+    reference: Table 69
+- id: cb_operation_counter
+  address: 2052
+  type: u16
+  aliases:
+  - CTRL.CBCSWI1.OpCntRs.stVal
+  source:
+    address: '2053'
+    page: 89
+    reference: Table 137, scale 1
+- id: internal_fault_code
+  address: 2060
+  type: u16
+  aliases:
+  - LD0.LPHD1.PhyHealth2.stVal
+  description: Latest internal fault code of the physical device; codes are in the
+    product manuals.
+  source:
+    address: '2061'
+    page: 87
+    reference: Table 133, scale 1
+- id: differential_current_a
+  address: 2079
+  type: u16
+  aliases:
+  - LD0.TR2PTDF1.DifAClc.phsA.mag
+  conversion:
+    exponent10: -3
+  description: Phase A differential current of the transformer differential protection
+    (87T) in multiples of the rated current In.
+  source:
+    address: '2080'
+    page: 98
+    reference: Table 156, scale 1000
+- id: differential_current_b
+  address: 2080
+  type: u16
+  aliases:
+  - LD0.TR2PTDF1.DifAClc.phsB.mag
+  conversion:
+    exponent10: -3
+  description: Phase B differential current of the transformer differential protection
+    (87T) in multiples of the rated current In.
+  source:
+    address: '2081'
+    page: 98
+    reference: Table 156, scale 1000
+- id: differential_current_c
+  address: 2081
+  type: u16
+  aliases:
+  - LD0.TR2PTDF1.DifAClc.phsC.mag
+  conversion:
+    exponent10: -3
+  description: Phase C differential current of the transformer differential protection
+    (87T) in multiples of the rated current In.
+  source:
+    address: '2082'
+    page: 98
+    reference: Table 156, scale 1000
+- id: cb_closed_input
+  table: discrete_input
+  address: 2803
+  type: bool
+  aliases:
+  - CTRL.CBCSWI1.Pos.stVal.Close
+  description: Circuit breaker closed, read as a 1X bit; the same bit is mirrored
+    in the indication registers.
+  source:
+    address: '2804'
+    page: 27
+    reference: Table 6, BitA

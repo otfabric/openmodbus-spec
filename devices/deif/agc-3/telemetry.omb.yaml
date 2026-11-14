@@ -1,0 +1,352 @@
+openmodbus: 0.1.0
+info:
+  id: deif/agc-3/telemetry
+  title: DEIF AGC-3 generator, engine and status registers
+  version: 0.1.0
+  description: 'Read-only subset of the measurement table and the alarm and status
+    table (function code 04h) for AGC-3 software version 3.6x.x or later with the
+    Modbus RS-485 option H2. Only rows the document marks as standard (X) for AGC-3
+    are included. The document does not state signedness, so only quantities that
+    cannot be negative are mapped, as unsigned.
+
+    '
+  attribution: Derived from DEIF's Multi-line 2 Description of options, Options H2
+    and H9 Modbus communication.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: deif-ml2-h2-h9
+device:
+  manufacturer: DEIF
+  family: Multi-line 2
+  model: AGC-3
+  classes:
+  - genset_controller
+  transports:
+  - type: rtu
+    notes: RS-485 with hardware option H2.
+  documentation:
+  - title: Multi-line 2 Description of options, Options H2 and H9 Modbus communication
+    url: https://www.deif.com/media/qmtcw1ih/option-h2-and-h9-modbus-communication-4189340442-uk.pdf
+    revision: 4189340442Z
+defaults:
+  table: input_register
+  access: r
+points:
+- id: generator_voltage_l1_l2
+  address: 501
+  type: u16
+  unit: V
+  aliases:
+  - Generator voltage L1-L2 [V]
+  source:
+    address: '501'
+    page: 43
+    reference: Measurement table (read only) (function code 04h)
+- id: generator_voltage_l2_l3
+  address: 502
+  type: u16
+  unit: V
+  aliases:
+  - Generator voltage L2-L3 [V]
+  source:
+    address: '502'
+    page: 43
+    reference: Measurement table (read only) (function code 04h)
+- id: generator_voltage_l3_l1
+  address: 503
+  type: u16
+  unit: V
+  aliases:
+  - Generator voltage L3-L1 [V]
+  source:
+    address: '503'
+    page: 43
+    reference: Measurement table (read only) (function code 04h)
+- id: generator_voltage_l1_n
+  address: 504
+  type: u16
+  unit: V
+  aliases:
+  - Generator voltage L1-N [V]
+  source:
+    address: '504'
+    page: 43
+    reference: Measurement table (read only) (function code 04h)
+- id: generator_voltage_l2_n
+  address: 505
+  type: u16
+  unit: V
+  aliases:
+  - Generator voltage L2-N [V]
+  source:
+    address: '505'
+    page: 43
+    reference: Measurement table (read only) (function code 04h)
+- id: generator_voltage_l3_n
+  address: 506
+  type: u16
+  unit: V
+  aliases:
+  - Generator voltage L3-N [V]
+  source:
+    address: '506'
+    page: 44
+    reference: Measurement table (read only) (function code 04h)
+- id: generator_frequency_l1
+  address: 507
+  type: u16
+  conversion:
+    exponent10: -2
+  unit: Hz
+  aliases:
+  - Generator f L1 [Hz/100]
+  source:
+    address: '507'
+    page: 44
+    reference: Measurement table (read only) (function code 04h)
+- id: generator_current_l1
+  address: 513
+  type: u16
+  unit: A
+  aliases:
+  - Generator current L1 [A]
+  source:
+    address: '513'
+    page: 45
+    reference: Measurement table (read only) (function code 04h)
+- id: generator_current_l2
+  address: 514
+  type: u16
+  unit: A
+  aliases:
+  - Generator current L2 [A]
+  source:
+    address: '514'
+    page: 46
+    reference: Measurement table (read only) (function code 04h)
+- id: generator_current_l3
+  address: 515
+  type: u16
+  unit: A
+  aliases:
+  - Generator current L3 [A]
+  source:
+    address: '515'
+    page: 46
+    reference: Measurement table (read only) (function code 04h)
+- id: run_hours
+  address: 554
+  type: u32
+  wordOrder: big
+  unit: h
+  aliases:
+  - Absolute. run hours
+  description: Unit taken from the row label; the document gives no unit bracket or
+    scale.
+  source:
+    address: 554 [Hi], 555 [Lo]
+    page: 52
+    reference: Measurement table (read only) (function code 04h)
+- id: alarm_count
+  address: 558
+  type: u16
+  aliases:
+  - No. of alarms
+  source:
+    address: '558'
+    page: 52
+    reference: Measurement table (read only) (function code 04h)
+- id: start_attempts
+  address: 566
+  type: u16
+  aliases:
+  - Start attempts
+  source:
+    address: '566'
+    page: 53
+    reference: Measurement table (read only) (function code 04h)
+- id: dc_supply_voltage
+  address: 567
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: V
+  aliases:
+  - DC supply term. 1-2 [V/10]
+  source:
+    address: '567'
+    page: 53
+    reference: Measurement table (read only) (function code 04h)
+- id: cos_phi_inductive_capacitive
+  address: 574
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: inductive
+      label: Inductive
+    - value: 1
+      name: capacitive
+      label: Capacitive
+  aliases:
+  - Cos-phi Inductive/Capacitive 0=Inductive, 1=Capacitive
+  source:
+    address: '574'
+    page: 53
+    reference: Measurement table (read only) (function code 04h)
+- id: engine_speed
+  address: 576
+  type: u16
+  unit: /min
+  aliases:
+  - RPM
+  description: Unit taken from the row label; the document gives no unit bracket or
+    scale.
+  source:
+    address: '576'
+    page: 53
+    reference: Measurement table (read only) (function code 04h)
+- id: engine_alarms
+  address: 1013
+  type: u16
+  flags:
+    flags:
+    - bit: 9
+      name: overspeed_1
+      label: Overspeed 1
+    - bit: 10
+      name: overspeed_2
+      label: Overspeed 2
+    - bit: 11
+      name: crank_failure
+      label: Crank failure
+    - bit: 12
+      name: running_feedback_failure
+      label: Running feedback failure
+    - bit: 13
+      name: mpu_wire_failure
+      label: MPU wire failure
+    - bit: 14
+      name: hz_v_failure
+      label: Hz/V failure
+    - bit: 15
+      name: start_failure
+      label: Start failure
+  aliases:
+  - Multi-functional input
+  description: Bits the document marks as standard (X) for AGC-3 (page 83); bits that
+    are empty or refer to an option or input are not named.
+  source:
+    address: '1013'
+    page: 80
+    reference: Alarm and status table (read only) (function code 04h)
+- id: status_flags
+  address: 1018
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: mains_failure
+      label: Mains failure
+    - bit: 1
+      name: mb_position_on
+      label: MB pos. ON
+    - bit: 2
+      name: dg_ramp_down
+      label: DG ramp down
+    - bit: 3
+      name: start_regulation
+      label: Start regulation
+    - bit: 4
+      name: gb_position_on
+      label: GB pos. ON
+    - bit: 5
+      name: gb_synchronising
+      label: GB synchronising
+    - bit: 6
+      name: engine_running
+      label: Engine running
+    - bit: 7
+      name: running_detection_timer_expired
+      label: Running detect. timer expired
+    - bit: 8
+      name: dg_hz_v_ok_timer_expired
+      label: DG Hz/V OK, timer expired
+    - bit: 9
+      name: battery_test
+      label: Battery test
+    - bit: 10
+      name: printing_log
+      label: Printing log
+    - bit: 11
+      name: gb_position_off
+      label: GB position OFF
+    - bit: 12
+      name: mb_position_off
+      label: MB position OFF
+    - bit: 13
+      name: bb_hz_v_ok
+      label: BB Hz/V OK
+    - bit: 14
+      name: mb_synchronising
+      label: MB synchronising
+  aliases:
+  - Status
+  description: Bits the document marks as standard (X) for AGC-3 (pages 87-88); bits
+    that are empty or refer to an option or input are not named.
+  source:
+    address: '1018'
+    page: 87
+    reference: Alarm and status table (read only) (function code 04h)
+- id: mode_flags
+  address: 1019
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: block_mode
+      label: Block mode
+    - bit: 1
+      name: manual_mode
+      label: Manual mode
+    - bit: 2
+      name: semi_auto_mode
+      label: Semi auto mode
+    - bit: 3
+      name: auto_mode
+      label: Auto mode
+    - bit: 4
+      name: test
+      label: Test
+    - bit: 5
+      name: island
+      label: Island
+    - bit: 6
+      name: amf
+      label: AMF
+    - bit: 7
+      name: peak_shaving
+      label: Peak shaving
+    - bit: 8
+      name: fixed_power
+      label: Fixed power
+    - bit: 9
+      name: mains_power_export
+      label: Mains power export
+    - bit: 10
+      name: load_takeover
+      label: Load takeover
+    - bit: 11
+      name: power_management
+      label: Power management
+    - bit: 15
+      name: amf_active
+      label: AMF active
+  aliases:
+  - General/Modes
+  description: Bits the document marks as standard (X) for AGC-3 (pages 88-89); bits
+    that are empty or refer to an option or input are not named.
+  source:
+    address: '1019'
+    page: 88
+    reference: Alarm and status table (read only) (function code 04h)

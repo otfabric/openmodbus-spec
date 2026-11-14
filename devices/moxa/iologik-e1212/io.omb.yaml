@@ -1,0 +1,175 @@
+openmodbus: 0.1.0
+info:
+  id: moxa/iologik-e1212/io
+  title: Moxa ioLogik E1212 digital inputs, outputs and counters
+  version: 0.1.0
+  description: 'Read-only subset of the Appendix A default Modbus/TCP map for the
+    ioLogik E1212 and E1212-T (8 DIs and 8 DIOs): the DI rows cover 16 channels and
+    the DO rows 8, as the map lists them; a DIO channel''s direction is set by jumper.
+    Counters are 32-bit, high word first. Writable rows are read-only in this contract.
+
+    '
+  attribution: Derived from Moxa's ioLogik E1200 Series User's Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: moxa-iologik-e1200-manual
+device:
+  manufacturer: Moxa
+  family: ioLogik E1200
+  model: ioLogik E1212
+  classes:
+  - remote_io
+  transports:
+  - type: tcp
+  unitId:
+    default: 1
+  documentation:
+  - title: ioLogik E1200 Series User's Manual
+    url: https://www.moxa.com/Moxa/media/PDIM/S100000327/moxa-iologik-e1200-series-manual-v15.2.pdf
+    revision: Edition 15.2, February 2018
+defaults:
+  access: r
+points:
+- id: di_status
+  aliases:
+  - DI_status
+  table: discrete_input
+  address: 0
+  type: bool
+  count: 16
+  source:
+    address: '10001'
+    page: 100
+    reference: Appendix A, ioLogik E1212 Modbus address and register map
+- id: di_counter_value
+  aliases:
+  - DI_counterValue
+  table: input_register
+  address: 16
+  type: u32
+  wordOrder: big
+  count: 16
+  source:
+    address: '30017'
+    page: 100
+    reference: Appendix A, ioLogik E1212 Modbus address and register map
+- id: di_counter_overflow_flag
+  aliases:
+  - DI_counterOverflowFlag
+  table: discrete_input
+  address: 1000
+  type: bool
+  count: 16
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '11001'
+    page: 100
+    reference: Appendix A, ioLogik E1212 Modbus address and register map
+- id: di_counter_status
+  aliases:
+  - DI_counterStatus
+  table: coil
+  address: 256
+  type: bool
+  count: 16
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '00257'
+    page: 100
+    reference: Appendix A, ioLogik E1212 Modbus address and register map
+- id: do_status
+  aliases:
+  - DO_status
+  table: coil
+  address: 0
+  type: bool
+  count: 8
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '00001'
+    page: 100
+    reference: Appendix A, ioLogik E1212 Modbus address and register map
+- id: do_pulse_status
+  aliases:
+  - DO_pulseStatus
+  table: coil
+  address: 16
+  type: bool
+  count: 8
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '00017'
+    page: 100
+    reference: Appendix A, ioLogik E1212 Modbus address and register map
+- id: do_p2p_status
+  aliases:
+  - DO_p2pStatus
+  table: discrete_input
+  address: 4096
+  type: bool
+  count: 8
+  source:
+    address: '14097'
+    page: 100
+    reference: Appendix A, ioLogik E1212 Modbus address and register map
+- id: do_pulse_on_width
+  aliases:
+  - DO_pulseOnWidth
+  table: holding_register
+  address: 52
+  type: u16
+  unit: ms
+  count: 8
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '40053'
+    page: 100
+    reference: Appendix A, ioLogik E1212 Modbus address and register map
+- id: do_pulse_off_width
+  aliases:
+  - DO_pulseOffWidth
+  table: holding_register
+  address: 68
+  type: u16
+  unit: ms
+  count: 8
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '40069'
+    page: 100
+    reference: Appendix A, ioLogik E1212 Modbus address and register map
+- id: model_name
+  aliases:
+  - modelName
+  table: input_register
+  address: 5000
+  type: string
+  registers: 10
+  stability: constant
+  source:
+    address: '35001'
+    page: 101
+    reference: Appendix A, ioLogik E1212 Modbus address and register map
+- id: device_name
+  aliases:
+  - deviceName
+  table: input_register
+  address: 5040
+  type: string
+  registers: 30
+  source:
+    address: '35041'
+    page: 101
+    reference: Appendix A, ioLogik E1212 Modbus address and register map
+- id: firmware_version
+  aliases:
+  - firmwareVersion
+  table: input_register
+  address: 5029
+  type: bytes
+  registers: 2
+  stability: constant
+  source:
+    address: '35030'
+    page: 101
+    reference: Appendix A, ioLogik E1212 Modbus address and register map

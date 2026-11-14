@@ -1,0 +1,325 @@
+openmodbus: 0.1.0
+info:
+  id: danfoss/fc-51/status
+  title: Danfoss VLT Micro Drive FC 51 drive status and readouts
+  version: 0.1.0
+  description: 'Read-only subset of the parameter readouts (groups 15 and 16) over
+    Modbus RTU: FC profile status word, power, motor voltage, frequency, motor current,
+    DC link voltage, alarm and warning words, running hours and kWh counter. Parameters
+    are holding registers at 10 x parameter number - 1. The manual states no unit
+    for the DC link voltage (16-30). Written for software version 2.1x as stated in
+    the manual.
+
+    '
+  attribution: Derived from Danfoss's VLT Micro Drive FC 51 Operating Instructions.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: danfoss-fc51-oi
+device:
+  manufacturer: Danfoss
+  family: VLT Micro Drive
+  model: FC 51
+  classes:
+  - drive
+  transports:
+  - type: rtu
+  documentation:
+  - title: VLT Micro Drive FC 51 Operating Instructions
+    url: https://assets.danfoss.com/documents/274690/AQ361180435097en-000501.pdf
+    revision: MG.02.A4.02
+defaults:
+  table: holding_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+points:
+- id: running_hours
+  label: Running Hours
+  aliases:
+  - 15-01
+  address: 15009
+  type: u32
+  unit: h
+  source:
+    address: 15-01
+    page: 57
+    reference: Parameter overview 15-**, PNU 1501
+- id: energy_counter
+  label: kWh Counter
+  aliases:
+  - 15-02
+  address: 15019
+  type: u32
+  unit: kW.h
+  source:
+    address: 15-02
+    page: 57
+    reference: Parameter overview 15-**, PNU 1502
+- id: status_word
+  label: Status Word
+  aliases:
+  - 16-03
+  address: 16029
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: control_ready
+      label: Control ready
+      description: '0: Control not ready; 1: Control ready'
+    - bit: 1
+      name: unit_ready
+      label: Unit ready
+      description: '0: Unit not ready; 1: Unit ready'
+    - bit: 2
+      name: enable
+      label: Enable
+      description: '0: Coasting; 1: Enable'
+    - bit: 3
+      name: trip
+      label: Error, trip
+      description: '0: No error; 1: Error, trip'
+    - bit: 4
+      name: error_no_trip
+      label: Error (no trip)
+      description: '0: No error; 1: Error (no trip)'
+    - bit: 6
+      name: trip_locked
+      label: Trip locked
+      description: '0: Not trip locked; 1: Trip locked'
+    - bit: 7
+      name: warning
+      label: Warning
+      description: '0: No warning; 1: Warning'
+    - bit: 8
+      name: speed_equals_reference
+      label: Speed = reference
+      description: '0: Speed ≠ reference; 1: Speed = reference'
+    - bit: 9
+      name: bus_control
+      label: Bus control
+      description: '0: Local operation; 1: Bus control'
+    - bit: 10
+      name: frequency_limit_ok
+      label: Frequency limit OK
+      description: '0: Out of frequency limit; 1: Frequency limit OK'
+    - bit: 11
+      name: running
+      label: Running
+      description: '0: Not running; 1: Running'
+    - bit: 12
+      name: resistor_brake_fault
+      label: Resistor brake fault
+      description: '0: No resistor brake fault; 1: Resistor brake fault'
+    - bit: 13
+      name: voltage_exceeded
+      label: Voltage exceeded
+      description: '0: Voltage OK; 1: Voltage exceeded'
+    - bit: 14
+      name: torque_exceeded
+      label: Torque exceeded
+      description: '0: Torque OK; 1: Torque exceeded'
+    - bit: 15
+      name: thermal_warning
+      label: Thermal warning
+      description: '0: No thermal warning; 1: Thermal warning'
+  description: Status word according to the FC profile (section 5.6.3).
+  source:
+    address: 16-03
+    page: 58
+    reference: 'Parameter overview 16-**, PNU 1603; bits: section 5.6.3, page 37'
+- id: power
+  label: Power [kW]
+  aliases:
+  - 16-10
+  address: 16099
+  type: u16
+  conversion:
+    exponent10: -3
+  unit: kW
+  source:
+    address: 16-10
+    page: 58
+    reference: Parameter overview 16-**, PNU 1610
+- id: motor_voltage
+  label: Motor Voltage
+  aliases:
+  - 16-12
+  address: 16119
+  type: u16
+  unit: V
+  source:
+    address: 16-12
+    page: 58
+    reference: Parameter overview 16-**, PNU 1612
+- id: output_frequency
+  label: Frequency
+  aliases:
+  - 16-13
+  address: 16129
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: Hz
+  source:
+    address: 16-13
+    page: 58
+    reference: Parameter overview 16-**, PNU 1613
+- id: motor_current
+  label: Motor Current
+  aliases:
+  - 16-14
+  address: 16139
+  type: u16
+  conversion:
+    exponent10: -2
+  unit: A
+  source:
+    address: 16-14
+    page: 58
+    reference: Parameter overview 16-**, PNU 1614
+- id: dc_link_voltage
+  label: DC Link Voltage
+  aliases:
+  - 16-30
+  address: 16299
+  type: u16
+  description: The manual states no unit for this parameter.
+  source:
+    address: 16-30
+    page: 58
+    reference: Parameter overview 16-**, PNU 1630
+- id: alarm_word
+  label: Alarm Word
+  aliases:
+  - 16-90
+  address: 16899
+  type: u32
+  flags:
+    flags:
+    - bit: 0
+      name: brake_check
+      label: Brake check
+    - bit: 1
+      name: pwr_card_temp
+      label: Pwr.card temp
+    - bit: 2
+      name: earth_fault
+      label: Earth Fault
+    - bit: 4
+      name: ctrl_word_to
+      label: Ctrl.word TO
+    - bit: 5
+      name: over_current
+      label: Over Current
+    - bit: 7
+      name: motor_th_over
+      label: Motor th over
+    - bit: 8
+      name: motor_etr_over
+      label: Motor ETR over
+    - bit: 9
+      name: inverter_overload
+      label: Inverter overload
+    - bit: 10
+      name: dc_under_volt
+      label: DC under volt
+    - bit: 11
+      name: dc_over_volt
+      label: DC over volt
+    - bit: 12
+      name: short_circuit
+      label: Short Circuit
+    - bit: 14
+      name: mains_ph_loss
+      label: Mains ph. loss
+    - bit: 15
+      name: amt_not_ok
+      label: AMT Not OK
+    - bit: 16
+      name: live_zero_error
+      label: Live zero error
+    - bit: 17
+      name: internal_fault
+      label: Internal fault
+    - bit: 19
+      name: u_phase_loss
+      label: U phase loss
+    - bit: 20
+      name: v_phase_loss
+      label: V phase loss
+    - bit: 21
+      name: w_phase_loss
+      label: W phase loss
+    - bit: 23
+      name: control_voltage_fault
+      label: Control Voltage Fault
+    - bit: 26
+      name: brake_resistor_shortcircuit
+      label: Brake resistor shortcircuit
+    - bit: 27
+      name: brake_igbt_shortcircuit
+      label: Brake IGBT shortcircuit
+    - bit: 29
+      name: drive_initialised
+      label: Drive initialised
+    - bit: 31
+      name: mech_brake_low
+      label: Mech. brake low
+  description: Bit meanings from section 7.1.1 (page 60); unlisted bits are not described.
+  source:
+    address: 16-90
+    page: 58
+    reference: 'Parameter overview 16-**, PNU 1690; bits: section 7.1.1, page 60'
+- id: warning_word
+  label: Warning Word
+  aliases:
+  - 16-92
+  address: 16919
+  type: u32
+  flags:
+    flags:
+    - bit: 1
+      name: pwr_card_temp
+      label: Pwr.card temp
+    - bit: 4
+      name: ctrl_word_to
+      label: Ctrl.word TO
+    - bit: 5
+      name: over_current
+      label: Over Current
+    - bit: 6
+      name: torque_limit
+      label: Torque limit
+    - bit: 7
+      name: motor_th_over
+      label: Motor th over
+    - bit: 8
+      name: motor_etr_over
+      label: Motor ETR over
+    - bit: 9
+      name: inverter_overload
+      label: Inverter overload
+    - bit: 10
+      name: dc_under_volt
+      label: DC under volt
+    - bit: 11
+      name: dc_over_volt
+      label: DC over volt
+    - bit: 14
+      name: mains_ph_loss
+      label: Mains ph. loss
+    - bit: 16
+      name: live_zero_error
+      label: Live zero error
+    - bit: 25
+      name: current_limit
+      label: Current limit
+    - bit: 28
+      name: motor_phase_missing
+      label: MotorPhaseMissing
+  description: Bit meanings from section 7.1.1 (page 60); unlisted bits are not described.
+  source:
+    address: 16-92
+    page: 58
+    reference: 'Parameter overview 16-**, PNU 1692; bits: section 7.1.1, page 60'

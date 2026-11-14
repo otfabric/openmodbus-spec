@@ -1,0 +1,193 @@
+openmodbus: 0.1.0
+info:
+  id: vaisala/mht410/telemetry
+  title: Vaisala MHT410 moisture, hydrogen and temperature telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the MHT410 Modbus registers (Appendix B): 32-bit
+    float measurement registers (least significant word first), the scaled 16-bit
+    integer copies and the device status bits. The 16-bit integer copies saturate
+    at 7FFFhex and 8001hex when the value does not fit; that saturation is not expressed
+    as a quality state here.
+
+    '
+  attribution: Derived from Vaisala's Moisture, Hydrogen and Temperature Transmitter
+    for Transformer Oil MHT410 User Guide.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: vaisala-mht410
+device:
+  manufacturer: Vaisala
+  model: MHT410
+  classes:
+  - transformer_monitor
+  transports:
+  - type: rtu
+    notes: RS-485; default 19200 baud, 8 data bits, no parity, 1 stop bit.
+  unitId:
+    mode: configurable
+    default: 240
+    notes: Default Modbus device address 240 (Table 58).
+  documentation:
+  - title: Moisture, Hydrogen and Temperature Transmitter for Transformer Oil MHT410
+      User Guide
+    url: https://docs.vaisala.com/r/M211737EN-J/en-US/GUID-62C1849F-EF6E-4CF6-A5D2-C0D8706AF854
+    revision: M211737EN-J
+defaults:
+  table: holding_register
+  access: r
+constraints:
+  minRequestIntervalMs: 1000
+points:
+- id: h2_1h_average
+  address: 0
+  type: f32
+  wordOrder: little
+  unit: '[ppm]'
+  description: 'Unit in the guide: ppmv (in oil).'
+  aliases:
+  - H2, 1 hour average
+  source:
+    address: '1'
+    page: 112
+    reference: Table 62 Modbus measurement data registers
+- id: h2_24h_average
+  address: 2
+  type: f32
+  wordOrder: little
+  unit: '[ppm]'
+  description: 'Unit in the guide: ppmv (in oil).'
+  aliases:
+  - H2, 24 hour average
+  source:
+    address: '3'
+    page: 112
+    reference: Table 62 Modbus measurement data registers
+- id: oil_relative_saturation
+  address: 14
+  type: f32
+  wordOrder: little
+  unit: '%'
+  aliases:
+  - Oil moisture, relative saturation
+  source:
+    address: '15'
+    page: 112
+    reference: Table 62 Modbus measurement data registers
+- id: oil_moisture
+  address: 16
+  type: f32
+  wordOrder: little
+  unit: '[ppm]'
+  description: 'Unit in the guide: ppmw.'
+  aliases:
+  - Oil moisture, current
+  source:
+    address: '17'
+    page: 113
+    reference: Table 62 Modbus measurement data registers
+- id: oil_temperature
+  address: 26
+  type: f32
+  wordOrder: little
+  unit: Cel
+  aliases:
+  - Oil temperature
+  source:
+    address: '27'
+    page: 113
+    reference: Table 62 Modbus measurement data registers
+- id: h2_1h_average_int
+  address: 256
+  type: i16
+  unit: '[ppm]'
+  invalid:
+  - -32768
+  description: 'Unit in the guide: ppmv (in oil). Raw 7FFFhex means 32767 or larger
+    and 8001hex means -32767 or smaller (Table 60).'
+  aliases:
+  - H2, 1 h average
+  source:
+    address: '257'
+    page: 113
+    reference: Table 62 Modbus measurement data registers
+- id: oil_relative_saturation_int
+  address: 263
+  type: i16
+  unit: '%'
+  conversion:
+    exponent10: -1
+  invalid:
+  - -32768
+  description: Raw 7FFFhex means 32767 or larger and 8001hex means -32767 or smaller
+    (Table 60).
+  aliases:
+  - Oil moisture, relative saturation
+  source:
+    address: '264'
+    page: 113
+    reference: Table 62 Modbus measurement data registers
+- id: oil_moisture_int
+  address: 264
+  type: i16
+  unit: '[ppm]'
+  conversion:
+    exponent10: -1
+  invalid:
+  - -32768
+  description: 'Unit in the guide: ppmw*10. Raw 7FFFhex means 32767 or larger and
+    8001hex means -32767 or smaller (Table 60).'
+  aliases:
+  - Oil moisture, current
+  source:
+    address: '265'
+    page: 113
+    reference: Table 62 Modbus measurement data registers
+- id: oil_temperature_int
+  address: 269
+  type: i16
+  unit: Cel
+  conversion:
+    exponent10: -1
+  invalid:
+  - -32768
+  description: Raw 7FFFhex means 32767 or larger and 8001hex means -32767 or smaller
+    (Table 60).
+  aliases:
+  - Oil temperature
+  source:
+    address: '270'
+    page: 113
+    reference: Table 62 Modbus measurement data registers
+- id: device_status
+  address: 512
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: critical_error
+      label: Critical Error active
+    - bit: 1
+      name: error
+      label: Error active
+    - bit: 2
+      name: rh_measurement_error
+      label: RH measurement error
+    - bit: 3
+      name: t_measurement_error
+      label: T measurement error
+    - bit: 4
+      name: h2_measurement_error
+      label: H2 measurement error
+    - bit: 5
+      name: other_error
+      label: Other error
+    - bit: 6
+      name: h2_alarm_level_exceeded
+      label: H2 alarm level exceeded
+  description: 0 = status OK. Several bits can be set at once.
+  aliases:
+  - Device status bits
+  source:
+    address: '513'
+    page: 114
+    reference: Table 63 Modbus status registers

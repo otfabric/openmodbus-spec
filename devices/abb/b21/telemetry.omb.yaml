@@ -1,0 +1,253 @@
+openmodbus: 0.1.0
+info:
+  id: abb/b21/telemetry
+  title: ABB B21 telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the B21 Modbus mapping tables (function code 3).
+    The B21 is a single-phase, direct-connected meter; this applies to variants with
+    RS-485 set to the Modbus protocol. Quantities that the meter variant lacks read
+    as the documented "invalid" value: FFFF in every register for unsigned quantities,
+    the highest positive value for signed ones.
+
+    '
+  attribution: Derived from ABB's B21 User Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: abb-b21-manual
+device:
+  manufacturer: ABB
+  model: B21
+  classes:
+  - energy_meter
+  transports:
+  - type: rtu
+    notes: RS-485 with the protocol set to Modbus; frames carry a CRC (manual chapter
+      9.1).
+  documentation:
+  - title: B21 User Manual
+    url: https://library.e.abb.com/public/a5cc6ae47646bf15c1257c3f00472b35/B21_User_Manual.pdf.pdf
+    revision: 2CMC485004M0201 Revision A (2013-06-20)
+defaults:
+  table: holding_register
+  access: r
+constraints:
+  ranges:
+  - table: holding_register
+    start: 4096
+    count: 32512
+    policy: safe_gap
+    reason: 'Manual 9.2: reading any register in 1000-8EFF (hex) returns a normal
+      response; quantities the meter lacks read as invalid.'
+points:
+- id: active_import_energy
+  address: 20480
+  type: u64
+  conversion:
+    exponent10: -2
+  unit: kW.h
+  invalid:
+  - 18446744073709551615
+  aliases:
+  - Active import kWh
+  source:
+    address: '5000'
+    page: 70
+    reference: Total energy table
+- id: active_export_energy
+  address: 20484
+  type: u64
+  conversion:
+    exponent10: -2
+  unit: kW.h
+  invalid:
+  - 18446744073709551615
+  aliases:
+  - Active export kWh
+  source:
+    address: '5004'
+    page: 70
+    reference: Total energy table
+- id: active_net_energy
+  address: 20488
+  type: i64
+  conversion:
+    exponent10: -2
+  unit: kW.h
+  invalid:
+  - 9223372036854775807
+  aliases:
+  - Active net kWh
+  source:
+    address: '5008'
+    page: 70
+    reference: Total energy table
+- id: voltage_l1_n
+  address: 23296
+  type: u32
+  conversion:
+    exponent10: -1
+  unit: V
+  invalid:
+  - 4294967295
+  aliases:
+  - Voltage L1-N
+  source:
+    address: 5B00
+    page: 73
+    reference: Instantaneous values table
+- id: current_l1
+  address: 23308
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: A
+  invalid:
+  - 4294967295
+  aliases:
+  - Current L1
+  source:
+    address: 5B0C
+    page: 73
+    reference: Instantaneous values table
+- id: active_power_total
+  address: 23316
+  type: i32
+  conversion:
+    exponent10: -2
+  unit: W
+  invalid:
+  - 2147483647
+  aliases:
+  - Active power Total
+  source:
+    address: 5B14
+    page: 73
+    reference: Instantaneous values table
+- id: reactive_power_total
+  address: 23324
+  type: i32
+  conversion:
+    exponent10: -2
+  description: 'Vendor unit: var'
+  invalid:
+  - 2147483647
+  aliases:
+  - Reactive power Total
+  source:
+    address: 5B1C
+    page: 73
+    reference: Instantaneous values table
+- id: frequency
+  address: 23340
+  type: u16
+  conversion:
+    exponent10: -2
+  unit: Hz
+  invalid:
+  - 65535
+  aliases:
+  - Frequency
+  source:
+    address: 5B2C
+    page: 73
+    reference: Instantaneous values table
+- id: phase_angle_power_total
+  address: 23341
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: deg
+  invalid:
+  - 32767
+  aliases:
+  - Phase angle power Total
+  source:
+    address: 5B2D
+    page: 73
+    reference: Instantaneous values table
+- id: power_factor_total
+  address: 23354
+  type: i16
+  conversion:
+    exponent10: -3
+  invalid:
+  - 32767
+  aliases:
+  - Power factor Total
+  source:
+    address: 5B3A
+    page: 73
+    reference: Instantaneous values table
+- id: serial_number
+  address: 35072
+  type: u32
+  invalid:
+  - 4294967295
+  aliases:
+  - Serial number
+  source:
+    address: '8900'
+    page: 75
+    reference: Production data table
+- id: firmware_version
+  address: 35080
+  type: string
+  registers: 8
+  stability: constant
+  aliases:
+  - Meter firmware version
+  source:
+    address: '8908'
+    page: 75
+    reference: Production data table
+- id: mapping_version_major
+  address: 35088
+  type: u16
+  mask: 65280
+  stability: constant
+  aliases:
+  - Modbus mapping version
+  source:
+    address: '8910'
+    page: 75
+    reference: Production data table
+- id: mapping_version_minor
+  address: 35088
+  type: u16
+  mask: 255
+  stability: constant
+  aliases:
+  - Modbus mapping version
+  source:
+    address: '8910'
+    page: 75
+    reference: Production data table
+- id: type_designation
+  address: 35168
+  type: string
+  registers: 6
+  stability: constant
+  aliases:
+  - Type designation
+  source:
+    address: '8960'
+    page: 75
+    reference: Production data table
+- id: led_source
+  address: 36068
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: active_energy
+      label: active energy
+    - value: 1
+      name: reactive_energy
+      label: reactive energy
+  aliases:
+  - LED source
+  description: Setting; the manual lists it as read and write. Exposed here read-only.
+  source:
+    address: 8CE4
+    page: 76
+    reference: Settings table

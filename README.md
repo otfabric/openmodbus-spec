@@ -40,6 +40,8 @@ Tooling lives in separate repositories (see the proposal, §4): `go-openmodbus` 
 
 The device catalog lives here. Run `make corpus CORPUS_SET=all` to rebuild every contract from its original vendor
 source. The [corpus guide](corpus/README.md) describes source links, checksums, extractors and the temporary cache.
+[Roster coverage](corpus/ROSTER.md) lists the mapped, needs-check and blocked models per device class, and the
+[corpus work items](docs/findings/corpus-work-items.md) list the open questions, including spec-gap candidates.
 
 ## Licence
 

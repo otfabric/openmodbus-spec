@@ -1,0 +1,173 @@
+openmodbus: 0.1.0
+info:
+  id: brainboxes/ed-538/io
+  title: Brainboxes ED-538 digital inputs, outputs and 16-bit counters
+  version: 0.1.0
+  description: 'Read-only input states, output states read back with function code
+    1, and input counters. The counter mapping applies when the device is configured
+    for 16-bit counters or runs firmware with only 16-bit counter support. The input
+    and output polarity settings decide whether a 1 means voltage present. Output
+    overload flags are left out of this subset.
+
+    '
+  attribution: Derived from Brainboxes' ED Modbus Product Data Tables.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: brainboxes-ed-tables
+device:
+  manufacturer: Brainboxes
+  model: ED-538
+  classes:
+  - remote_io
+  transports:
+  - type: tcp
+  documentation:
+  - title: ED Modbus Product Data Tables
+    url: https://docs.brainboxes.com/reference/protocols/ed-modbus-product-data-tables
+defaults:
+  access: r
+points:
+- id: di_0
+  table: discrete_input
+  address: 0
+  type: bool
+  source:
+    address: '0x0000'
+    reference: ED-538 product data table
+- id: di_1
+  table: discrete_input
+  address: 1
+  type: bool
+  source:
+    address: '0x0001'
+    reference: ED-538 product data table
+- id: di_2
+  table: discrete_input
+  address: 2
+  type: bool
+  source:
+    address: '0x0002'
+    reference: ED-538 product data table
+- id: di_3
+  table: discrete_input
+  address: 3
+  type: bool
+  source:
+    address: '0x0003'
+    reference: ED-538 product data table
+- id: di_4
+  table: discrete_input
+  address: 4
+  type: bool
+  source:
+    address: '0x0004'
+    reference: ED-538 product data table
+- id: di_5
+  table: discrete_input
+  address: 5
+  type: bool
+  source:
+    address: '0x0005'
+    reference: ED-538 product data table
+- id: di_6
+  table: discrete_input
+  address: 6
+  type: bool
+  source:
+    address: '0x0006'
+    reference: ED-538 product data table
+- id: di_7
+  table: discrete_input
+  address: 7
+  type: bool
+  source:
+    address: '0x0007'
+    reference: ED-538 product data table
+- id: do_0
+  table: coil
+  address: 0
+  type: bool
+  description: Vendor function codes 1, 5, 15; read-only in this contract.
+  source:
+    address: '0x0000'
+    reference: ED-538 product data table
+- id: do_1
+  table: coil
+  address: 1
+  type: bool
+  description: Vendor function codes 1, 5, 15; read-only in this contract.
+  source:
+    address: '0x0001'
+    reference: ED-538 product data table
+- id: do_2
+  table: coil
+  address: 2
+  type: bool
+  description: Vendor function codes 1, 5, 15; read-only in this contract.
+  source:
+    address: '0x0002'
+    reference: ED-538 product data table
+- id: do_3
+  table: coil
+  address: 3
+  type: bool
+  description: Vendor function codes 1, 5, 15; read-only in this contract.
+  source:
+    address: '0x0003'
+    reference: ED-538 product data table
+- id: counter_0
+  table: input_register
+  address: 0
+  type: u16
+  source:
+    address: '0x0000'
+    reference: ED-538 product data table
+- id: counter_1
+  table: input_register
+  address: 1
+  type: u16
+  source:
+    address: '0x0001'
+    reference: ED-538 product data table
+- id: counter_2
+  table: input_register
+  address: 2
+  type: u16
+  source:
+    address: '0x0002'
+    reference: ED-538 product data table
+- id: counter_3
+  table: input_register
+  address: 3
+  type: u16
+  source:
+    address: '0x0003'
+    reference: ED-538 product data table
+- id: counter_4
+  table: input_register
+  address: 4
+  type: u16
+  source:
+    address: '0x0004'
+    reference: ED-538 product data table
+- id: counter_5
+  table: input_register
+  address: 5
+  type: u16
+  source:
+    address: '0x0005'
+    reference: ED-538 product data table
+- id: counter_6
+  table: input_register
+  address: 6
+  type: u16
+  source:
+    address: '0x0006'
+    reference: ED-538 product data table
+- id: counter_7
+  table: input_register
+  address: 7
+  type: u16
+  source:
+    address: '0x0007'
+    reference: ED-538 product data table

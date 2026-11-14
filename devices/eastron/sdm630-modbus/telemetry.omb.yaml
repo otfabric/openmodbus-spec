@@ -1,0 +1,222 @@
+openmodbus: 0.1.0
+info:
+  id: eastron/sdm630-modbus/telemetry
+  title: Eastron SDM630-Modbus telemetry
+  version: 0.1.0
+  description: 'Subset of the Modbus RTU input registers for the SDM630-Modbus. Read
+    each selected value as a complete two-register float. Floats are most significant
+    register first by default; the meter''s Register Order setting can reverse that
+    order, which this contract does not model. Which phase values are meaningful depends
+    on the configured wiring system; each point notes it.
+
+    '
+  attribution: Derived from Eastron's SDM630Modbus Smart Meter Modbus Protocol Implementation.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: eastron-sdm630-modbus
+device:
+  manufacturer: Eastron
+  model: SDM630-Modbus
+  classes:
+  - energy_meter
+  transports:
+  - type: rtu
+  documentation:
+  - title: SDM630Modbus Smart Meter Modbus Protocol Implementation
+    url: https://www.eastroneurope.com/images/uploads/products/protocol/SDM630_MODBUS_Protocol.pdf
+    revision: '1.8'
+defaults:
+  table: input_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+constraints:
+  maxReadRegisters: 80
+  ranges:
+  - table: holding_register
+    start: 14
+    count: 2
+    policy: side_effects
+    reason: 'Password Lock (40015): reading it resets the password timeout timer.'
+  - table: holding_register
+    start: 24
+    count: 2
+    policy: side_effects
+    reason: 'Password (40025): reading it resets the password timeout timer.'
+points:
+- id: voltage_l1_n
+  address: 0
+  type: f32
+  unit: V
+  description: Valid for 3P4W, 1P2W; reads zero for 3P3W.
+  aliases:
+  - Phase 1 line to neutral volts.
+  source:
+    address: '30001'
+    page: 2
+    reference: SDM630Modbus input register table
+- id: voltage_l2_n
+  address: 2
+  type: f32
+  unit: V
+  description: Valid for 3P4W; reads zero for 3P3W, 1P2W.
+  aliases:
+  - Phase 2 line to neutral volts.
+  source:
+    address: '30003'
+    page: 2
+    reference: SDM630Modbus input register table
+- id: voltage_l3_n
+  address: 4
+  type: f32
+  unit: V
+  description: Valid for 3P4W; reads zero for 3P3W, 1P2W.
+  aliases:
+  - Phase 3 line to neutral volts.
+  source:
+    address: '30005'
+    page: 2
+    reference: SDM630Modbus input register table
+- id: current_l1
+  address: 6
+  type: f32
+  unit: A
+  description: Valid for 3P4W, 3P3W, 1P2W.
+  aliases:
+  - Phase 1 current.
+  source:
+    address: '30007'
+    page: 2
+    reference: SDM630Modbus input register table
+- id: current_l2
+  address: 8
+  type: f32
+  unit: A
+  description: Valid for 3P4W, 3P3W; reads zero for 1P2W.
+  aliases:
+  - Phase 2 current.
+  source:
+    address: '30009'
+    page: 2
+    reference: SDM630Modbus input register table
+- id: current_l3
+  address: 10
+  type: f32
+  unit: A
+  description: Valid for 3P4W, 3P3W; reads zero for 1P2W.
+  aliases:
+  - Phase 3 current.
+  source:
+    address: '30011'
+    page: 2
+    reference: SDM630Modbus input register table
+- id: active_power_l1
+  address: 12
+  type: f32
+  unit: W
+  description: Valid for 3P4W, 1P2W; reads zero for 3P3W.
+  aliases:
+  - Phase 1 power.
+  source:
+    address: '30013'
+    page: 2
+    reference: SDM630Modbus input register table
+- id: active_power_total
+  address: 52
+  type: f32
+  unit: W
+  description: Valid for 3P4W, 3P3W, 1P2W.
+  aliases:
+  - Total system power.
+  source:
+    address: '30053'
+    page: 3
+    reference: SDM630Modbus input register table
+- id: apparent_power_total
+  address: 56
+  type: f32
+  unit: V.A
+  description: Valid for 3P4W, 3P3W, 1P2W.
+  aliases:
+  - Total system volt amps.
+  source:
+    address: '30057'
+    page: 3
+    reference: SDM630Modbus input register table
+- id: reactive_power_total
+  address: 60
+  type: f32
+  description: 'Vendor unit: VAr. Valid for 3P4W, 3P3W, 1P2W.'
+  aliases:
+  - Total system VAr.
+  source:
+    address: '30061'
+    page: 3
+    reference: SDM630Modbus input register table
+- id: power_factor_total
+  address: 62
+  type: f32
+  description: The power factor has its sign adjusted to indicate the direction of
+    the current. Positive refers to forward current, negative refers to reverse current.
+    Valid for 3P4W, 3P3W, 1P2W.
+  aliases:
+  - Total system power factor (1).
+  source:
+    address: '30063'
+    page: 3
+    reference: SDM630Modbus input register table
+- id: frequency
+  address: 70
+  type: f32
+  unit: Hz
+  description: Valid for 3P4W, 3P3W, 1P2W.
+  aliases:
+  - Frequency of supply voltages.
+  source:
+    address: '30071'
+    page: 3
+    reference: SDM630Modbus input register table
+- id: import_active_energy
+  address: 72
+  type: f32
+  unit: kW.h
+  description: Valid for 3P4W, 3P3W, 1P2W.
+  aliases:
+  - Total Import kWh
+  source:
+    address: '30073'
+    page: 3
+    reference: SDM630Modbus input register table
+- id: export_active_energy
+  address: 74
+  type: f32
+  unit: kW.h
+  description: Valid for 3P4W, 3P3W, 1P2W.
+  aliases:
+  - Total Export kWh.
+  source:
+    address: '30075'
+    page: 3
+    reference: SDM630Modbus input register table
+- id: voltage_l1_l2
+  address: 200
+  type: f32
+  unit: V
+  description: Valid for 3P4W, 3P3W; reads zero for 1P2W.
+  aliases:
+  - Line 1 to Line 2 volts.
+  source:
+    address: '30201'
+    page: 3
+    reference: SDM630Modbus input register table
+- id: current_n
+  address: 224
+  type: f32
+  unit: A
+  description: Valid for 3P4W; reads zero for 3P3W, 1P2W.
+  aliases:
+  - Neutral current.
+  source:
+    address: '30225'
+    page: 4
+    reference: SDM630Modbus input register table

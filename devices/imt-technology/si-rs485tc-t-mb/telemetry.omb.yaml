@@ -1,0 +1,98 @@
+openmodbus: 0.1.0
+info:
+  id: imt-technology/si-rs485tc-t-mb/telemetry
+  title: IMT Technology Si-RS485TC-T-MB irradiance sensor telemetry
+  version: 0.1.0
+  description: 'All registers of the Si-RS485TC-T-MB that the specification lists
+    as active for this sensor type, plus the two cell-temperature compatibility registers,
+    for firmware 2.03. Serial number, firmware version and bus parameters are only
+    available through the vendor-specific function code 0x46 and are not covered.
+    The addresses are taken as zero-based because the register list starts at register
+    0, which one-based numbering cannot contain; the specification does not state
+    the base. The register tables are listed under the supported read functions 0x03
+    and 0x04 and are mapped as input registers.
+
+    '
+  attribution: Derived from IMT Technology's Modbus Specification for Irradiance Sensors
+    Si-RS485…-MB.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: imt-technology-si-rs485-modbus
+device:
+  manufacturer: IMT Technology
+  model: Si-RS485TC-T-MB
+  classes:
+  - irradiance_sensor
+  transports:
+  - type: rtu
+    notes: RS-485. Factory default 9600 baud, 8 data bits, no parity, 1 stop bit.
+  unitId:
+    mode: configurable
+    default: 1
+    notes: Set through the vendor-specific function code 0x46.
+  documentation:
+  - title: Modbus Specification for Irradiance Sensors Si-RS485…-MB
+    url: https://imt-technology.com/fileadmin/docs/en/products/Si-RS485_Modbus_SPEC_EN.pdf
+    revision: January 2026 (firmware 2.03)
+defaults:
+  table: input_register
+  access: r
+points:
+- id: irradiance
+  address: 0
+  type: u16
+  aliases:
+  - Irradiance in W/m²
+  conversion:
+    exponent10: -1
+  unit: W/m2
+  description: 'Irradiance in W/m², raw 0…15000 for 0…1500 W/m². Note: Up to Firmware
+    Version 1.52 range is 0…1400 W/m².'
+  source:
+    address: '0'
+    page: 1
+    reference: 'Register table (firmware 2.03): Irradiance in W/m²'
+- id: cell_temperature_offset_25
+  address: 1
+  type: u16
+  aliases:
+  - Cell Temperature in °C
+  conversion:
+    exponent10: -1
+    offset: -25
+  unit: Cel
+  description: 'Compatibility register for older firmware: Cell Temperature in °C,
+    raw 0…1000 for -25…+75 °C.'
+  source:
+    address: '1'
+    page: 2
+    reference: 'Register table (firmware 2.03): Cell Temperature in °C'
+- id: cell_temperature_offset_100
+  address: 5
+  type: u16
+  aliases:
+  - Cell Temperature in °C
+  conversion:
+    exponent10: -1
+    offset: -100
+  unit: Cel
+  description: 'Compatibility register for older firmware: Cell Temperature in °C,
+    raw 600…1900 for -40…+90 °C. Note: Only available from Firmware Version 1.52.'
+  source:
+    address: '5'
+    page: 2
+    reference: 'Register table (firmware 2.03): Cell Temperature in °C'
+- id: cell_temperature
+  address: 7
+  type: i16
+  aliases:
+  - Cell Temperature in °C
+  conversion:
+    exponent10: -1
+  unit: Cel
+  description: 'Cell Temperature in °C, raw -400…900 for -40…+90 °C. Note: Only available
+    from Firmware Version 1.53.'
+  source:
+    address: '7'
+    page: 1
+    reference: 'Register table (firmware 2.03): Cell Temperature in °C'

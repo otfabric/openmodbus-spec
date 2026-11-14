@@ -1,0 +1,246 @@
+openmodbus: 0.1.0
+info:
+  id: icp-das/et-2251/io
+  title: ICP DAS ET-2251 digital inputs, counters and status
+  version: 0.1.0
+  description: 'Read-only subset of the section 6.3 DIO tables for the 16-channel
+    ET-2251, which the manual lists as (P)ET-2251 together with its PoE variant. Counter
+    and frequency values are 32-bit, low word first. Configuration coils and registers
+    are read-only in this contract.
+
+    '
+  attribution: Derived from ICP DAS's ET-2200 Series Ethernet I/O Modules User Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: icp-das-et-2200-manual
+device:
+  manufacturer: ICP DAS
+  family: ET-2200
+  model: ET-2251
+  classes:
+  - remote_io
+  transports:
+  - type: tcp
+  - type: udp
+  unitId:
+    default: 1
+  documentation:
+  - title: ET-2200 Series Ethernet I/O Modules User Manual
+    url: https://www.icpdas.com/web/product/download/io_and_unit/ethernet/et2200/document/manual/ET-2200_user_manual_en.pdf
+    revision: Ver. 2.0, Apr. 2026
+defaults:
+  access: r
+points:
+- id: di_status
+  aliases:
+  - The status of all Digital Input Channels
+  table: discrete_input
+  address: 0
+  type: bool
+  count: 16
+  source:
+    address: 0 (0x00)
+    page: 180
+    reference: Section 6.3, 1xxxx DI address table
+- id: di_high_latch
+  aliases:
+  - The status of all high-latched DI Channels
+  table: discrete_input
+  address: 32
+  type: bool
+  count: 16
+  source:
+    address: 32 (0x20)
+    page: 180
+    reference: Section 6.3, 1xxxx DI address table
+- id: di_low_latch
+  aliases:
+  - The status of all low-latched DI Channels
+  table: discrete_input
+  address: 64
+  type: bool
+  count: 16
+  source:
+    address: 64 (0x40)
+    page: 180
+    reference: Section 6.3, 1xxxx DI address table
+- id: di_latch_enable
+  aliases:
+  - Enables the high and low latches for all DI Channels
+  table: coil
+  address: 150
+  type: bool
+  description: Vendor access R/W/F; read-only in this contract.
+  source:
+    address: 150 (0x96)
+    page: 178
+    reference: Section 6.3, 0xxxx DO address table
+- id: di_counter_enable
+  aliases:
+  - Enables the high-speed digital counter for all DI Channels
+  table: coil
+  address: 151
+  type: bool
+  count: 16
+  description: Vendor access R/W/F; read-only in this contract.
+  source:
+    address: 151 (0x97)
+    page: 179
+    reference: Section 6.3, 0xxxx DO address table
+- id: di_frequency_enable
+  aliases:
+  - Enables frequency measurement for all DI Channels
+  table: coil
+  address: 190
+  type: bool
+  count: 16
+  description: Vendor access R/W/F; read-only in this contract.
+  source:
+    address: 190 (0xBE)
+    page: 179
+    reference: Section 6.3, 0xxxx DO address table
+- id: di_counter
+  aliases:
+  - The Digital Counter Value
+  table: input_register
+  address: 16
+  type: u32
+  count: 16
+  wordOrder: little
+  source:
+    address: 16 (0x10)
+    page: 180
+    reference: Section 6.3, 3xxxx AI address table
+- id: di_frequency
+  aliases:
+  - 'The frequency Value is * 1,000. (Note: The Client must first divide the value
+    by 1,000.)'
+  table: input_register
+  address: 64
+  type: u32
+  count: 16
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  description: Frequency multiplied by 1,000; the client divides by 1,000. Measurement
+    is enabled per channel by di_frequency_enable.
+  source:
+    address: 64 (0x40)
+    page: 180
+    reference: Section 6.3, 3xxxx AI address table
+- id: di_channel_count
+  aliases:
+  - Number of DI Channels
+  table: input_register
+  address: 100
+  type: u16
+  source:
+    address: 100 (0x64)
+    page: 180
+    reference: Section 6.3, 3xxxx AI address table
+- id: counter_channel_count
+  aliases:
+  - Number of high-speed counters
+  table: input_register
+  address: 121
+  type: u16
+  source:
+    address: 121 (0x79)
+    page: 180
+    reference: Section 6.3, 3xxxx AI address table
+- id: firmware_version
+  aliases:
+  - Firmware Version
+  table: input_register
+  address: 151
+  type: u16
+  description: 'Decimal digits of the firmware version: 123 means 1.2.3.'
+  stability: constant
+  source:
+    address: 151 (0x97)
+    page: 176
+    reference: Section 6.3, 3xxxx AI address table
+- id: modbus_communication_status
+  aliases:
+  - Modbus Communication Status
+  table: input_register
+  address: 158
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: no_error
+      label: No Error
+    - value: 1
+      name: timeout
+      label: Timeout
+  source:
+    address: 158 (0x9E)
+    page: 176
+    reference: Section 6.3, 3xxxx AI address table
+- id: pair_connection_status
+  aliases:
+  - Pair-Connection Status
+  table: input_register
+  address: 160
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: normal
+      label: Normal
+    - value: 1
+      name: timeout
+      label: Timeout
+    - value: 2
+      name: disconnected
+      label: Disconnected
+  source:
+    address: 160 (0xA0)
+    page: 176
+    reference: Section 6.3, 3xxxx AI address table
+- id: cpu_reset_status
+  aliases:
+  - CPU Reset Status
+  table: holding_register
+  address: 255
+  type: u16
+  enum:
+    values:
+    - value: 1
+      name: power_on
+      label: Reset at Power-on
+    - value: 2
+      name: watchdog
+      label: Reset by the WDT
+    - value: 3
+      name: reset_command
+      label: Reset using the reset command
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: 255 (0xFF)
+    page: 177
+    reference: Section 6.3, 4xxxx AO address table
+- id: host_wdt_events
+  aliases:
+  - Host WDT Events
+  table: holding_register
+  address: 258
+  type: u16
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: 258 (0x102)
+    page: 177
+    reference: Section 6.3, 4xxxx AO address table
+- id: module_name
+  aliases:
+  - Module Name
+  table: holding_register
+  address: 259
+  type: u16
+  description: 16-bit module name value; the manual does not document its encoding.
+  stability: constant
+  source:
+    address: 259 (0x103)
+    page: 177
+    reference: Section 6.3, 4xxxx AO address table

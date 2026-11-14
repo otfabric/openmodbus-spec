@@ -1,0 +1,397 @@
+openmodbus: 0.1.0
+info:
+  id: woodward/easygen-3200xt/telemetry
+  title: Woodward easYgen-3200XT generator, engine and status registers
+  version: 0.1.0
+  description: 'Read-only subset of the Modbus data protocol 5010 (basic visualization)
+    for easYgen-3200XT-P1 and 3200XT-P1-LT with software release 2.17 or higher. The
+    protocol is served when parameter 3184 (Modbus protocol number) is 5010, the default.
+    Only rows whose model column reads "All" are included. The manual lists bus addresses
+    (Modicon reference 450001 = 50000), states big-endian registers and writes the
+    high word of a 32-bit value to the lower address. The scale column ("*100") is
+    read as raw = value x 100; the manual does not define it. 16-bit voltages, currents
+    and power use the exponent registers (parameters 3181 to 3183). J1939 values need
+    an engine control unit on the CAN bus.
+
+    '
+  attribution: Derived from Woodward's easYgen-3000XT Series Manual Genset Control,
+    easYgen-3100XT-P1 / 3200XT-P1 / 3200XT-P1-LT.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: woodward-b37574
+device:
+  manufacturer: Woodward
+  family: easYgen-3000XT Series
+  model: easYgen-3200XT
+  classes:
+  - genset_controller
+  transports:
+  - type: rtu
+    notes: RS-485 serial interface.
+  - type: tcp
+    notes: Ethernet; up to 5 Modbus/TCP channels.
+  unitId:
+    mode: configurable
+    default: 1
+    notes: 'RS-485 slave ID is parameter 3188 (0 to 255, 0 disables Modbus); the Modbus/TCP
+      slave ID is parameter 7485 (1 to 255).
+
+      '
+  documentation:
+  - title: easYgen-3000XT Series Manual Genset Control, easYgen-3100XT-P1 / 3200XT-P1
+      / 3200XT-P1-LT
+    url: https://www.woodward.com/products/wp-content/uploads/sites/3/2025/04/B37574_U.pdf
+    revision: B37574 Revision U, Release 2.17-0
+defaults:
+  table: holding_register
+  access: r
+points:
+- id: power_exponent
+  address: 50001
+  type: i16
+  description: Power-of-ten exponent of the 16-bit power values (parameter 3181, values
+    [2, 3, 4, 5]); see the examples from page 635.
+  aliases:
+  - Skaling Power (16 bits) Exponent 10* W
+  source:
+    address: '50001'
+    page: 987
+    reference: 'Protocol 5010 (Basic Visualization): Skaling Power (16 bits) Exponent
+      10* W'
+- id: voltage_exponent
+  address: 50002
+  type: i16
+  description: Power-of-ten exponent of the 16-bit voltage values (parameter 3182,
+    values [-1, 0, 1, 2]); see the examples from page 635.
+  aliases:
+  - Skaling Volts (16 bits) Exponent 10* V
+  source:
+    address: '50002'
+    page: 987
+    reference: 'Protocol 5010 (Basic Visualization): Skaling Volts (16 bits) Exponent
+      10* V'
+- id: current_exponent
+  address: 50003
+  type: i16
+  description: Power-of-ten exponent of the 16-bit current values (parameter 3183,
+    values [-1, 0]); see the examples from page 635.
+  aliases:
+  - Skaling Amps (16 bits) Exponent 10* A
+  source:
+    address: '50003'
+    page: 987
+    reference: 'Protocol 5010 (Basic Visualization): Skaling Amps (16 bits) Exponent
+      10* A'
+- id: generator_frequency
+  address: 50009
+  type: i16
+  conversion:
+    exponent10: -2
+  unit: Hz
+  aliases:
+  - Generator frequency
+  source:
+    address: '50009'
+    page: 987
+    reference: 'Protocol 5010 (Basic Visualization): Generator frequency'
+- id: generator_active_power
+  address: 50010
+  type: i16
+  conversion:
+    exponent10:
+      point: power_exponent
+  unit: W
+  aliases:
+  - Total generator power
+  source:
+    address: '50010'
+    page: 987
+    reference: 'Protocol 5010 (Basic Visualization): Total generator power'
+- id: generator_voltage_l1_l2
+  address: 50013
+  type: i16
+  conversion:
+    exponent10:
+      point: voltage_exponent
+  unit: V
+  aliases:
+  - Generator voltage L1-L2
+  source:
+    address: '50013'
+    page: 987
+    reference: 'Protocol 5010 (Basic Visualization): Generator voltage L1-L2'
+- id: generator_current_l1
+  address: 50019
+  type: i16
+  conversion:
+    exponent10:
+      point: current_exponent
+  unit: A
+  aliases:
+  - Generator current 1
+  source:
+    address: '50019'
+    page: 988
+    reference: 'Protocol 5010 (Basic Visualization): Generator current 1'
+- id: engine_speed
+  address: 50051
+  type: i16
+  unit: /min
+  aliases:
+  - Engine Pickup speed
+  source:
+    address: '50051'
+    page: 990
+    reference: 'Protocol 5010 (Basic Visualization): Engine Pickup speed'
+- id: battery_voltage
+  address: 50052
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: V
+  aliases:
+  - Battery voltage
+  source:
+    address: '50052'
+    page: 990
+    reference: 'Protocol 5010 (Basic Visualization): Battery voltage'
+- id: start_requests
+  address: 50054
+  type: i16
+  aliases:
+  - Engine, number of startrequests
+  source:
+    address: '50054'
+    page: 990
+    reference: 'Protocol 5010 (Basic Visualization): Engine, number of startrequests'
+- id: control_mode
+  address: 50099
+  type: u16
+  mask: 15
+  enum:
+    values:
+    - value: 1
+      name: auto
+      label: AUTO
+    - value: 2
+      name: stop
+      label: STOP
+    - value: 4
+      name: manual
+      label: MANUAL
+    - value: 8
+      name: test
+      label: TEST
+  description: Declared int16 BITLIST; read as unsigned for the mask.
+  aliases:
+  - Control mode (STOP/AUTO/MANUAL/TEST)
+  source:
+    address: '50099'
+    page: 991
+    reference: 'Protocol 5010 (Basic Visualization): Control mode (STOP/AUTO/MANUAL/TEST)'
+- id: engine_alarms_latched
+  address: 50120
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: canopen_error_can_interface_1
+      label: 08.18 CANopen error at CAN Interface 1
+    - bit: 1
+      name: maintenance_hours_exceeded
+      label: 05.10 Maintenance hours exceeded latched
+    - bit: 2
+      name: maintenance_days_exceeded
+      label: 05.09 Maintenance days exceeded latched
+    - bit: 3
+      name: start_fail
+      label: 05.08 Start fail detected latched
+    - bit: 4
+      name: can_fault_j1939
+      label: 08.10 General CAN-J1939 fault latched
+    - bit: 5
+      name: mcb_fail_to_open
+      label: 08.08 MCB fail to open latched
+    - bit: 6
+      name: mcb_fail_to_close
+      label: 08.07 MCB fail to close latched
+    - bit: 7
+      name: gcb_fail_to_open
+      label: 08.06 GCB fail to open latched
+    - bit: 8
+      name: gcb_fail_to_close
+      label: 08.05 GCB fail to close latched
+    - bit: 9
+      name: shutdown_malfunction
+      label: 05.06 Shutdown malfunction detected latched
+    - bit: 10
+      name: speed_detection_alarm
+      label: 05.07 Speed detection alarm latched
+    - bit: 11
+      name: unintended_stop
+      label: 05.05 Unintended stop detected latched
+    - bit: 12
+      name: underspeed_2
+      label: 05.04 Engine under speed 2 latched
+    - bit: 13
+      name: underspeed_1
+      label: 05.03 Engine under speed 1 latched
+    - bit: 14
+      name: overspeed_2
+      label: 05.02 Engine Over speed 2 latched
+    - bit: 15
+      name: overspeed_1
+      label: 05.01 Engine Over speed 1 latched
+  description: Engine alarms 1, latched and not yet acknowledged. Declared int16 BITLIST;
+    read as unsigned.
+  aliases:
+  - Alarms 1 latched (unacknowledged)
+  source:
+    address: '50120'
+    page: 999
+    reference: 'Protocol 5010 (Basic Visualization): Alarms 1 latched (unacknowledged)'
+- id: j1939_engine_stop_information
+  address: 50195
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: type_0
+      label: Type 0
+    - value: 1
+      name: type_1
+      label: Type 1
+    - value: 2
+      name: type_2
+      label: Type 2
+    - value: 3
+      name: type_3
+      label: Type 3
+    - value: 4
+      name: type_4
+      label: Type 4
+    - value: 5
+      name: type_5
+      label: Type 5
+    - value: 6
+      name: type_6
+      label: Type 6
+    - value: 7
+      name: type_7
+      label: Type 7
+    - value: 8
+      name: type_8
+      label: Type 8
+    - value: 9
+      name: type_9
+      label: Type 9
+  invalid:
+  - 65279
+  - 65535
+  description: Engine stop information from the engine control unit (DEUTZ-specific
+    J1939 message). Raw 65279 means error and 65535 means missing.
+  aliases:
+  - J1939 EMR Engine Stop Information
+  source:
+    address: '50195'
+    page: 1018
+    reference: 'Protocol 5010 (Basic Visualization): J1939 EMR Engine Stop Information'
+- id: j1939_coolant_temperature
+  address: 50202
+  type: i16
+  unit: Cel
+  aliases:
+  - Engine Coolant Temperature (SPN 110)
+  source:
+    address: '50202'
+    page: 1019
+    reference: 'Protocol 5010 (Basic Visualization): Engine Coolant Temperature (SPN
+      110)'
+- id: j1939_oil_pressure
+  address: 50205
+  type: i16
+  unit: kPa
+  aliases:
+  - Engine Oil Pressure (SPN 100)
+  source:
+    address: '50205'
+    page: 1019
+    reference: 'Protocol 5010 (Basic Visualization): Engine Oil Pressure (SPN 100)'
+- id: generator_active_power_long
+  address: 50322
+  type: i32
+  wordOrder: big
+  byteOrder: big
+  unit: W
+  description: Two registers, high word at the lower address (big-endian data format,
+    chapter 7.6; word order statement on page 848).
+  aliases:
+  - Total gen. power
+  source:
+    address: '50322'
+    page: 1022
+    reference: 'Protocol 5010 (Basic Visualization): Total gen. power'
+- id: generator_current_l1_long
+  address: 50336
+  type: i32
+  wordOrder: big
+  byteOrder: big
+  conversion:
+    exponent10: -3
+  unit: A
+  description: Two registers, high word at the lower address (big-endian data format,
+    chapter 7.6; word order statement on page 848).
+  aliases:
+  - Gen. current 1
+  source:
+    address: '50336'
+    page: 1022
+    reference: 'Protocol 5010 (Basic Visualization): Gen. current 1'
+- id: generator_voltage_l1_l2_long
+  address: 50346
+  type: i32
+  wordOrder: big
+  byteOrder: big
+  conversion:
+    exponent10: -1
+  unit: V
+  description: Two registers, high word at the lower address (big-endian data format,
+    chapter 7.6; word order statement on page 848).
+  aliases:
+  - Gen. voltage L1-L2
+  source:
+    address: '50346'
+    page: 1022
+    reference: 'Protocol 5010 (Basic Visualization): Gen. voltage L1-L2'
+- id: generator_active_energy
+  address: 50366
+  type: i32
+  wordOrder: big
+  byteOrder: big
+  conversion:
+    exponent10: -2
+  unit: MW.h
+  description: Two registers, high word at the lower address (big-endian data format,
+    chapter 7.6; word order statement on page 848).
+  aliases:
+  - Gen. real energy
+  source:
+    address: '50366'
+    page: 1023
+    reference: 'Protocol 5010 (Basic Visualization): Gen. real energy'
+- id: generator_operating_hours
+  address: 50370
+  type: i32
+  wordOrder: big
+  byteOrder: big
+  conversion:
+    exponent10: -2
+  unit: h
+  description: Two registers, high word at the lower address (big-endian data format,
+    chapter 7.6; word order statement on page 848).
+  aliases:
+  - Gen. hours of operation
+  source:
+    address: '50370'
+    page: 1023
+    reference: 'Protocol 5010 (Basic Visualization): Gen. hours of operation'

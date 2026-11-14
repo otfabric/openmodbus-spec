@@ -31,6 +31,29 @@ NOT_UCUM = {"kWh", "Wh", "MWh", "kVAh", "kvarh", "varh", "kVArh", "degC", "°C",
             "var", "kvar", "VAr", "kVAr", "sec", "hrs", "W/m²", "Ω", "% RH", "%RH"}
 
 
+class ContractDumper(yaml.SafeDumper):
+    """PyYAML resolves scalars by YAML 1.1. Quote any string that a YAML 1.2 Core
+    parser would read as a number, boolean or null, so contracts mean the same
+    to every conforming parser (e.g. a vendor address "00508")."""
+
+
+YAML12_NON_STRING = re.compile(
+    r"[-+]?(0o[0-7]+|0x[0-9a-fA-F]+|[0-9]+|(\.[0-9]+|[0-9]+(\.[0-9]*)?)([eE][-+]?[0-9]+)?)"
+    r"|[-+]?\.(inf|Inf|INF)|\.(nan|NaN|NAN)|true|True|TRUE|false|False|FALSE|null|Null|NULL|~|")
+
+
+def _represent_str(dumper, data):
+    style = "'" if YAML12_NON_STRING.fullmatch(data) else None
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data, style=style)
+
+
+ContractDumper.add_representer(str, _represent_str)
+
+
+def dump_contract(document):
+    return yaml.dump(document, Dumper=ContractDumper, sort_keys=False, allow_unicode=True)
+
+
 def read_yaml(path):
     return yaml.safe_load(Path(path).read_text(encoding="utf-8"))
 
@@ -137,16 +160,18 @@ def load_extractor(name):
     return module
 
 
+def link(document):
+    result = {"title": document["title"], "url": document.get("documentation_url", document["download_urls"][0])}
+    if "revision" in document:
+        result["revision"] = document["revision"]
+    return result
+
+
 def build_contract(source_id, source, contract, extracted):
     if isinstance(extracted, list):
         extracted = {"points": extracted}
     require(set(extracted) <= {"points", "components", "constraints"}, "Unexpected extractor result keys")
-    documentation = {
-        "title": source["title"],
-        "url": source.get("documentation_url", source["download_urls"][0]),
-    }
-    if "revision" in source:
-        documentation["revision"] = source["revision"]
+    documentation = [link(source), *(link(item) for item in source.get("evidence", []))]
     document = {
         "openmodbus": "0.1.0",
         "info": {
@@ -155,7 +180,7 @@ def build_contract(source_id, source, contract, extracted):
             "verification": "documented",
             "x-otfabric-corpus-source": source_id,
         },
-        "device": {**contract["device"], "documentation": [documentation]},
+        "device": {**contract["device"], "documentation": documentation},
     }
     for key in ("defaults", "constraints"):
         if key in contract or key in extracted:
@@ -266,7 +291,8 @@ def changed_sources(manifest, lock, ref):
     for source_id, source in manifest["sources"].items():
         files = {f"corpus/extractors/{source.get('extractor')}.py",
                  *(contract["path"] for contract in source.get("contracts", []))}
-        if (old_sources.get(source_id) != source or old_lock.get(source_id) != lock.get(source_id)
+        pins = [source_id, *(item["id"] for item in source.get("evidence", []))]
+        if (old_sources.get(source_id) != source or any(old_lock.get(pin) != lock.get(pin) for pin in pins)
                 or files & changed_files):
             selected.append(source_id)
     return selected
@@ -279,7 +305,7 @@ def check_manifest(manifest, lock):
     pins = lock.get("sources") or {}
     for set_name, members in (manifest.get("sets") or {}).items():
         errors += [f"set {set_name}: unknown source {member}" for member in members if member not in sources]
-    paths, contract_ids = set(), set()
+    paths, contract_ids, used_pins = set(), set(), set()
     for source_id, source in sources.items():
         def fail(message):
             errors.append(f"{source_id}: {message}")
@@ -290,20 +316,26 @@ def check_manifest(manifest, lock):
         if missing:
             fail(f"missing keys {missing}")
             continue
-        for url in source["download_urls"]:
-            try:
-                https_url(url)
-            except CorpusError as exc:
-                fail(f"{url}: {exc}")
         if not re.fullmatch(r"[a-z][a-z0-9_]*", str(source["extractor"])) or \
                 not (EXTRACTORS / f"{source['extractor']}.py").is_file():
             fail(f"extractor module missing: {source['extractor']}")
-        pin = pins.get(source_id)
-        if not isinstance(pin, dict):
-            fail("no lock entry")
-        elif not (re.fullmatch(r"[a-f0-9]{64}", str(pin.get("sha256"))) and type(pin.get("size")) is int
-                  and pin["size"] > 0 and pin.get("verified_on") and pin.get("normalize", None) in (None, *NORMALIZERS)):
-            fail("invalid lock entry")
+        for item in [{"id": source_id, **source}, *source.get("evidence", [])]:
+            if item is not source and not all(key in item for key in ("id", "title", "download_urls", "format")):
+                fail(f"evidence {item.get('id')}: needs id, title, download_urls and format")
+                continue
+            for url in item["download_urls"]:
+                try:
+                    https_url(url)
+                except CorpusError as exc:
+                    fail(f"{url}: {exc}")
+            used_pins.add(item["id"])
+            pin = pins.get(item["id"])
+            if not isinstance(pin, dict):
+                fail(f"no lock entry for {item['id']}")
+            elif not (re.fullmatch(r"[a-f0-9]{64}", str(pin.get("sha256"))) and type(pin.get("size")) is int
+                      and pin["size"] > 0 and pin.get("verified_on")
+                      and pin.get("normalize", None) in (None, *NORMALIZERS)):
+                fail(f"invalid lock entry for {item['id']}")
         for contract in source["contracts"]:
             path = (ROOT / contract["path"]).resolve()
             if not (path.is_relative_to(ROOT / "devices") and path.name.endswith(".omb.yaml")):
@@ -314,27 +346,39 @@ def check_manifest(manifest, lock):
                 fail(f"{contract['path']}: duplicate path or catalog ID")
             paths.add(path)
             contract_ids.add(contract["info"]["id"])
-    errors += [f"lock entry without source: {source_id}" for source_id in pins if source_id not in sources]
+    errors += [f"lock entry without source or evidence: {pin}" for pin in pins if pin not in used_pins]
     errors += [f"{path.relative_to(ROOT)}: not produced by any corpus source"
                for path in sorted((ROOT / "devices").rglob("*.omb.yaml")) if path.resolve() not in paths]
     return errors
 
 
-def build_source(source_id, source, pin, cache, offline, validator, catalog, contract_ids):
-    devices = ROOT / "devices"
+def fetch_pinned(document, pin, cache, offline):
     require(re.fullmatch(r"[a-f0-9]{64}", pin["sha256"]), "Invalid SHA-256 in source lock")
     require(type(pin["size"]) is int and pin["size"] > 0, "Invalid byte size in source lock")
+    return normalized(cached_source(document, pin, cache, offline), pin)
+
+
+def build_source(source_id, source, lock, cache, offline, validator, catalog, contract_ids):
+    devices = ROOT / "devices"
     extractor = load_extractor(source["extractor"])
     contracts = source.get("contracts")
     require(isinstance(contracts, list) and contracts, "Source needs at least one contract")
-    data = normalized(cached_source(source, pin, cache, offline), pin)
+    data = fetch_pinned(source, lock[source_id], cache, offline)
+    # Evidence documents state facts the extractor checks (address base, function code, word order)
+    # but are not mapped themselves. They are pinned like sources.
+    evidence = {}
+    for item in source.get("evidence", []):
+        require(item["id"] in lock, f"Evidence {item['id']} has no lock entry")
+        evidence[item["id"]] = fetch_pinned(item, lock[item["id"]], cache, offline)
+    extra = {"evidence": evidence} if evidence else {}
     built = []
     for contract in contracts:
         path = (ROOT / contract["path"]).resolve()
         require(path.is_relative_to(devices) and path.name.endswith(".omb.yaml"),
                 "Contract path must be a .omb.yaml under devices/")
         require(path not in catalog, f"Duplicate catalog path: {path.relative_to(ROOT)}")
-        document = build_contract(source_id, source, contract, extractor.extract(data, contract.get("selector")))
+        document = build_contract(source_id, source, contract,
+                                  extractor.extract(data, contract.get("selector"), **extra))
         verify_contract(validator, document, path.relative_to(ROOT))
         contract_id = document["info"]["id"]
         require(contract_id not in contract_ids, f"Duplicate catalog ID: {contract_id}")
@@ -352,7 +396,7 @@ def build_catalog(source_ids, sources, lock, cache, offline, write):
     for source_id in source_ids:
         try:
             require(source_id in lock, "Source has no lock entry")
-            built = build_source(source_id, sources[source_id], lock[source_id], cache, offline,
+            built = build_source(source_id, sources[source_id], lock, cache, offline,
                                  validator, catalog, contract_ids)
         except (CorpusError, OSError, KeyError, TypeError, ValueError, yaml.YAMLError,
                 subprocess.SubprocessError) as exc:
@@ -369,7 +413,7 @@ def build_catalog(source_ids, sources, lock, cache, offline, write):
 
     if write:
         for path, document in catalog.items():
-            content = yaml.safe_dump(document, sort_keys=False, allow_unicode=True)
+            content = dump_contract(document)
             if path.is_file() and path.read_text(encoding="utf-8") == content:
                 continue
             path.parent.mkdir(parents=True, exist_ok=True)

@@ -1,0 +1,152 @@
+openmodbus: 0.1.0
+info:
+  id: moxa/iologik-e1240/io
+  title: Moxa ioLogik E1240 analog inputs
+  version: 0.1.0
+  description: 'Read-only subset of the Appendix A default Modbus/TCP map for the
+    8-input ioLogik E1240 and E1240-T: raw input values with their range codes (AI_mode)
+    and status. The manual gives no formula from raw value to volts or milliamps,
+    and does not state the type of the two-word scaled values, which are left out.
+    In 4-20 mA burnout mode a raw value of 0000h means burnout and FFFFh over range.
+
+    '
+  attribution: Derived from Moxa's ioLogik E1200 Series User's Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: moxa-iologik-e1200-manual
+device:
+  manufacturer: Moxa
+  family: ioLogik E1200
+  model: ioLogik E1240
+  classes:
+  - remote_io
+  transports:
+  - type: tcp
+  unitId:
+    default: 1
+  documentation:
+  - title: ioLogik E1200 Series User's Manual
+    url: https://www.moxa.com/Moxa/media/PDIM/S100000327/moxa-iologik-e1200-series-manual-v15.2.pdf
+    revision: Edition 15.2, February 2018
+defaults:
+  access: r
+points:
+- id: ai_raw_value
+  aliases:
+  - AI_rawValue
+  table: input_register
+  address: 0
+  type: u16
+  count: 8
+  source:
+    address: '30001'
+    page: 106
+    reference: Appendix A, ioLogik E1240 Modbus address and register map
+- id: ai_raw_value_min
+  aliases:
+  - AI_rawValueMin
+  table: input_register
+  address: 24
+  type: u16
+  count: 8
+  source:
+    address: '30025'
+    page: 106
+    reference: Appendix A, ioLogik E1240 Modbus address and register map
+- id: ai_raw_value_max
+  aliases:
+  - AI_rawValueMax
+  table: input_register
+  address: 32
+  type: u16
+  count: 8
+  source:
+    address: '30033'
+    page: 106
+    reference: Appendix A, ioLogik E1240 Modbus address and register map
+- id: ai_status
+  aliases:
+  - AI_status
+  table: input_register
+  address: 60
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: normal
+      label: normal
+    - value: 1
+      name: burnout
+      label: burnout
+    - value: 2
+      name: over_range
+      label: over range
+    - value: 3
+      name: under_range
+      label: under range
+  count: 8
+  source:
+    address: '30061'
+    page: 106
+    reference: Appendix A, ioLogik E1240 Modbus address and register map
+- id: ai_mode
+  aliases:
+  - AI_mode
+  table: holding_register
+  address: 24
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: voltage_0_10v
+      label: 0-10 V
+    - value: 1
+      name: current_4_20ma
+      label: 4-20mA
+    - value: 2
+      name: current_0_20ma
+      label: 0-20mA
+    - value: 4
+      name: current_4_20ma_burnout
+      label: 4-20mA burnout
+  count: 8
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '40025'
+    page: 106
+    reference: Appendix A, ioLogik E1240 Modbus address and register map
+- id: model_name
+  aliases:
+  - modelName
+  table: input_register
+  address: 5000
+  type: string
+  registers: 10
+  stability: constant
+  source:
+    address: '35001'
+    page: 107
+    reference: Appendix A, ioLogik E1240 Modbus address and register map
+- id: device_name
+  aliases:
+  - deviceName
+  table: input_register
+  address: 5040
+  type: string
+  registers: 30
+  source:
+    address: '35041'
+    page: 106
+    reference: Appendix A, ioLogik E1240 Modbus address and register map
+- id: firmware_version
+  aliases:
+  - firmwareVersion
+  table: input_register
+  address: 5029
+  type: bytes
+  registers: 2
+  stability: constant
+  source:
+    address: '35030'
+    page: 106
+    reference: Appendix A, ioLogik E1240 Modbus address and register map

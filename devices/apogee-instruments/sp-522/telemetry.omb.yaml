@@ -1,0 +1,147 @@
+openmodbus: 0.1.0
+info:
+  id: apogee-instruments/sp-522/telemetry
+  title: Apogee Instruments SP-522 heated pyranometer telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the SP-522 Modbus RTU holding registers: irradiance
+    and detector voltage as floats and as decimal-shifted 16-bit integers, heater
+    status, device status and identification. Model number, serial number and heater
+    status are read here only; the manual documents them in the read/write table.
+
+    '
+  attribution: Derived from Apogee Instruments' Owner's manual, pyranometer models
+    SP-522.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: apogee-instruments-sp-522
+device:
+  manufacturer: Apogee Instruments
+  model: SP-522
+  classes:
+  - irradiance_sensor
+  transports:
+  - type: rtu
+    notes: RS-232 or RS-485. Factory default 19200 baud, 8 data bits, even parity,
+      1 stop bit.
+  unitId:
+    mode: configurable
+    default: 1
+    notes: Valid addresses are 1 to 247.
+  documentation:
+  - title: Owner's manual, pyranometer models SP-522
+    url: https://www.apogeeinstruments.com/content/SP-522-manual.pdf
+    revision: 11-March-2026
+defaults:
+  table: holding_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+points:
+- id: irradiance
+  address: 0
+  type: f32
+  aliases:
+  - calibrated output watts
+  unit: W/m2
+  description: 'Calibrated output: shortwave irradiance.'
+  source:
+    address: 0-1
+    page: 12
+    reference: 'Read only float registers: calibrated output watts'
+- id: detector_voltage
+  address: 2
+  type: f32
+  aliases:
+  - detector millivolts
+  unit: mV
+  description: Detector output voltage.
+  source:
+    address: 2-3
+    page: 12
+    reference: 'Read only float registers: detector millivolts'
+- id: firmware_version
+  address: 8
+  type: f32
+  aliases:
+  - firmware version
+  description: Firmware version.
+  source:
+    address: 8-9
+    page: 12
+    reference: 'Read only float registers: firmware version'
+- id: model_number
+  address: 18
+  type: f32
+  aliases:
+  - model number*
+  stability: constant
+  description: Model number.
+  source:
+    address: 18-19
+    page: 13
+    reference: 'Read/Write float registers: model number*'
+- id: serial_number
+  address: 20
+  type: f32
+  aliases:
+  - serial number*
+  stability: constant
+  description: Serial number.
+  source:
+    address: 20-21
+    page: 13
+    reference: 'Read/Write float registers: serial number*'
+- id: irradiance_int
+  address: 40
+  type: i16
+  aliases:
+  - calibrated output watts (multiplied by 10)
+  conversion:
+    exponent10: -1
+  unit: W/m2
+  description: Calibrated output as a decimal-shifted integer (x10).
+  source:
+    address: '40'
+    page: 12
+    reference: 'Read only integer registers: calibrated output watts (multiplied by
+      10)'
+- id: detector_voltage_int
+  address: 41
+  type: i16
+  aliases:
+  - detector millivolts (multiplied by 100)
+  conversion:
+    exponent10: -2
+  unit: mV
+  description: Detector output voltage as a decimal-shifted integer (x100).
+  source:
+    address: '41'
+    page: 12
+    reference: 'Read only integer registers: detector millivolts (multiplied by 100)'
+- id: device_status
+  address: 43
+  type: i16
+  aliases:
+  - device status (1 means device is busy, 0 otherwise)
+  enum:
+    values:
+    - value: 1
+      name: busy
+    - value: 0
+      name: not_busy
+  description: Device status.
+  source:
+    address: '43'
+    page: 12
+    reference: 'Read only integer registers: device status (1 means device is busy,
+      0 otherwise)'
+- id: heater_status
+  address: 57
+  type: i16
+  aliases:
+  - heater status
+  description: Heater status; the manual does not list its values.
+  source:
+    address: '57'
+    page: 13
+    reference: 'Read/Write integer registers: heater status'

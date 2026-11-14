@@ -1,0 +1,290 @@
+openmodbus: 0.1.0
+info:
+  id: solis/s6-gr1p6k/telemetry
+  title: Solis S6-GR1P6K telemetry
+  version: 0.1.0
+  description: Read-only subset of the input registers (function code 04) of the Solis
+    RS485 Modbus protocol for grid-connected PV inverters. The vendor states that
+    the protocol applies to Solis grid-connected inverters of all power ranges manufactured
+    after mid-2023; it does not name the S6-GR1P6K. Register numbers in the vendor
+    table are the PDU addresses, as the worked examples in section 6 show. Unimplemented
+    registers read as 0 without an exception. The vendor recommends at most 50 registers
+    per frame. Inverter status (3043) is left out because register 3029 subdivides
+    its meaning.
+  attribution: Derived from Solis's RS485_MODBUS Communication protocol for grid-connected
+    inverters.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: solis-grid-rs485-modbus
+device:
+  manufacturer: Solis
+  model: S6-GR1P6K
+  classes:
+  - pv_inverter
+  transports:
+  - type: rtu
+  unitId:
+    mode: configurable
+    notes: Slave address 1-99.
+  documentation:
+  - title: 'RS485_MODBUS Communication: Solis PV Grid-Connected Inverter'
+    url: https://oss.soliscloud.com/templet/RS485_MODBUS%C2%A0Solis%20PV%C2%A0Grid-Connected%C2%A0Inverter.pdf
+    revision: '3.7'
+defaults:
+  table: input_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+constraints:
+  minRequestIntervalMs: 300
+points:
+- id: active_power
+  aliases:
+  - Active Power
+  address: 3004
+  type: i32
+  unit: W
+  source:
+    address: 3004-3005
+    page: 7
+    reference: 5.1 Inverter Parameter Address Definition for 0x04
+- id: dc_power_total
+  aliases:
+  - Total DC output power
+  address: 3006
+  type: u32
+  unit: W
+  source:
+    address: 3006-3007
+    page: 7
+    reference: 5.1 Inverter Parameter Address Definition for 0x04
+- id: energy_total
+  aliases:
+  - Total energy
+  address: 3008
+  type: u32
+  unit: kW.h
+  source:
+    address: 3008-3009
+    page: 7
+    reference: 5.1 Inverter Parameter Address Definition for 0x04
+- id: energy_today
+  aliases:
+  - Energy today
+  address: 3014
+  type: u16
+  unit: kW.h
+  conversion:
+    exponent10: -1
+  source:
+    address: '3014'
+    page: 7
+    reference: 5.1 Inverter Parameter Address Definition for 0x04
+- id: dc_voltage_1
+  aliases:
+  - DC voltage 1
+  address: 3021
+  type: u16
+  unit: V
+  conversion:
+    exponent10: -1
+  source:
+    address: '3021'
+    page: 7
+    reference: 5.1 Inverter Parameter Address Definition for 0x04
+- id: dc_current_1
+  aliases:
+  - DC current1
+  address: 3022
+  type: u16
+  unit: A
+  conversion:
+    exponent10: -1
+  source:
+    address: '3022'
+    page: 7
+    reference: 5.1 Inverter Parameter Address Definition for 0x04
+- id: dc_voltage_2
+  aliases:
+  - DC voltage 2
+  address: 3023
+  type: u16
+  unit: V
+  conversion:
+    exponent10: -1
+  source:
+    address: '3023'
+    page: 7
+    reference: 5.1 Inverter Parameter Address Definition for 0x04
+- id: dc_current_2
+  aliases:
+  - DC current 2
+  address: 3024
+  type: u16
+  unit: A
+  conversion:
+    exponent10: -1
+  source:
+    address: '3024'
+    page: 7
+    reference: 5.1 Inverter Parameter Address Definition for 0x04
+- id: ac_voltage_ab_or_a
+  aliases:
+  - AB line voltage / A phase voltage
+  address: 3033
+  type: u16
+  unit: V
+  conversion:
+    exponent10: -1
+  source:
+    address: '3033'
+    page: 8
+    reference: 5.1 Inverter Parameter Address Definition for 0x04
+- id: ac_current_a
+  aliases:
+  - A phase current
+  address: 3036
+  type: u16
+  unit: A
+  conversion:
+    exponent10: -1
+  source:
+    address: '3036'
+    page: 8
+    reference: 5.1 Inverter Parameter Address Definition for 0x04
+- id: working_mode
+  aliases:
+  - Standard working mode
+  address: 3040
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: no_response_mode
+      label: No response mode
+    - value: 1
+      name: volt_watt_default
+      label: Volt–watt default
+    - value: 2
+      name: volt_var
+      label: Volt–var
+    - value: 3
+      name: fixed_power_factor
+      label: Fixed power factor
+    - value: 4
+      name: fix_reactive_power
+      label: Fix reactive power
+    - value: 5
+      name: power_pf
+      label: Power-PF
+    - value: 6
+      name: rule21volt_watt
+      label: Rule21Volt–watt
+  source:
+    address: '3040'
+    page: 8
+    reference: 5.1 Inverter Parameter Address Definition for 0x04
+- id: inverter_temperature
+  aliases:
+  - Inverter temperature
+  address: 3041
+  type: i16
+  unit: Cel
+  conversion:
+    exponent10: -1
+  description: 'Vendor remark: Note：AC NTC (IGBT)'
+  source:
+    address: '3041'
+    page: 8
+    reference: 5.1 Inverter Parameter Address Definition for 0x04
+- id: grid_frequency
+  aliases:
+  - Grid Frequency
+  address: 3042
+  type: u16
+  unit: Hz
+  conversion:
+    exponent10: -2
+  source:
+    address: '3042'
+    page: 8
+    reference: 5.1 Inverter Parameter Address Definition for 0x04
+- id: reactive_power
+  aliases:
+  - Reactive power value
+  address: 3055
+  type: i32
+  description: 'Vendor unit: Var.'
+  source:
+    address: 3055-3056
+    page: 9
+    reference: 5.1 Inverter Parameter Address Definition for 0x04
+- id: apparent_power
+  aliases:
+  - Apparent power value
+  address: 3057
+  type: i32
+  unit: V.A
+  source:
+    address: 3057-3058
+    page: 9
+    reference: 5.1 Inverter Parameter Address Definition for 0x04
+- id: power_factor
+  aliases:
+  - Real-time power factor
+  address: 3059
+  type: i16
+  conversion:
+    exponent10: -2
+  source:
+    address: '3059'
+    page: 9
+    reference: 5.1 Inverter Parameter Address Definition for 0x04
+- id: working_status
+  aliases:
+  - Working Status
+  address: 3071
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: normal_operation
+      label: Normal operation
+    - bit: 1
+      name: initial_standby
+      label: Initial standby
+    - bit: 2
+      name: controlled_shutdown
+      label: Controlled shutdown
+    - bit: 3
+      name: fault_shutdown
+      label: Fault shutdown
+    - bit: 4
+      name: standby
+      label: Standby
+    - bit: 5
+      name: derating_operation
+      label: Derating operation
+    - bit: 6
+      name: power_limit_operation
+      label: Power-limit operation
+    - bit: 7
+      name: over_voltage_reduction
+      label: Over voltage reduction
+    - bit: 8
+      name: grid_surge
+      label: Grid surge
+    - bit: 10
+      name: external_fan_fault
+      label: External fan fault
+    - bit: 14
+      name: phase_ground_alarm
+      label: Phase-ground alarm
+    - bit: 15
+      name: igbt_fault
+      label: IGBT Fault
+  source:
+    address: '3071'
+    page: 9
+    reference: 5.1 Inverter Parameter Address Definition for 0x04; Appendix 3 Status
+      Bits Definition (page 28)

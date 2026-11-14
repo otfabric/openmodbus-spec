@@ -28,7 +28,8 @@ committing it.
 
 `make check` runs `corpus/run.py --check-manifest`: an offline check that every
 source has a lock entry and an extractor, every contract file exists, and every
-`devices/` contract comes from a corpus source. It never downloads.
+`devices/` contract comes from a corpus source. It never downloads. It also runs
+`corpus/roster.py --check` (see [Roster](#roster)).
 
 ## Extractors
 
@@ -40,6 +41,15 @@ rows by their vendor label and parse address, width, type and scale from the
 document. They fail on anything unexpected. [sourcelib.py](sourcelib.py) reads
 PDF pages through `pdftotext`, HTML tables, CSV, ZIP members in memory, and XLSX
 cached cell values. It never evaluates formulas or macros.
+
+Vendors often state a convention the mapping depends on, such as the address
+base, the function code or the word order, in a companion manual rather than
+in the register list. A source lists such documents under `evidence`. Each is
+pinned in the lock like a source, passed to the extractor as
+`extract(data, selector, evidence={id: bytes})`, and linked from the generated
+contracts' `device.documentation`. The extractor must find the stated fact in
+those bytes. A convention that is neither stated nor forced by the documents
+leaves the model unmapped.
 
 ## Downloads and source changes
 
@@ -64,6 +74,21 @@ removes those bytes before hashing; `size` and `sha256` then describe the
 normalised bytes. The only one is `cloudflare`: it blanks Cloudflare's
 per-response email-obfuscation keys and removes its injected analytics beacon.
 The Brainboxes ED tables need it.
+
+## Roster
+
+[roster.yaml](roster.yaml) tracks the target roster: ten device classes, five
+vendors per class and three models per vendor. Each model is `mapped` (with its
+contracts), `needs-check` or `blocked`, with the reason in its notes. It also
+records the sources tried with their HTTP outcome, and work items with their
+evidence, owner and draft decision. `corpus/roster.py` renders it into
+[ROSTER.md](ROSTER.md) (coverage) and
+[corpus-work-items.md](../docs/findings/corpus-work-items.md) (work items
+grouped by kind, with spec-gap candidates and questions grouped by theme). With
+`--check`, it fails when a page is stale, when a mapped model's contract is not
+produced by the manifest, when a catalog contract is missing from the roster, or
+when a spec-gap or question item is in no theme. The sets `class-01` to
+`class-10` in the manifest select one class's sources.
 
 ## Findings
 

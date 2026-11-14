@@ -1,0 +1,571 @@
+openmodbus: 0.1.0
+info:
+  id: automationdirect/sio-mb08thms/io
+  title: AutomationDirect Stride SIO-MB08THMS thermocouple inputs
+  version: 0.1.0
+  description: 'Read-only temperatures, input types, break status, system flags and
+    firmware registers. The temperature scale of 0.1 Cel applies when a channel''s
+    input type is a thermocouple and its Degree Units register is Celsius, the defaults;
+    250 mV inputs carry two implied decimals in mV, and the Fahrenheit and Kelvin
+    settings change the unit. Measurements are not updated while INIT mode is active.
+    The guide writes references as 0xxxx and 4xxxx without stating the base; the system-flag
+    bit diagram that mirrors coils into a register only fits 1-based references, which
+    the extractor checks. Writable registers are read-only in this contract.
+
+    '
+  attribution: Derived from AutomationDirect's Stride Field I/O SIO-MB08THMS User
+    Guide.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: automationdirect-sio-mb08thms
+device:
+  manufacturer: AutomationDirect
+  family: Stride Field I/O
+  model: SIO-MB08THMS
+  classes:
+  - remote_io
+  transports:
+  - type: tcp
+  documentation:
+  - title: Stride Field I/O SIO-MB08THMS User Guide
+    url: https://cdn.automationdirect.com/static/manuals/stridefio/siomb08thmsug.pdf
+    revision: 1st Edition, Rev. C
+defaults:
+  access: r
+points:
+- id: ai_0
+  aliases:
+  - Analog Input (0) - Ch0
+  table: holding_register
+  address: 40
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: Cel
+  source:
+    address: '40041'
+    page: 2
+    reference: Register addresses
+- id: ai_1
+  aliases:
+  - Analog Input (1) - Ch1
+  table: holding_register
+  address: 41
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: Cel
+  source:
+    address: '40042'
+    page: 2
+    reference: Register addresses
+- id: ai_2
+  aliases:
+  - Analog Input (2) - Ch2
+  table: holding_register
+  address: 42
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: Cel
+  source:
+    address: '40043'
+    page: 2
+    reference: Register addresses
+- id: ai_3
+  aliases:
+  - Analog Input (3) - Ch3
+  table: holding_register
+  address: 43
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: Cel
+  source:
+    address: '40044'
+    page: 2
+    reference: Register addresses
+- id: ai_4
+  aliases:
+  - Analog Input (4) - Ch4
+  table: holding_register
+  address: 44
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: Cel
+  source:
+    address: '40045'
+    page: 2
+    reference: Register addresses
+- id: ai_5
+  aliases:
+  - Analog Input (5) - Ch5
+  table: holding_register
+  address: 45
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: Cel
+  source:
+    address: '40046'
+    page: 2
+    reference: Register addresses
+- id: ai_6
+  aliases:
+  - Analog Input (6) - Ch6
+  table: holding_register
+  address: 46
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: Cel
+  source:
+    address: '40047'
+    page: 2
+    reference: Register addresses
+- id: ai_7
+  aliases:
+  - Analog Input (7) - Ch7
+  table: holding_register
+  address: 47
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: Cel
+  source:
+    address: '40048'
+    page: 2
+    reference: Register addresses
+- id: input_type_0
+  aliases:
+  - Input Type, Channels 1–0
+  table: holding_register
+  address: 30
+  type: u16
+  mask: 255
+  enum:
+    values:
+    - value: 0
+      name: disabled
+      label: Disabled
+    - value: 1
+      name: mv_250
+      label: 250mV
+    - value: 4
+      name: tc_j
+      label: TC J
+    - value: 5
+      name: tc_k
+      label: TC K
+    - value: 6
+      name: tc_r
+      label: TC R
+    - value: 7
+      name: tc_s
+      label: TC S
+    - value: 8
+      name: tc_t
+      label: TC T
+    - value: 9
+      name: tc_b
+      label: TC B
+    - value: 10
+      name: tc_e
+      label: TC E
+    - value: 11
+      name: tc_n
+      label: TC N
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '40031'
+    page: 2
+    reference: Register addresses
+- id: input_type_1
+  aliases:
+  - Input Type, Channels 1–0
+  table: holding_register
+  address: 30
+  type: u16
+  mask: 65280
+  enum:
+    values:
+    - value: 0
+      name: disabled
+      label: Disabled
+    - value: 1
+      name: mv_250
+      label: 250mV
+    - value: 4
+      name: tc_j
+      label: TC J
+    - value: 5
+      name: tc_k
+      label: TC K
+    - value: 6
+      name: tc_r
+      label: TC R
+    - value: 7
+      name: tc_s
+      label: TC S
+    - value: 8
+      name: tc_t
+      label: TC T
+    - value: 9
+      name: tc_b
+      label: TC B
+    - value: 10
+      name: tc_e
+      label: TC E
+    - value: 11
+      name: tc_n
+      label: TC N
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '40031'
+    page: 2
+    reference: Register addresses
+- id: input_type_2
+  aliases:
+  - Input Type, Channels 3–2
+  table: holding_register
+  address: 31
+  type: u16
+  mask: 255
+  enum:
+    values:
+    - value: 0
+      name: disabled
+      label: Disabled
+    - value: 1
+      name: mv_250
+      label: 250mV
+    - value: 4
+      name: tc_j
+      label: TC J
+    - value: 5
+      name: tc_k
+      label: TC K
+    - value: 6
+      name: tc_r
+      label: TC R
+    - value: 7
+      name: tc_s
+      label: TC S
+    - value: 8
+      name: tc_t
+      label: TC T
+    - value: 9
+      name: tc_b
+      label: TC B
+    - value: 10
+      name: tc_e
+      label: TC E
+    - value: 11
+      name: tc_n
+      label: TC N
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '40032'
+    page: 2
+    reference: Register addresses
+- id: input_type_3
+  aliases:
+  - Input Type, Channels 3–2
+  table: holding_register
+  address: 31
+  type: u16
+  mask: 65280
+  enum:
+    values:
+    - value: 0
+      name: disabled
+      label: Disabled
+    - value: 1
+      name: mv_250
+      label: 250mV
+    - value: 4
+      name: tc_j
+      label: TC J
+    - value: 5
+      name: tc_k
+      label: TC K
+    - value: 6
+      name: tc_r
+      label: TC R
+    - value: 7
+      name: tc_s
+      label: TC S
+    - value: 8
+      name: tc_t
+      label: TC T
+    - value: 9
+      name: tc_b
+      label: TC B
+    - value: 10
+      name: tc_e
+      label: TC E
+    - value: 11
+      name: tc_n
+      label: TC N
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '40032'
+    page: 2
+    reference: Register addresses
+- id: input_type_4
+  aliases:
+  - Input Type, Channels 5–4
+  table: holding_register
+  address: 32
+  type: u16
+  mask: 255
+  enum:
+    values:
+    - value: 0
+      name: disabled
+      label: Disabled
+    - value: 1
+      name: mv_250
+      label: 250mV
+    - value: 4
+      name: tc_j
+      label: TC J
+    - value: 5
+      name: tc_k
+      label: TC K
+    - value: 6
+      name: tc_r
+      label: TC R
+    - value: 7
+      name: tc_s
+      label: TC S
+    - value: 8
+      name: tc_t
+      label: TC T
+    - value: 9
+      name: tc_b
+      label: TC B
+    - value: 10
+      name: tc_e
+      label: TC E
+    - value: 11
+      name: tc_n
+      label: TC N
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '40033'
+    page: 2
+    reference: Register addresses
+- id: input_type_5
+  aliases:
+  - Input Type, Channels 5–4
+  table: holding_register
+  address: 32
+  type: u16
+  mask: 65280
+  enum:
+    values:
+    - value: 0
+      name: disabled
+      label: Disabled
+    - value: 1
+      name: mv_250
+      label: 250mV
+    - value: 4
+      name: tc_j
+      label: TC J
+    - value: 5
+      name: tc_k
+      label: TC K
+    - value: 6
+      name: tc_r
+      label: TC R
+    - value: 7
+      name: tc_s
+      label: TC S
+    - value: 8
+      name: tc_t
+      label: TC T
+    - value: 9
+      name: tc_b
+      label: TC B
+    - value: 10
+      name: tc_e
+      label: TC E
+    - value: 11
+      name: tc_n
+      label: TC N
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '40033'
+    page: 2
+    reference: Register addresses
+- id: input_type_6
+  aliases:
+  - Input Type, Channels 7–6
+  table: holding_register
+  address: 33
+  type: u16
+  mask: 255
+  enum:
+    values:
+    - value: 0
+      name: disabled
+      label: Disabled
+    - value: 1
+      name: mv_250
+      label: 250mV
+    - value: 4
+      name: tc_j
+      label: TC J
+    - value: 5
+      name: tc_k
+      label: TC K
+    - value: 6
+      name: tc_r
+      label: TC R
+    - value: 7
+      name: tc_s
+      label: TC S
+    - value: 8
+      name: tc_t
+      label: TC T
+    - value: 9
+      name: tc_b
+      label: TC B
+    - value: 10
+      name: tc_e
+      label: TC E
+    - value: 11
+      name: tc_n
+      label: TC N
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '40034'
+    page: 2
+    reference: Register addresses
+- id: input_type_7
+  aliases:
+  - Input Type, Channels 7–6
+  table: holding_register
+  address: 33
+  type: u16
+  mask: 65280
+  enum:
+    values:
+    - value: 0
+      name: disabled
+      label: Disabled
+    - value: 1
+      name: mv_250
+      label: 250mV
+    - value: 4
+      name: tc_j
+      label: TC J
+    - value: 5
+      name: tc_k
+      label: TC K
+    - value: 6
+      name: tc_r
+      label: TC R
+    - value: 7
+      name: tc_s
+      label: TC S
+    - value: 8
+      name: tc_t
+      label: TC T
+    - value: 9
+      name: tc_b
+      label: TC B
+    - value: 10
+      name: tc_e
+      label: TC E
+    - value: 11
+      name: tc_n
+      label: TC N
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '40034'
+    page: 2
+    reference: Register addresses
+- id: break_status
+  aliases:
+  - Break Status
+  table: holding_register
+  address: 49
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: break_input_0
+      label: 'Break input #0'
+    - bit: 1
+      name: break_input_1
+      label: 'Break input #1'
+    - bit: 2
+      name: break_input_2
+      label: 'Break input #2'
+    - bit: 3
+      name: break_input_3
+      label: 'Break input #3'
+    - bit: 4
+      name: break_input_4
+      label: 'Break input #4'
+    - bit: 5
+      name: break_input_5
+      label: 'Break input #5'
+    - bit: 6
+      name: break_input_6
+      label: 'Break input #6'
+    - bit: 7
+      name: break_input_7
+      label: 'Break input #7'
+  source:
+    address: '40050'
+    page: 2
+    reference: Register addresses
+- id: system_flags
+  aliases:
+  - System Flags
+  table: holding_register
+  address: 10
+  type: u16
+  flags:
+    flags:
+    - bit: 8
+      name: watchdog_enable
+      label: Watchdog Enable
+    - bit: 9
+      name: watchdog_event
+      label: Watchdog Event
+    - bit: 10
+      name: power_up_event
+      label: Power Up Event
+  description: Vendor access R/W; read-only in this contract.
+  source:
+    address: '40011'
+    page: 2
+    reference: Register addresses
+- id: firmware_0
+  aliases:
+  - Firmware [0]
+  table: holding_register
+  address: 1
+  type: u16
+  stability: constant
+  source:
+    address: '40002'
+    page: 2
+    reference: Register addresses
+- id: firmware_1
+  aliases:
+  - Firmware [1]
+  table: holding_register
+  address: 2
+  type: u16
+  stability: constant
+  source:
+    address: '40003'
+    page: 2
+    reference: Register addresses
