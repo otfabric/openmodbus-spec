@@ -21,7 +21,7 @@ from html import unescape
 import re
 import subprocess
 
-from sourcelib import require
+from sourcelib import CorpusError, require
 
 PAGE = re.compile(r"<page [^>]*>(.*?)</page>", re.DOTALL)
 WORD = re.compile(r'<word xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="([\d.]+)">(.*?)</word>')
@@ -248,9 +248,8 @@ def paragraphs(lines):
     return result
 
 
-def register_rows(pages, document):
-    """Every row of the sections that hold selected rows: {(section, label): row}."""
-    sections = {section for section, _ in document["rows"]}
+def parsed_rows(pages, sections, columns):
+    """Every row of the register list in these sections (all sections when None), with its paragraphs."""
     found, section, last_row, started, done = [], None, None, False, False
     for number, words in enumerate(pages, start=1):
         continued = True
@@ -264,11 +263,11 @@ def register_rows(pages, document):
                     break
                 section, last_row, continued = payload, None, False
                 continue
-            if not started or section is None or section.split(" (")[0] not in sections:
+            if not started or section is None or sections is not None and section.split(" (")[0] not in sections:
                 last_row, continued = None, False
                 continue
             where = f"Schneider manual p.{number}, {section}"
-            lead, rows = parse_region(payload, document["columns"], where)
+            lead, rows = parse_region(payload, columns, where)
             if lead:
                 require(continued and last_row is not None, f"{where}: description lines without a row")
                 last_row["lines"] = last_row["lines"] + [(y + 10000.0, line) for y, line in lead]
@@ -280,10 +279,16 @@ def register_rows(pages, document):
         if done:
             break
     require(started and done, "Schneider manual: the Modbus register list was not found")
-    labelled = {}
     for row in found:
         row["paragraphs"] = paragraphs(row["lines"])
         require(row["paragraphs"], f"Schneider manual p.{row['page']}: row without a description")
+    return found
+
+
+def register_rows(pages, document):
+    """Every row of the sections that hold selected rows: {(section, label): row}."""
+    labelled = {}
+    for row in parsed_rows(pages, {section for section, _ in document["rows"]}, document["columns"]):
         key = (row["section"].split(" (")[0], row["paragraphs"][0].rstrip(":"))
         require(key not in labelled or key not in document["rows"], f"Schneider manual: two rows labelled {key}")
         labelled[key] = row
@@ -384,6 +389,44 @@ def coded(row, kind, names, ref):
         return {"enum": {"values": entries}}
     require(entries and len({entry["bit"] for entry in entries}) == len(entries), f"{ref}: no flags")
     return {"flags": {"flags": entries}}
+
+
+def all_rows(data, selector):
+    """Every row of the sections that hold selected rows, for a row dump: the cells as printed, unselected.
+
+    Other sections use layouts this extractor does not read. The address is given where the address and register cells parse and agree (register = address + 1).
+    The access is the selected model's action column (PM3200) or the single one (iEM3000).
+    """
+    matches = [document for document in DOCUMENTS.values() if selector in document["models"]]
+    require(len(matches) == 1, f"Schneider manual: unknown model {selector!r}")
+    document = matches[0]
+    result = []
+    sections = {section for section, _ in document["rows"]}
+    for row in parsed_rows(pages_of_words(data), sections, document["columns"]):
+        label = row["paragraphs"][0].rstrip(":")
+        entry = {}
+        try:
+            addresses, registers, actions, size, kind, unit = fixed_cells(row, document["columns"], label)
+        except CorpusError:
+            cells = [word[4] for word in sorted(row["cells"], key=lambda w: (w[0], w[1]))]
+            entry["vendor_address"] = " ".join(cells)
+        else:
+            if all(address + 1 == register for address, register in zip(addresses, registers)):
+                entry.update(table="holding_register", address=addresses[0])
+            entry["vendor_address"] = " – ".join(f"0x{address:04X}" for address in addresses)
+            if size.isdigit():
+                entry["registers"] = int(size)
+            elif len(addresses) == 2:
+                entry["registers"] = addresses[1] - addresses[0] + 1
+            entry.update(type=kind, unit=unit)
+            entry["access"] = actions[document["columns"].index(selector)] if document["columns"] else actions[0]
+        entry["label"] = label
+        notes = "; ".join(row["paragraphs"][1:])
+        if notes:
+            entry["notes"] = notes
+        entry.update(page=row["page"], reference=f"Modbus register list, {row['section']}")
+        result.append(entry)
+    return result
 
 
 def extract(data, selector):

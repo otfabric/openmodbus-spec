@@ -539,6 +539,28 @@ def read_limit(text):
     return int(prose.pop()) if prose == frames else None
 
 
+def all_rows(data, selector):
+    """Every parsed row of every table, for a row dump: the cells as printed, unselected.
+
+    The address and the input-register table are given where the Modicom and physical addresses agree.
+    """
+    require(selector in SELECTORS, f"Unknown Carlo Gavazzi selector {selector!r}")
+    rows = []
+    for part in read_tables(page_words(data)):
+        for row in part["rows"]:
+            entry = {}
+            address = int(row["physical"][:4], 16)
+            if modicon_reference(row["modicom"], "input_register") == address:
+                entry = {"table": "input_register", "address": address}
+            entry.update(vendor_address=row["physical"], registers=row["length"], type=row["format"],
+                         label=full_label(part, row) if row["label_x"] is not None else row["label"])
+            if row.get("note"):
+                entry["notes"] = row["note"]
+            entry.update(page=row["page"], reference=f"Table {row['table']}; {row['modicom']}")
+            rows.append(entry)
+    return rows
+
+
 def extract(data, selector):
     require(selector in SELECTORS, f"Unknown Carlo Gavazzi selector {selector!r}")
     family, scope = SELECTORS[selector]

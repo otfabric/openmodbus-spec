@@ -43,6 +43,24 @@ PDF pages through `pdftotext`, HTML tables, CSV, ZIP members in memory, and the
 cached cell values of XLSX and legacy XLS workbooks. It uses the standard
 library only and never evaluates formulas or macros.
 
+An extractor may also define `all_rows(data, selector)` (with `evidence` like
+`extract`). It returns every row it parses, not only the selected ones, as
+mappings with the vendor's own cell text: `vendor_address`, `registers`, `type`,
+`label`, `unit`, `scale`, `access`, `notes`, `page` and `reference`, plus
+`table` and the zero-based `address` where the document settles them as it does
+for the contract. A row needs a label or a vendor address. With
+`--dump-rows DIR`, a directory outside the checkout, `run.py` writes the rows
+of each contract to `DIR/<vendor>/<model>/<name>.rows.yaml` and marks a row
+`selected` when a contract point starts at its table and address. It lists the
+sources whose extractor has no `all_rows`. The dump is for comparing a whole
+register list with another transcription of the same document; it is never a
+source, and it does not change the contracts. CI writes it for the sources a pull
+request changes, so the hooks stay in working order.
+
+```sh
+CORPUS_CACHE=~/corpus-cache corpus/run.py --set all --offline --dump-rows ~/corpus-rows
+```
+
 Vendors often state a convention the mapping depends on, such as the address
 base, the function code or the word order, in a companion manual rather than
 in the register list. A source lists such documents under `evidence`. Each is
