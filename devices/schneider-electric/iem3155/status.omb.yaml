@@ -1,0 +1,303 @@
+openmodbus: 0.1.0
+info:
+  id: schneider-electric/iem3155/status
+  title: Schneider Electric iEM3155 setup and status
+  version: 0.1.0
+  description: 'Read-only subset of the Modbus register list in the iEM3100 / iEM3200
+    / iEM3300 series user manual for the iEM3155: single-register setup and status
+    values only. The measurements and energies are Float32 and Int64 values whose
+    register order the manual does not state, so they are left out. Read with FC 3;
+    addresses are the manual''s Address column, which it defines as the data used
+    in the Modbus frame (register = address + 1).
+
+    '
+  attribution: Derived from Schneider Electric's Energy meters iEM3100 / iEM3200 /
+    iEM3300 series User manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: schneider-electric-iem3000-user-manual
+device:
+  manufacturer: Schneider Electric
+  family: iEM3000
+  model: iEM3155
+  classes:
+  - energy_meter
+  transports:
+  - type: rtu
+  documentation:
+  - title: Energy meters iEM3100 / iEM3200 / iEM3300 series User manual
+    url: https://download.se.com/files?p_Doc_Ref=DOCA0005EN&p_enDocType=User+guide&p_File_Name=DOCA0005EN-16.pdf
+    revision: DOCA0005EN-16, 05/2026
+defaults:
+  table: holding_register
+  access: r
+points:
+- id: firmware_version
+  address: 1636
+  type: u16
+  aliases:
+  - 'Present Firmware Version (DLF format): X.Y.ZTT'
+  source:
+    address: 0x0664 (register 1637)
+    page: 62
+    reference: Modbus register list, System
+- id: clock_year
+  address: 1844
+  type: u16
+  aliases:
+  - 'Date/Time: Year'
+  source:
+    address: 0x0734 – 0x0737 (registers 1845 – 1848), Reg. 1845
+    page: 62
+    reference: Modbus register list, System, Date/Time, Year (b6:b0)
+  mask: 127
+  conversion:
+    offset: 2000
+- id: clock_month
+  address: 1845
+  type: u16
+  aliases:
+  - 'Date/Time: Month'
+  source:
+    address: 0x0734 – 0x0737 (registers 1845 – 1848), Reg. 1846
+    page: 62
+    reference: Modbus register list, System, Date/Time, Month (b11:b8)
+  mask: 3840
+- id: clock_day
+  address: 1845
+  type: u16
+  aliases:
+  - 'Date/Time: Day'
+  source:
+    address: 0x0734 – 0x0737 (registers 1845 – 1848), Reg. 1846
+    page: 62
+    reference: Modbus register list, System, Date/Time, Day (b4:b0)
+  mask: 31
+- id: clock_hour
+  address: 1846
+  type: u16
+  aliases:
+  - 'Date/Time: Hour'
+  source:
+    address: 0x0734 – 0x0737 (registers 1845 – 1848), Reg. 1847
+    page: 62
+    reference: Modbus register list, System, Date/Time, Hour (b12:b8)
+  mask: 7936
+- id: clock_minute
+  address: 1846
+  type: u16
+  aliases:
+  - 'Date/Time: Minute'
+  source:
+    address: 0x0734 – 0x0737 (registers 1845 – 1848), Reg. 1847
+    page: 62
+    reference: Modbus register list, System, Date/Time, Minute (b5:b0)
+  mask: 63
+- id: number_of_phases
+  address: 2013
+  type: u16
+  aliases:
+  - Number of Phases
+  source:
+    address: 0x07DD (register 2014)
+    page: 62
+    reference: Modbus register list, Meter Setup and Status
+- id: power_system
+  address: 2015
+  type: u16
+  aliases:
+  - Power System
+  source:
+    address: 0x07DF (register 2016)
+    page: 62
+    reference: Modbus register list, Meter Setup and Status
+  enum:
+    values:
+    - value: 0
+      name: single_phase_2_wire_l_n
+      label: 1PH2W L-N
+    - value: 1
+      name: single_phase_2_wire_l_l
+      label: 1PH2W L-L
+    - value: 2
+      name: single_phase_3_wire_l_l_n
+      label: 1PH3W L-L with N
+    - value: 3
+      name: three_phase_3_wire
+      label: 3PH3W
+    - value: 11
+      name: three_phase_4_wire
+      label: 3PH4W
+    - value: 13
+      name: single_phase_4_wire_multi_l_n
+      label: 1PH4W multi L with N
+- id: nominal_frequency
+  address: 2016
+  type: u16
+  aliases:
+  - Nominal Frequency
+  source:
+    address: 0x07E0 (register 2017)
+    page: 63
+    reference: Modbus register list, Meter Setup and Status
+  unit: Hz
+- id: active_tariff
+  address: 4190
+  type: u16
+  aliases:
+  - Multi Tariffs Energy Active Rate
+  source:
+    address: 0x105E (register 4191)
+    page: 67
+    reference: Modbus register list, Meter Data
+  description: '0: Multi Tariff disabled; 1 to 4: rate A to rate D'
+- id: modbus_address
+  address: 6500
+  type: u16
+  aliases:
+  - Address
+  source:
+    address: 0x1964 (register 6501)
+    page: 64
+    reference: Modbus register list, Communication
+- id: baud_rate
+  address: 6501
+  type: u16
+  aliases:
+  - Baud Rate
+  source:
+    address: 0x1965 (register 6502)
+    page: 64
+    reference: Modbus register list, Communication
+  enum:
+    values:
+    - value: 0
+      name: baud_9600
+      label: '9600'
+    - value: 1
+      name: baud_19200
+      label: '19200'
+    - value: 2
+      name: baud_38400
+      label: '38400'
+- id: parity
+  address: 6502
+  type: u16
+  aliases:
+  - Parity
+  source:
+    address: 0x1966 (register 6503)
+    page: 64
+    reference: Modbus register list, Communication
+  enum:
+    values:
+    - value: 0
+      name: even
+      label: Even
+    - value: 1
+      name: odd
+      label: Odd
+    - value: 2
+      name: none
+      label: None
+- id: digital_input_control_mode
+  address: 7273
+  type: u16
+  aliases:
+  - Digital Input Control Mode
+  source:
+    address: 0x1C69 (register 7274)
+    page: 65
+    reference: Modbus register list, Digital Input (iEM3155 / iEM3255 / iEM3355)
+  enum:
+    values:
+    - value: 0
+      name: input_status
+      label: Normal (Input Status)
+    - value: 2
+      name: multi_tariff_control
+      label: Multi Tariff Control
+    - value: 3
+      name: input_metering
+      label: Input Metering
+    - value: 5
+      name: all_energy_reset
+      label: All Energy Reset
+- id: digital_output_control_mode
+  address: 9672
+  type: u16
+  aliases:
+  - Digital Output Control Mode Status
+  source:
+    address: 0x25C8 (register 9673)
+    page: 65
+    reference: Modbus register list, Digital Output (iEM3155 / iEM3255 / iEM3355)
+  enum:
+    values:
+    - value: 2
+      name: alarm
+      label: Alarm
+    - value: 3
+      name: pulse_kwh
+      label: Pulse (kWh)
+    - value: 6
+      name: pulse_kvarh
+      label: Pulse (kVARh)
+    - value: 65535
+      name: disabled
+      label: Disable
+- id: diagnostics_error_status
+  address: 44999
+  type: u16
+  aliases:
+  - Diagnostics error status
+  source:
+    address: 0xAFC7 (register 45000)
+    page: 62
+    reference: Modbus register list, System
+  flags:
+    flags:
+    - bit: 0
+      name: code_101
+      label: Code 101
+    - bit: 1
+      name: code_102
+      label: Code 102
+    - bit: 2
+      name: code_201
+      label: Code 201
+    - bit: 3
+      name: code_202
+      label: Code 202
+    - bit: 4
+      name: code_203
+      label: Code 203
+    - bit: 5
+      name: code_204
+      label: Code 204
+    - bit: 6
+      name: code_205
+      label: Code 205
+    - bit: 7
+      name: code_206
+      label: Code 206
+    - bit: 8
+      name: code_207
+      label: Code 207
+- id: overload_alarm_status
+  address: 45004
+  type: u16
+  aliases:
+  - Activated Status
+  source:
+    address: 0xAFCC (register 45005)
+    page: 69
+    reference: Modbus register list, Overload Alarm (iEM3155 / iEM3255 / iEM3355)
+  enum:
+    values:
+    - value: 0
+      name: inactive
+      label: Alarm is inactive
+    - value: 256
+      name: active
+      label: Alarm is active

@@ -289,3 +289,143 @@ sources:
     sha256: 0f8bf73fe0bfed680a39960f5b7f626646031dbd7f2b264aabc79067b114ea3e
     size: 336322
     verified_on: '2026-11-13'
+  abb-a43-a44-manual:
+    sha256: e668b913f51b5fcafb05cf9cb6f68ed23ac88ad27be2a49d4096a3d90cb34986
+    size: 5914665
+    verified_on: '2026-11-14'
+  abb-acs580-firmware-manual:
+    sha256: 8d1b3a25cac85e7d03b181e1490c0533ee5312633781c1b52d728a76459487b6
+    size: 11199645
+    verified_on: '2026-11-14'
+  abb-ach580-firmware-manual:
+    sha256: 78701ad8df999113db2f8c4914ce7dee0f32b8bcb4a1d434025d14882899cd7d
+    size: 16597611
+    verified_on: '2026-11-14'
+  abb-acs880-firmware-manual:
+    sha256: c698d653ffbddb1bb08487cc5a30524d58b8e97ee21e5c0c9bd8569968ed821d
+    size: 9581351
+    verified_on: '2026-11-14'
+  danfoss-fc102-pg:
+    sha256: c1cfb07f617658688c183fdeb7983089780bd65a45b3d68ff6f7f17e0d69c7ab
+    size: 4966531
+    verified_on: '2026-11-14'
+  danfoss-fc102-design-guide:
+    sha256: f126557c65d2de7189532160c74c6e4890f3d306069b1c6c8904838fe369d00f
+    size: 7448210
+    verified_on: '2026-11-14'
+  carlo-gavazzi-em100-et100-protocol:
+    sha256: 118272b7b0880eb6ab309b871fa39a6698e25a77310ab1f8d97888955f9d54a4
+    size: 415870
+    verified_on: '2026-11-14'
+  carlo-gavazzi-em210-protocol:
+    sha256: b1edeb5732c21bf32abf938c3848f3a4b247fca45b0e4551f35f0dbc5cd51dbc
+    size: 602737
+    verified_on: '2026-11-14'
+  carlo-gavazzi-em24-din-protocol:
+    sha256: b0480349f67080d66770c3a8b7f957feabe405bddd86b6d67891d4af5b1b20f6
+    size: 658909
+    verified_on: '2026-11-14'
+  carlo-gavazzi-em24-is-protocol:
+    sha256: 801b04f86bde4d14e3d1ef2a20784724b92882f0ec85764c7a46efe4ef9eb1b4
+    size: 478138
+    verified_on: '2026-11-14'
+  carlo-gavazzi-em300-et300-protocol:
+    sha256: df1a113bd360af4189cced7a369c59ebc3c59ee94991f91c2ff92945c2bc2b7d
+    size: 610923
+    verified_on: '2026-11-14'
+  eastron-sdm120ctm-modbus:
+    sha256: b739e1dbd6d38d7979452327d50533c91a8956fab8804f1f4ea156eab08b57f5
+    size: 245569
+    verified_on: '2026-11-14'
+  janitza-umg509pro-modbus:
+    sha256: 8d901d3d118f883cce6c35a535519589dbd8473137634cad8f8f621b4e7d0c6f
+    size: 726394
+    verified_on: '2026-11-14'
+  janitza-umg509pro-manual:
+    sha256: e865b2d6fd9a310966776aa81e17a4bba6de927970f7e4c06a81090216ee750a
+    size: 9226701
+    verified_on: '2026-11-14'
+  janitza-umg604pro-modbus:
+    sha256: 568e2cd93494edfafec2d253a8b6d596a94cfaa327147cecd01a7f581753c340
+    size: 858925
+    verified_on: '2026-11-14'
+  janitza-umg604pro-manual:
+    sha256: 2c88c28fbd88ed0c94dd3a354035865c387617e53762ca99c1ff530acb8cb30d
+    size: 8996703
+    verified_on: '2026-11-14'
+  janitza-umg96pa-modbus:
+    sha256: 7f26a760838175015ce6ab44c4938ecbd9b337ccedec457ea799e3c3d0bcba1e
+    size: 614567
+    verified_on: '2026-11-14'
+  janitza-umg96pa-manual:
+    sha256: 99212ed4476248a2e67f3634a8c2a3f4934d8988a5ce15ec4e4e3f4b6a5dfc62
+    size: 9910628
+    verified_on: '2026-11-14'
+  lovato-electric-dmg-modbus:
+    sha256: 08fcb9a2d47376476d25f1d6e398fdc9331cb0c4eeb45628e30fb164f90649f9
+    size: 923113
+    verified_on: '2026-11-14'
+  schneider-electric-atv900-comm:
+    sha256: 0092346e02191c8e9b38b783b7317e9cec3534e3a17eef28d0f5f5cb90481f25
+    size: 351544
+    verified_on: '2026-11-14'
+  schneider-electric-atv900-modbus-manual:
+    sha256: 1e80607af0c700b74874dbe71a7d9a72f4aa84ae190d31a49f6714c39ba39ea4
+    size: 1447807
+    verified_on: '2026-11-14'
+  schneider-electric-atv61-comm:
+    sha256: fdf3274e345a766c5a7d70bb9ed884254a4da3b5bffd26394d66c3cb55528117
+    size: 192106
+    verified_on: '2026-11-14'
+  schneider-electric-atv61-comm-manual:
+    sha256: a3898eef8a1316ace814277b9fd74703679820fbc3cc6bf7580931aac251f3a0
+    size: 2034623
+    verified_on: '2026-11-14'
+  schneider-electric-atv61-71-ethernet-manual:
+    sha256: a02b3bec57c08af14b75ece09f5123d363e0ada496f667b4308e4d32239bf688
+    size: 2914603
+    verified_on: '2026-11-14'
+  schneider-electric-atv71-comm:
+    sha256: e12d9a79fb288faa25e3ad87178d89deee130e907871b4b37713384d5ceddc84
+    size: 191657
+    verified_on: '2026-11-14'
+  schneider-electric-atv71-comm-manual:
+    sha256: 7065ef8040a9b843614def5aba7a87915bded7e3a32847fc5741fe61d6216b60
+    size: 2093350
+    verified_on: '2026-11-14'
+  schneider-electric-atv71-modbus-manual:
+    sha256: 799e2a6cd85bbf23435869237de18cd32c650c299cfb9e92414e3b62f627fb9f
+    size: 661235
+    verified_on: '2026-11-14'
+  schneider-electric-iem3000-user-manual:
+    sha256: 43f3fc74197f97eb0a7bee08eb39c8927ff2c5b054cf10f3350c6cc2f1e1c301
+    size: 3822457
+    verified_on: '2026-11-14'
+  schneider-electric-pm3200-user-manual:
+    sha256: e7e1041edd18f9666f602a6c89b64e9dce9cf3d2066d42ff0d1ee7b93d714ff3
+    size: 3379785
+    verified_on: '2026-11-14'
+  siemens-pac3200-manual:
+    sha256: b9efef1f28f8588d3f9b9ba04754e4914850fb0ec74373955d199d8f6b3de187
+    size: 7155099
+    verified_on: '2026-11-14'
+  siemens-pac-rs485-manual:
+    sha256: d695b96c9660bc8f87074657f5e0ffea08df76f2e84ca9430ad85dadeb998c37
+    size: 1230860
+    verified_on: '2026-11-14'
+  siemens-pac4200-manual:
+    sha256: fafd49af4745c2fc24d78b0a9a7d09a1a3746f7d9d7ade94baee1d5a9a247276
+    size: 4837783
+    verified_on: '2026-11-14'
+  siemens-pac3120-pac3220-manual:
+    sha256: cc479033726eb4fde2d4e669e72e121094bd5e78d8973473f1080045498c1373
+    size: 5364008
+    verified_on: '2026-11-14'
+  siemens-g120-fieldbus-manual:
+    sha256: 79e81a74052e0eb52832f02778452312c253a46967204b49717f387ed923a5a7
+    size: 7224157
+    verified_on: '2026-11-14'
+  siemens-v20-operating-instructions:
+    sha256: fe2ff65823b9db291791533d342cae2ea5a10411485e4423528086f0f4eef220
+    size: 28683003
+    verified_on: '2026-11-14'

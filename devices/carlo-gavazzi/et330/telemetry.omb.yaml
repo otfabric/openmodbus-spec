@@ -1,0 +1,315 @@
+openmodbus: 0.1.0
+info:
+  id: carlo-gavazzi/et330/telemetry
+  title: Carlo Gavazzi ET330 telemetry
+  version: 0.1.0
+  description: Read-only subset of the EM300/ET300 series Modbus RTU map (Table 2.4-1,
+    grouped by variable type) for the ET330. Function codes 03 and 04 return the same
+    values; the points use the input-register (function 04) table. 32-bit values are
+    least significant word first. The document gives 7FFFFFFFh (wire order FFFF 7FFF)
+    as the overflow value of a 32-bit variable; the voltage, current and power points
+    list it as invalid. The identification code must be read one word at a time. The
+    document gives two request limits (50 registers in the text, 20 in the frame tables);
+    none is set here.
+  attribution: Derived from Carlo Gavazzi's EM300 Series and ET300 Series Communication
+    Protocol.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: carlo-gavazzi-em300-et300-protocol
+device:
+  manufacturer: Carlo Gavazzi
+  model: ET330
+  family: ET300 Series
+  classes:
+  - energy_meter
+  transports:
+  - type: rtu
+  documentation:
+  - title: EM300 Series and ET300 Series Communication Protocol
+    url: https://www.gavazziautomation.com/fileadmin/images/PIM/OTHERSTUFF/COMPRO/EM330_EM340_ET330_ET340_CP.pdf
+    revision: Version 2 Revision 17 (2021-07-05)
+defaults:
+  table: input_register
+  access: r
+constraints:
+  ranges:
+  - table: input_register
+    start: 11
+    count: 1
+    policy: isolated
+    reason: 'Vendor: read only with function 03 or 04, limited to a word at a time.'
+points:
+- id: voltage_l1_n
+  address: 0
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  invalid:
+  - 2147483647
+  aliases:
+  - V L1-N
+  source:
+    address: 0000h
+    page: 9
+    reference: Table 2.4-1; 300001
+- id: voltage_l2_n
+  address: 2
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  invalid:
+  - 2147483647
+  aliases:
+  - V L2-N
+  source:
+    address: 0002h
+    page: 9
+    reference: Table 2.4-1; 300003
+- id: voltage_l3_n
+  address: 4
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  invalid:
+  - 2147483647
+  aliases:
+  - V L3-N
+  source:
+    address: 0004h
+    page: 9
+    reference: Table 2.4-1; 300005
+- id: voltage_l1_l2
+  address: 6
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  invalid:
+  - 2147483647
+  aliases:
+  - V L1-L2
+  source:
+    address: 0006h
+    page: 9
+    reference: Table 2.4-1; 300007
+- id: identification_code
+  address: 11
+  type: u16
+  enum:
+    values:
+    - value: 335
+      name: et330_av5
+      label: ET330-DIN AV5
+      description: ET330-DIN AV5 3 L S1 X; ET330-DIN AV5 3 H S1 X
+    - value: 336
+      name: et330_av6
+      label: ET330-DIN AV6
+      description: ET330-DIN AV6 3 L S1 X; ET330-DIN AV6 3 H S1 X
+  stability: constant
+  aliases:
+  - Carlo Gavazzi Controls identification code
+  source:
+    address: 000Bh
+    page: 14
+    reference: Table 2.8-1; 300012
+- id: current_l1
+  address: 12
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  unit: A
+  invalid:
+  - 2147483647
+  aliases:
+  - A L1
+  source:
+    address: 000Ch
+    page: 9
+    reference: Table 2.4-1; 300013
+- id: current_l2
+  address: 14
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  unit: A
+  invalid:
+  - 2147483647
+  aliases:
+  - A L2
+  source:
+    address: 000Eh
+    page: 9
+    reference: Table 2.4-1; 300015
+- id: current_l3
+  address: 16
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  unit: A
+  invalid:
+  - 2147483647
+  aliases:
+  - A L3
+  source:
+    address: 0010h
+    page: 9
+    reference: Table 2.4-1; 300017
+- id: active_power_total
+  address: 40
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: W
+  invalid:
+  - 2147483647
+  aliases:
+  - W sys
+  source:
+    address: 0028h
+    page: 9
+    reference: Table 2.4-1; 300041
+- id: apparent_power_total
+  address: 42
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V.A
+  invalid:
+  - 2147483647
+  aliases:
+  - VA sys
+  source:
+    address: 002Ah
+    page: 9
+    reference: Table 2.4-1; 300043
+- id: reactive_power_total
+  address: 44
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  description: 'Vendor unit: var'
+  invalid:
+  - 2147483647
+  aliases:
+  - var sys
+  source:
+    address: 002Ch
+    page: 9
+    reference: Table 2.4-1; 300045
+- id: power_factor_total
+  address: 49
+  type: i16
+  conversion:
+    exponent10: -3
+  description: 'Vendor: Negative values correspond to exported active power, positive
+    values correspond to imported active power.'
+  aliases:
+  - PF sys
+  source:
+    address: 0031h
+    page: 9
+    reference: Table 2.4-1; 300050
+- id: phase_sequence
+  address: 50
+  type: i16
+  enum:
+    values:
+    - value: 1
+      name: l1_l3_l2
+      label: L1-L3-L2
+    - value: 0
+      name: l1_l2_l3
+      label: L1-L2-L3
+  description: Meaningful only in a 3-phase system.
+  aliases:
+  - Phase sequence
+  source:
+    address: 0032h
+    page: 9
+    reference: Table 2.4-1; 300051
+- id: frequency
+  address: 51
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: Hz
+  aliases:
+  - Hz
+  source:
+    address: 0033h
+    page: 9
+    reference: Table 2.4-1; 300052
+- id: import_active_energy
+  address: 52
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: kW.h
+  aliases:
+  - kWh (+) TOT
+  source:
+    address: 0034h
+    page: 9
+    reference: Table 2.4-1; 300053
+- id: export_active_energy
+  address: 78
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: kW.h
+  aliases:
+  - kWh (-) TOT
+  source:
+    address: 004Eh
+    page: 9
+    reference: Table 2.4-1; 300079
+- id: neutral_current
+  address: 152
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  unit: A
+  aliases:
+  - An
+  source:
+    address: 0098h
+    page: 10
+    reference: Table 2.4-1; 300153
+- id: firmware_version_code
+  address: 770
+  type: u16
+  description: 'Vendor: Value=0: Version "A", =1: Version "B", etc.'
+  stability: constant
+  aliases:
+  - Version code
+  source:
+    address: 0302h
+    page: 13
+    reference: Table 2.7-1; 300771
+- id: firmware_revision_code
+  address: 771
+  type: u16
+  description: 'Vendor: Value=0: Revision "0" etc.'
+  stability: constant
+  aliases:
+  - Revision code
+  source:
+    address: 0303h
+    page: 13
+    reference: Table 2.7-1; 300772

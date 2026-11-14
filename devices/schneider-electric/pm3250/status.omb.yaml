@@ -1,0 +1,189 @@
+openmodbus: 0.1.0
+info:
+  id: schneider-electric/pm3250/status
+  title: Schneider Electric PM3250 setup and status
+  version: 0.1.0
+  description: 'Read-only subset of the Modbus register list in the PM3200 series
+    user manual for the PM3250: single-register setup and status values only. The
+    measurements and energies are Float32 and Int64 values whose register order the
+    manual does not state, so they are left out. Read with FC 3; addresses are the
+    manual''s Address column, which it defines as the data used in the Modbus frame
+    (register = address + 1).
+
+    '
+  attribution: Derived from Schneider Electric's PM3200 series User manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: schneider-electric-pm3200-user-manual
+device:
+  manufacturer: Schneider Electric
+  family: PM3200
+  model: PM3250
+  classes:
+  - power_meter
+  transports:
+  - type: rtu
+  documentation:
+  - title: PM3200 series User manual
+    url: https://download.se.com/files?p_Doc_Ref=DOCA0006EN&p_enDocType=User+guide&p_File_Name=DOCA0006EN-09.pdf
+    revision: DOCA0006EN-09, 07/2026
+defaults:
+  table: holding_register
+  access: r
+points:
+- id: firmware_version
+  address: 1636
+  type: u16
+  aliases:
+  - 'Present Firmware Version (DLF format): X.Y.ZTT'
+  source:
+    address: 0x0664 (register 1637)
+    page: 58
+    reference: Modbus register list, System
+- id: language_version
+  address: 1700
+  type: u16
+  aliases:
+  - 'Present Language Version (DLF format): X.Y.ZTT'
+  source:
+    address: 0x06A4 (register 1701)
+    page: 58
+    reference: Modbus register list, System
+- id: clock_year
+  address: 1844
+  type: u16
+  aliases:
+  - 'Date/Time: Year'
+  source:
+    address: 0x0734 – 0x0737 (registers 1845 – 1848), Reg. 1845
+    page: 58
+    reference: Modbus register list, System, Date/Time, Year (b6:b0)
+  mask: 127
+  conversion:
+    offset: 2000
+- id: clock_month
+  address: 1845
+  type: u16
+  aliases:
+  - 'Date/Time: Month'
+  source:
+    address: 0x0734 – 0x0737 (registers 1845 – 1848), Reg. 1846
+    page: 58
+    reference: Modbus register list, System, Date/Time, Month (b11:b8)
+  mask: 3840
+- id: clock_day
+  address: 1845
+  type: u16
+  aliases:
+  - 'Date/Time: Day'
+  source:
+    address: 0x0734 – 0x0737 (registers 1845 – 1848), Reg. 1846
+    page: 58
+    reference: Modbus register list, System, Date/Time, Day (b4:b0)
+  mask: 31
+- id: clock_hour
+  address: 1846
+  type: u16
+  aliases:
+  - 'Date/Time: Hour'
+  source:
+    address: 0x0734 – 0x0737 (registers 1845 – 1848), Reg. 1847
+    page: 58
+    reference: Modbus register list, System, Date/Time, Hour (b12:b8)
+  mask: 7936
+- id: clock_minute
+  address: 1846
+  type: u16
+  aliases:
+  - 'Date/Time: Minute'
+  source:
+    address: 0x0734 – 0x0737 (registers 1845 – 1848), Reg. 1847
+    page: 58
+    reference: Modbus register list, System, Date/Time, Minute (b5:b0)
+  mask: 63
+- id: demand_method
+  address: 3700
+  type: u16
+  aliases:
+  - Demand Method
+  source:
+    address: 0x0E74 (register 3701)
+    page: 65
+    reference: Modbus register list, Demand
+  enum:
+    values:
+    - value: 1
+      name: sliding_block
+      label: Timed Interval Sliding Block
+    - value: 2
+      name: fixed_block
+      label: Timed Interval Fixed Block
+- id: demand_interval
+  address: 3701
+  type: u16
+  aliases:
+  - Demand Interval Duration
+  source:
+    address: 0x0E75 (register 3702)
+    page: 65
+    reference: Modbus register list, Demand
+  unit: min
+- id: active_tariff
+  address: 4190
+  type: u16
+  aliases:
+  - Active Tariff (Only modifiable in case of COM Control Mode Enabled)
+  source:
+    address: 0x105E (register 4191)
+    page: 63
+    reference: Modbus register list, Basic Meter Data
+  description: 0 = multi-tariff disabled; 1-4 = rate 1 to rate 4
+- id: modbus_address
+  address: 6500
+  type: u16
+  aliases:
+  - Address
+  source:
+    address: 0x1964 (register 6501)
+    page: 59
+    reference: Modbus register list, Communications
+- id: baud_rate
+  address: 6501
+  type: u16
+  aliases:
+  - Baud Rate
+  source:
+    address: 0x1965 (register 6502)
+    page: 60
+    reference: Modbus register list, Communications
+  enum:
+    values:
+    - value: 0
+      name: baud_9600
+      label: '9600'
+    - value: 1
+      name: baud_19200
+      label: '19200'
+    - value: 2
+      name: baud_38400
+      label: '38400'
+- id: parity
+  address: 6502
+  type: u16
+  aliases:
+  - Parity
+  source:
+    address: 0x1966 (register 6503)
+    page: 60
+    reference: Modbus register list, Communications
+  enum:
+    values:
+    - value: 0
+      name: even
+      label: Even
+    - value: 1
+      name: odd
+      label: Odd
+    - value: 2
+      name: none
+      label: None

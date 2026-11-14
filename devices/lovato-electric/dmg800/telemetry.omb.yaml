@@ -1,0 +1,249 @@
+openmodbus: 0.1.0
+info:
+  id: lovato-electric/dmg800/telemetry
+  title: Lovato Electric DMG800 telemetry
+  version: 0.1.0
+  description: 'Read-only subset of Table 2 of the DMG series Modbus protocol document
+    for the DMG800. The document gives table addresses that are sent decreased by
+    one, and reads them with function 04 (function 03 reads the same addresses); 32-bit
+    values carry the most significant register first. Power values are left out: from
+    software revision 09 their resolution changes from 1/100 W to 1/10 W when the
+    maximum power per phase exceeds 5 MW, which a fixed scale cannot state. The energy
+    counters are the 2-word ones; the document also lists 4-word counters for software
+    revision 09 or later.
+
+    '
+  attribution: Derived from Lovato Electric's DMG series digital multimeters-analyzers,
+    Modbus communication protocol.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: lovato-electric-dmg-modbus
+device:
+  manufacturer: Lovato Electric
+  family: DMG
+  model: DMG800
+  classes:
+  - power_meter
+  transports:
+  - type: rtu
+    notes: Built-in port or expansion module; the document states this for the DMG700,
+      DMG800 and DMG900 together.
+  - type: ascii
+    notes: Built-in port or expansion module.
+  - type: tcp
+    notes: Built-in port or expansion module.
+  documentation:
+  - title: DMG series digital multimeters-analyzers, Modbus communication protocol
+    url: https://catalogue.lovatoelectric.com/gl_en/Product/GetDocument?doc=Technical%5CTechInstructions%5C28.%20CONTATORI%20DI%20ENERGIA%20E%20ANALIZZATORI%20DI%20RETE%5CI317IGB02_22.pdf
+    revision: I317 I GB 02_22, 07/02/2022
+defaults:
+  table: input_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+constraints:
+  maxReadRegisters: 80
+points:
+- id: voltage_l1_n
+  address: 1
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: V
+  aliases:
+  - L1 Phase Voltage
+  source:
+    address: 0002H
+    page: 9
+    reference: Table 2, section (IN), L1 Phase Voltage
+- id: voltage_l2_n
+  address: 3
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: V
+  aliases:
+  - L2 Phase Voltage
+  source:
+    address: 0004H
+    page: 9
+    reference: Table 2, section (IN), L2 Phase Voltage
+- id: voltage_l3_n
+  address: 5
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: V
+  aliases:
+  - L3 Phase Voltage
+  source:
+    address: 0006H
+    page: 9
+    reference: Table 2, section (IN), L3 Phase Voltage
+- id: current_l1
+  address: 7
+  type: u32
+  conversion:
+    exponent10: -4
+  unit: A
+  aliases:
+  - L1 Current
+  source:
+    address: 0008H
+    page: 9
+    reference: Table 2, section (IN), L1 Current
+- id: current_l2
+  address: 9
+  type: u32
+  conversion:
+    exponent10: -4
+  unit: A
+  aliases:
+  - L2 Current
+  source:
+    address: 000AH
+    page: 9
+    reference: Table 2, section (IN), L2 Current
+- id: current_l3
+  address: 11
+  type: u32
+  conversion:
+    exponent10: -4
+  unit: A
+  aliases:
+  - L3 Current
+  source:
+    address: 000CH
+    page: 9
+    reference: Table 2, section (IN), L3 Current
+- id: voltage_l1_l2
+  address: 13
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: V
+  aliases:
+  - L1-L2 Voltage
+  source:
+    address: 000EH
+    page: 9
+    reference: Table 2, section (IN), L1-L2 Voltage
+- id: frequency
+  address: 49
+  type: u32
+  conversion:
+    exponent10: -3
+  unit: Hz
+  aliases:
+  - Frequency
+  source:
+    address: 0032H
+    page: 9
+    reference: Table 2, section (IN), Frequency
+- id: power_factor_total
+  address: 63
+  type: i32
+  conversion:
+    exponent10: -4
+  aliases:
+  - Eqv Power Factor
+  source:
+    address: 0040H
+    page: 9
+    reference: Table 2, section (IN), Eqv Power Factor
+- id: voltage_thd_l1
+  address: 83
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: '%'
+  aliases:
+  - L1 Voltage Thd
+  source:
+    address: 0054H
+    page: 10
+    reference: Table 2, section (IN), L1 Voltage Thd
+- id: current_thd_l1
+  address: 89
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: '%'
+  aliases:
+  - L1 Current Thd
+  source:
+    address: 005AH
+    page: 10
+    reference: Table 2, section (IN), L1 Current Thd
+- id: active_energy_import
+  address: 6687
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: kW.h
+  description: Rolls over to 0 above 19 999 999.99 kWh.
+  aliases:
+  - Total imp. Active Energy
+  source:
+    address: 1A20H
+    page: 13
+    reference: Table 2, Total imp. Active Energy
+- id: active_energy_export
+  address: 6689
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: kW.h
+  description: Rolls over to 0 above 19 999 999.99 kWh.
+  aliases:
+  - Total exported Active Energy
+  source:
+    address: 1A22H
+    page: 13
+    reference: Table 2, Total exported Active Energy
+- id: hour_meter_total
+  address: 7679
+  type: u32
+  unit: s
+  aliases:
+  - Total Hour meter
+  source:
+    address: 1E00H
+    page: 15
+    reference: Table 2, Total Hour meter
+- id: input_1
+  address: 8448
+  type: u16
+  description: The document gives the unit as bool.
+  aliases:
+  - Input 1
+  source:
+    address: 2101H
+    page: 15
+    reference: Table 2, Input 1
+- id: alarm_1
+  address: 8480
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: latched
+      label: latched alarm
+    - bit: 1
+      name: active
+      label: active alarm
+  aliases:
+  - Alarm 1
+  source:
+    address: 2121H
+    page: 15
+    reference: Table 2, Alarm 1
+- id: clock_year
+  address: 10479
+  type: u16
+  aliases:
+  - Year
+  source:
+    address: 28F0H
+    page: 13
+    reference: Table 2, Year

@@ -1,0 +1,243 @@
+openmodbus: 0.1.0
+info:
+  id: lovato-electric/dmg110/telemetry
+  title: Lovato Electric DMG110 telemetry
+  version: 0.1.0
+  description: 'Read-only subset of Table 2 of the DMG series Modbus protocol document
+    for the DMG110. The document gives table addresses that are sent decreased by
+    one, and reads them with function 04 (function 03 reads the same addresses); 32-bit
+    values carry the most significant register first. The DMG110 has only the 4-word
+    energy counters; they are left out because the document shows the register order
+    of 2-word values only.
+
+    '
+  attribution: Derived from Lovato Electric's DMG series digital multimeters-analyzers,
+    Modbus communication protocol.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: lovato-electric-dmg-modbus
+device:
+  manufacturer: Lovato Electric
+  family: DMG
+  model: DMG110
+  classes:
+  - power_meter
+  transports:
+  - type: rtu
+    notes: RS-485.
+  - type: ascii
+    notes: RS-485.
+  documentation:
+  - title: DMG series digital multimeters-analyzers, Modbus communication protocol
+    url: https://catalogue.lovatoelectric.com/gl_en/Product/GetDocument?doc=Technical%5CTechInstructions%5C28.%20CONTATORI%20DI%20ENERGIA%20E%20ANALIZZATORI%20DI%20RETE%5CI317IGB02_22.pdf
+    revision: I317 I GB 02_22, 07/02/2022
+defaults:
+  table: input_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+constraints:
+  maxReadRegisters: 64
+points:
+- id: voltage_l1_n
+  address: 1
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: V
+  aliases:
+  - L1 Phase Voltage
+  source:
+    address: 0002H
+    page: 9
+    reference: Table 2, section (IN), L1 Phase Voltage
+- id: voltage_l2_n
+  address: 3
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: V
+  aliases:
+  - L2 Phase Voltage
+  source:
+    address: 0004H
+    page: 9
+    reference: Table 2, section (IN), L2 Phase Voltage
+- id: voltage_l3_n
+  address: 5
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: V
+  aliases:
+  - L3 Phase Voltage
+  source:
+    address: 0006H
+    page: 9
+    reference: Table 2, section (IN), L3 Phase Voltage
+- id: current_l1
+  address: 7
+  type: u32
+  conversion:
+    exponent10: -4
+  unit: A
+  aliases:
+  - L1 Current
+  source:
+    address: 0008H
+    page: 9
+    reference: Table 2, section (IN), L1 Current
+- id: current_l2
+  address: 9
+  type: u32
+  conversion:
+    exponent10: -4
+  unit: A
+  aliases:
+  - L2 Current
+  source:
+    address: 000AH
+    page: 9
+    reference: Table 2, section (IN), L2 Current
+- id: current_l3
+  address: 11
+  type: u32
+  conversion:
+    exponent10: -4
+  unit: A
+  aliases:
+  - L3 Current
+  source:
+    address: 000CH
+    page: 9
+    reference: Table 2, section (IN), L3 Current
+- id: voltage_l1_l2
+  address: 13
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: V
+  aliases:
+  - L1-L2 Voltage
+  source:
+    address: 000EH
+    page: 9
+    reference: Table 2, section (IN), L1-L2 Voltage
+- id: frequency
+  address: 49
+  type: u32
+  conversion:
+    exponent10: -3
+  unit: Hz
+  aliases:
+  - Frequency
+  source:
+    address: 0032H
+    page: 9
+    reference: Table 2, section (IN), Frequency
+- id: active_power_total
+  address: 57
+  type: i32
+  conversion:
+    exponent10: -2
+  unit: W
+  description: Resolution 1/100 W. The document's note on power resolution describes
+    a change to 1/10 W above 5 MW per phase as a function of the DMG700, DMG800 and
+    DMG900.
+  aliases:
+  - Eqv. Active Power
+  source:
+    address: 003AH
+    page: 9
+    reference: Table 2, section (IN), Eqv. Active Power
+- id: reactive_power_total
+  address: 59
+  type: i32
+  conversion:
+    exponent10: -2
+  description: 'Resolution 1/100 W. The document''s note on power resolution describes
+    a change to 1/10 W above 5 MW per phase as a function of the DMG700, DMG800 and
+    DMG900. Vendor unit: var.'
+  aliases:
+  - Eqv. Reactive Power
+  source:
+    address: 003CH
+    page: 9
+    reference: Table 2, section (IN), Eqv. Reactive Power
+- id: apparent_power_total
+  address: 61
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: V.A
+  description: Resolution 1/100 W. The document's note on power resolution describes
+    a change to 1/10 W above 5 MW per phase as a function of the DMG700, DMG800 and
+    DMG900.
+  aliases:
+  - Eqv. Apparent Power
+  source:
+    address: 003EH
+    page: 9
+    reference: Table 2, section (IN), Eqv. Apparent Power
+- id: power_factor_total
+  address: 63
+  type: i32
+  conversion:
+    exponent10: -4
+  aliases:
+  - Eqv Power Factor
+  source:
+    address: 0040H
+    page: 9
+    reference: Table 2, section (IN), Eqv Power Factor
+- id: voltage_thd_l1
+  address: 83
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: '%'
+  aliases:
+  - L1 Voltage Thd
+  source:
+    address: 0054H
+    page: 10
+    reference: Table 2, section (IN), L1 Voltage Thd
+- id: current_thd_l1
+  address: 89
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: '%'
+  aliases:
+  - L1 Current Thd
+  source:
+    address: 005AH
+    page: 10
+    reference: Table 2, section (IN), L1 Current Thd
+- id: hour_meter_total
+  address: 7679
+  type: u32
+  unit: s
+  aliases:
+  - Total Hour meter
+  source:
+    address: 1E00H
+    page: 15
+    reference: Table 2, Total Hour meter
+- id: phase_sequence
+  address: 8431
+  type: u16
+  enum:
+    values:
+    - value: 1
+      name: good
+      label: good
+    - value: 0
+      name: not_good
+      label: not good
+  aliases:
+  - Phase sequence
+  source:
+    address: 20F0H
+    page: 13
+    reference: Table 2, Phase sequence

@@ -1,0 +1,319 @@
+openmodbus: 0.1.0
+info:
+  id: fronius/tauro/inverter
+  title: Fronius Tauro inverter telemetry (int+SF)
+  version: 0.1.0
+  description: 'Read-only subset of the SunSpec map that the inverter serves when
+    the Modbus setting "SunSpec Model Type" is int + SF (inverter model 103), taken
+    from the ROW map of the bundle 1.2.7-2. The default setting is float (inverter
+    model 111 to 113) with a different register layout; the float maps are not mapped
+    because neither they nor the operating instructions state the register order of
+    32-bit values, which also leaves out AC energy (WH) and the event flags here.
+    The operating instructions state that register addresses depend on the composition
+    of the SunSpec model chain: check the model ID registers (register numbers 40003,
+    40070, 40182 and 40254 hold 1, 103, 122 and 160) before relying on these addresses.
+    The map lists 1-based register numbers; the operating instructions state that
+    the address is the register number minus 1 and list the values returned for unavailable
+    data. The operating instructions are titled for the GEN24 series; they link this
+    bundle of register maps, which includes the Tauro maps. The operating states are
+    the SunSpec Operating Codes table of the operating instructions. Scale factors
+    can change at runtime.'
+  attribution: Derived from Fronius's GEN24 Plus Modbus SunSpec Maps.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: fronius-gen24-modbus
+device:
+  manufacturer: Fronius
+  family: Tauro
+  model: Tauro
+  classes:
+  - pv_inverter
+  transports:
+  - type: tcp
+  - type: rtu
+  unitId:
+    mode: configurable
+    notes: The Fronius GEN24 Modbus operating instructions state unit ID 1 over Modbus
+      TCP and a slave ID set in the inverter web interface over Modbus RTU.
+  documentation:
+  - title: GEN24 Plus Modbus SunSpec Maps
+    url: https://www.fronius.com/de/~/downloads/Solar%20Energy/Operating%20Instructions/gen24-modbus-api-external-docs.zip
+    revision: 1.2.7-2
+  - title: Fronius GEN24 - Modbus TCP and RTU Operating instructions
+    url: https://manuals.fronius.com/html/4204102649/en-US.html
+    revision: 034-28092026
+defaults:
+  table: holding_register
+  access: r
+points:
+- id: model
+  address: 40020
+  type: string
+  registers: 16
+  description: Device
+  aliases:
+  - Md
+  source:
+    address: '40021'
+    reference: Tauro_Inverter_Register_Map_Int&SF_ROW.xlsx Complete Map!A10 (common
+      (1))
+- id: ac_current
+  address: 40071
+  type: u16
+  unit: A
+  conversion:
+    exponent10:
+      point: a_sf
+  invalid:
+  - 65535
+  description: AC Current
+  aliases:
+  - A
+  source:
+    address: '40072'
+    reference: Tauro_Inverter_Register_Map_Int&SF_ROW.xlsx Complete Map!A19 (inverter
+      (103))
+- id: a_sf
+  address: 40075
+  type: i16
+  invalid:
+  - -32768
+  description: auto-scaled on A, AphA, AphB, AphC
+  aliases:
+  - A_SF
+  source:
+    address: '40076'
+    reference: Tauro_Inverter_Register_Map_Int&SF_ROW.xlsx Complete Map!A23 (inverter
+      (103))
+- id: voltage_l1_n
+  address: 40079
+  type: u16
+  unit: V
+  conversion:
+    exponent10:
+      point: v_sf
+  invalid:
+  - 65535
+  description: Phase Voltage AN
+  aliases:
+  - PhVphA
+  source:
+    address: '40080'
+    reference: Tauro_Inverter_Register_Map_Int&SF_ROW.xlsx Complete Map!A27 (inverter
+      (103))
+- id: v_sf
+  address: 40082
+  type: i16
+  invalid:
+  - -32768
+  aliases:
+  - V_SF
+  source:
+    address: '40083'
+    reference: Tauro_Inverter_Register_Map_Int&SF_ROW.xlsx Complete Map!A30 (inverter
+      (103))
+- id: ac_power
+  address: 40083
+  type: i16
+  unit: W
+  conversion:
+    exponent10:
+      point: w_sf
+  invalid:
+  - -32768
+  description: AC Power
+  aliases:
+  - W
+  source:
+    address: '40084'
+    reference: Tauro_Inverter_Register_Map_Int&SF_ROW.xlsx Complete Map!A31 (inverter
+      (103))
+- id: w_sf
+  address: 40084
+  type: i16
+  invalid:
+  - -32768
+  description: auto-scaled on W
+  aliases:
+  - W_SF
+  source:
+    address: '40085'
+    reference: Tauro_Inverter_Register_Map_Int&SF_ROW.xlsx Complete Map!A32 (inverter
+      (103))
+- id: frequency
+  address: 40085
+  type: u16
+  unit: Hz
+  conversion:
+    exponent10:
+      point: hz_sf
+  invalid:
+  - 65535
+  description: Line Frequency
+  aliases:
+  - Hz
+  source:
+    address: '40086'
+    reference: Tauro_Inverter_Register_Map_Int&SF_ROW.xlsx Complete Map!A33 (inverter
+      (103))
+- id: hz_sf
+  address: 40086
+  type: i16
+  invalid:
+  - -32768
+  aliases:
+  - Hz_SF
+  source:
+    address: '40087'
+    reference: Tauro_Inverter_Register_Map_Int&SF_ROW.xlsx Complete Map!A34 (inverter
+      (103))
+- id: dc_power
+  address: 40100
+  type: i16
+  unit: W
+  conversion:
+    exponent10:
+      point: dcw_sf
+  invalid:
+  - -32768
+  description: DC Power
+  aliases:
+  - DCW
+  source:
+    address: '40101'
+    reference: Tauro_Inverter_Register_Map_Int&SF_ROW.xlsx Complete Map!A47 (inverter
+      (103))
+- id: dcw_sf
+  address: 40101
+  type: i16
+  invalid:
+  - -32768
+  description: auto-scaled on DCW
+  aliases:
+  - DCW_SF
+  source:
+    address: '40102'
+    reference: Tauro_Inverter_Register_Map_Int&SF_ROW.xlsx Complete Map!A48 (inverter
+      (103))
+- id: operating_state
+  address: 40107
+  type: u16
+  enum:
+    values:
+    - value: 1
+      name: 'off'
+      label: I_STATUS_OFF
+      description: Inverter is off
+    - value: 2
+      name: sleeping
+      label: I_STATUS_SLEEPING
+      description: Auto shutdown
+    - value: 3
+      name: starting
+      label: I_STATUS_STARTING
+      description: Inverter starting
+    - value: 4
+      name: mppt
+      label: I_STATUS_MPPT
+      description: Inverter working normally
+    - value: 5
+      name: throttled
+      label: I_STATUS_THROTTLED
+      description: Power reduction active
+    - value: 6
+      name: shutting_down
+      label: I_STATUS_SHUTTING_DOWN
+      description: Inverter shutting down
+    - value: 7
+      name: fault
+      label: I_STATUS_FAULT
+      description: One or more faults present, see St*or Evt* register
+    - value: 8
+      name: standby
+      label: I_STATUS_STANDBY
+      description: Standby
+  invalid:
+  - 65535
+  description: Enumerated value. Operating state
+  aliases:
+  - St
+  source:
+    address: '40108'
+    reference: Tauro_Inverter_Register_Map_Int&SF_ROW.xlsx Complete Map!A54 (inverter
+      (103))
+- id: pv_connection_status
+  address: 40183
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: connected
+    - bit: 1
+      name: available
+    - bit: 2
+      name: operating
+  invalid:
+  - 65535
+  description: PV inverter present/available status.
+  aliases:
+  - PVConn
+  source:
+    address: '40184'
+    reference: Tauro_Inverter_Register_Map_Int&SF_ROW.xlsx Complete Map!A130 (status
+      (122))
+- id: mppt_dca_sf
+  address: 40255
+  type: i16
+  invalid:
+  - -32768
+  description: Current Scale Factor. auto-scaled on DCA 1-N
+  aliases:
+  - DCA_SF
+  source:
+    address: '40256'
+    reference: Tauro_Inverter_Register_Map_Int&SF_ROW.xlsx Complete Map!A182 (mppt
+      (160))
+- id: mppt_dcv_sf
+  address: 40256
+  type: i16
+  invalid:
+  - -32768
+  description: Voltage Scale Factor. auto-scaled on DCV 1-N
+  aliases:
+  - DCV_SF
+  source:
+    address: '40257'
+    reference: Tauro_Inverter_Register_Map_Int&SF_ROW.xlsx Complete Map!A183 (mppt
+      (160))
+- id: mppt1_current
+  address: 40272
+  type: u16
+  unit: A
+  conversion:
+    exponent10:
+      point: mppt_dca_sf
+  invalid:
+  - 65535
+  description: DC Current
+  aliases:
+  - module/1/DCA
+  source:
+    address: '40273'
+    reference: Tauro_Inverter_Register_Map_Int&SF_ROW.xlsx Complete Map!A191 (mppt
+      (160))
+- id: mppt1_voltage
+  address: 40273
+  type: u16
+  unit: V
+  conversion:
+    exponent10:
+      point: mppt_dcv_sf
+  invalid:
+  - 65535
+  description: DC Voltage
+  aliases:
+  - module/1/DCV
+  source:
+    address: '40274'
+    reference: Tauro_Inverter_Register_Map_Int&SF_ROW.xlsx Complete Map!A192 (mppt
+      (160))

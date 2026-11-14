@@ -1,0 +1,107 @@
+openmodbus: 0.1.0
+info:
+  id: danfoss/fc-102/status
+  title: Danfoss VLT HVAC Drive FC 102 drive status and readouts
+  version: 0.1.0
+  description: 'Read-only subset of the data readouts (parameter group 16-**) over
+    the built-in RS-485 Modbus RTU (parameter 8-30 Protocol set to Modbus RTU): reference,
+    motor voltage, frequency, DC link voltage and digital inputs. Data types and conversion
+    indexes are from the Programming Guide for software version 7.3X, which refers
+    to the VLT HVAC Drive FC 102 Design Guide (MG11BB22) for the Modbus RTU protocol.
+    The design guide states that parameters are holding registers at 10 x parameter
+    number - 1, with request examples, and gives the conversion factors; it is older
+    than the Programming Guide. Only 16-bit parameters with a defined data type are
+    included: the design guide does not state the register order of 32-bit parameters
+    or where an 8-bit value sits in its register, and does not define data type V2
+    of the status word. Array parameters are not included.'
+  attribution: Derived from Danfoss's VLT HVAC Drive FC 102 Programming Guide.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: danfoss-fc102-pg
+device:
+  manufacturer: Danfoss
+  family: VLT HVAC Drive
+  model: FC 102
+  classes:
+  - drive
+  transports:
+  - type: rtu
+  unitId:
+    mode: configurable
+    notes: Parameter 8-31 Address, 1 to 247.
+  documentation:
+  - title: VLT HVAC Drive FC 102 Programming Guide
+    url: https://assets.danfoss.com/documents/284244/AU430028034214en-001801.pdf
+    revision: AU430028034214en-000101 / 130R0318, 2023.07, software version 7.3X
+  - title: VLT HVAC Drive Design Guide
+    url: https://assets.danfoss.com/documents/272739/AJ299549559248en-US1501.pdf
+    revision: MG11BB22
+defaults:
+  table: holding_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+points:
+- id: reference_percent
+  label: Reference %
+  aliases:
+  - 16-02
+  address: 16019
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: '%'
+  source:
+    address: 16-02
+    page: 375
+    reference: Parameter 16-02 Reference %, PNU 1602, Int16, conversion index -1
+- id: motor_voltage
+  label: Motor Voltage
+  aliases:
+  - 16-12
+  address: 16119
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: V
+  source:
+    address: 16-12
+    page: 376
+    reference: Parameter 16-12 Motor Voltage, PNU 1612, Uint16, conversion index -1
+- id: output_frequency
+  label: Frequency
+  aliases:
+  - 16-13
+  address: 16129
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: Hz
+  source:
+    address: 16-13
+    page: 376
+    reference: Parameter 16-13 Frequency, PNU 1613, Uint16, conversion index -1
+- id: dc_link_voltage
+  label: DC Link Voltage
+  aliases:
+  - 16-30
+  address: 16299
+  type: u16
+  unit: V
+  source:
+    address: 16-30
+    page: 379
+    reference: Parameter 16-30 DC Link Voltage, PNU 1630, Uint16, conversion index
+      0
+- id: digital_input
+  label: Digital Input
+  aliases:
+  - 16-60
+  address: 16599
+  type: u16
+  description: Signal states of the digital inputs as a bit pattern; see the guide
+    for the terminal of each bit.
+  source:
+    address: 16-60
+    page: 383
+    reference: Parameter 16-60 Digital Input, PNU 1660, Uint16, conversion index 0

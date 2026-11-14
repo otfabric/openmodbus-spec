@@ -1,0 +1,292 @@
+openmodbus: 0.1.0
+info:
+  id: siemens/pac3200/telemetry
+  title: Siemens SENTRON PAC3200 telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the measured variables (table 3-6): voltages,
+    currents, power, power factor, frequency, THD, device status, active tariff and
+    the working hours counter. Function codes 0x03 and 0x04 read the same values;
+    the points use the input-register (0x04) table. The manual does not say what an
+    "Offset" is on the wire or how multi-register values are ordered: the offset is
+    taken as the PDU address, and Float and Unsigned long values as most significant
+    word first, because the PAC RS485 expansion module manual that this manual lists
+    as further documentation prints a captured PAC3200 exchange that reads "offset
+    0001: voltage Va-n" at start address 00 01 and returns 43 68 70 22 for 232.4 V.
+    The energy counters exist only in Double format, whose register order no Siemens
+    document shows, so they are left out. A read that starts or ends inside a multi-register
+    value returns an error code. Modbus TCP must be selected on the device (SEAbus
+    TCP is the default); Modbus RTU needs the PAC RS485 expansion module and firmware
+    V2.0x or later.
+
+    '
+  attribution: Derived from Siemens' SENTRON PAC3200 Power Monitoring Device Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: siemens-pac3200-manual
+device:
+  manufacturer: Siemens
+  family: SENTRON PAC
+  model: PAC3200
+  classes:
+  - power_meter
+  transports:
+  - type: tcp
+    notes: Port 502, after switching the protocol from SEAbus TCP to MODBUS TCP.
+  - type: rtu
+    notes: With the PAC RS485 expansion module.
+  documentation:
+  - title: SENTRON PAC3200 Power Monitoring Device Manual
+    url: https://cache.industry.siemens.com/dl/files/150/26504150/att_906558/v1/A5E01168664B-04_EN-US_122016_201612221316360495.pdf
+    revision: A5E01168664B-04, 02/2008
+  - title: SENTRON Expansion Module PAC RS485 Manual
+    url: https://support.industry.siemens.com/cs/ww/en/view/28865965
+    revision: A5E02091800B-01, 02/2008
+defaults:
+  table: input_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+points:
+- id: voltage_l1_n
+  address: 1
+  type: f32
+  unit: V
+  aliases:
+  - Voltage Va-n
+  source:
+    address: '1'
+    page: 42
+    reference: 'Table 3-6 Available measured variables: Voltage Va-n'
+- id: voltage_l2_n
+  address: 3
+  type: f32
+  unit: V
+  aliases:
+  - Voltage Vb-n
+  source:
+    address: '3'
+    page: 42
+    reference: 'Table 3-6 Available measured variables: Voltage Vb-n'
+- id: voltage_l3_n
+  address: 5
+  type: f32
+  unit: V
+  aliases:
+  - Voltage Vc-n
+  source:
+    address: '5'
+    page: 42
+    reference: 'Table 3-6 Available measured variables: Voltage Vc-n'
+- id: voltage_l1_l2
+  address: 7
+  type: f32
+  unit: V
+  aliases:
+  - Voltage Va-b
+  source:
+    address: '7'
+    page: 42
+    reference: 'Table 3-6 Available measured variables: Voltage Va-b'
+- id: voltage_l2_l3
+  address: 9
+  type: f32
+  unit: V
+  aliases:
+  - Voltage Vb-c
+  source:
+    address: '9'
+    page: 42
+    reference: 'Table 3-6 Available measured variables: Voltage Vb-c'
+- id: voltage_l3_l1
+  address: 11
+  type: f32
+  unit: V
+  aliases:
+  - Voltage Vc-a
+  source:
+    address: '11'
+    page: 42
+    reference: 'Table 3-6 Available measured variables: Voltage Vc-a'
+- id: current_l1
+  address: 13
+  type: f32
+  unit: A
+  aliases:
+  - Current a
+  source:
+    address: '13'
+    page: 42
+    reference: 'Table 3-6 Available measured variables: Current a'
+- id: current_l2
+  address: 15
+  type: f32
+  unit: A
+  aliases:
+  - Current b
+  source:
+    address: '15'
+    page: 42
+    reference: 'Table 3-6 Available measured variables: Current b'
+- id: current_l3
+  address: 17
+  type: f32
+  unit: A
+  aliases:
+  - Current c
+  source:
+    address: '17'
+    page: 42
+    reference: 'Table 3-6 Available measured variables: Current c'
+- id: voltage_thd_l1
+  address: 43
+  type: f32
+  unit: '%'
+  aliases:
+  - THD-R Voltage a
+  source:
+    address: '43'
+    page: 42
+    reference: 'Table 3-6 Available measured variables: THD-R Voltage a'
+- id: current_thd_l1
+  address: 49
+  type: f32
+  unit: '%'
+  aliases:
+  - THD-R Current a
+  source:
+    address: '49'
+    page: 43
+    reference: 'Table 3-6 Available measured variables: THD-R Current a'
+- id: frequency
+  address: 55
+  type: f32
+  unit: Hz
+  aliases:
+  - Frequency
+  source:
+    address: '55'
+    page: 43
+    reference: 'Table 3-6 Available measured variables: Frequency'
+- id: apparent_power_total
+  address: 63
+  type: f32
+  unit: V.A
+  aliases:
+  - Total Apparent Power
+  source:
+    address: '63'
+    page: 43
+    reference: 'Table 3-6 Available measured variables: Total Apparent Power'
+- id: active_power_total
+  address: 65
+  type: f32
+  unit: W
+  aliases:
+  - Total Active Power
+  source:
+    address: '65'
+    page: 43
+    reference: 'Table 3-6 Available measured variables: Total Active Power'
+- id: reactive_power_total
+  address: 67
+  type: f32
+  aliases:
+  - Total Reactive Power
+  description: 'Vendor unit: var.'
+  source:
+    address: '67'
+    page: 43
+    reference: 'Table 3-6 Available measured variables: Total Reactive Power'
+- id: power_factor_total
+  address: 69
+  type: f32
+  aliases:
+  - Total Power Factor
+  source:
+    address: '69'
+    page: 43
+    reference: 'Table 3-6 Available measured variables: Total Power Factor'
+- id: device_status
+  address: 205
+  type: u32
+  aliases:
+  - Device Diagnostics and Device Status
+  flags:
+    flags:
+    - bit: 8
+      name: parameters_changed_stored
+      label: Relevant parameter changes
+      description: Byte 2, bit 0, mask 0x00000100; type saving.
+    - bit: 9
+      name: limit_violation_stored
+      label: Upper or lower limit violation
+      description: Byte 2, bit 1, mask 0x00000200; type saving.
+    - bit: 10
+      name: pulse_rate_exceeded_stored
+      label: Maximum pulse rate exceeded
+      description: Byte 2, bit 2, mask 0x00000400; type saving.
+    - bit: 11
+      name: device_restarted_stored
+      label: Restart of the device
+      description: Byte 2, bit 3, mask 0x00000800; type saving.
+    - bit: 12
+      name: energy_counters_reset_stored
+      label: Resetting of energy counter by user
+      description: Byte 2, bit 4, mask 0x00001000; type saving.
+    - bit: 16
+      name: module_slot_1
+      label: Module slot 1
+      description: Byte 1, bit 0, mask 0x00010000; type Status.
+    - bit: 17
+      name: pulse_rate_exceeded
+      label: Maximum pulse rate exceeded
+      description: Byte 1, bit 1, mask 0x00020000; type Status.
+    - bit: 24
+      name: no_synchronization_pulse
+      label: No synchronization pulse
+      description: Byte 0, bit 0, mask 0x01000000; type Status.
+    - bit: 25
+      name: configuration_menu_active
+      label: Device Configuration menu is active
+      description: Byte 0, bit 1, mask 0x02000000; type Status.
+    - bit: 26
+      name: voltage_overload
+      label: Voltage overload
+      description: Byte 0, bit 2, mask 0x04000000; type Status.
+    - bit: 27
+      name: current_overload
+      label: Current overload
+      description: Byte 0, bit 3, mask 0x08000000; type Status.
+  description: Bits as listed in the device status table on page 47.
+  source:
+    address: '205'
+    page: 44
+    reference: 'Table 3-6 Available measured variables: Device Diagnostics and Device
+      Status'
+- id: active_tariff
+  address: 211
+  type: u32
+  aliases:
+  - Active Tariff
+  enum:
+    values:
+    - value: 0
+      name: tariff_1
+      label: Tariff 1
+    - value: 1
+      name: tariff_2
+      label: Tariff 2
+  source:
+    address: '211'
+    page: 45
+    reference: 'Table 3-6 Available measured variables: Active Tariff'
+- id: operating_hours_counter
+  address: 213
+  type: u32
+  unit: s
+  aliases:
+  - Working hours counter
+  source:
+    address: '213'
+    page: 45
+    reference: 'Table 3-6 Available measured variables: Working hours counter'

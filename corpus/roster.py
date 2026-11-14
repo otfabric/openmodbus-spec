@@ -62,27 +62,26 @@ def check(roster, manifest):
     produced = {contract["path"]: source_id for source_id, source in manifest["sources"].items()
                 for contract in source["contracts"]}
     claimed = set()
-    for klass in roster["classes"]:
-        for vendor in klass["vendors"]:
-            for model in vendor["models"]:
-                where = f"class {klass['id']} {vendor['vendor']} {model['model']}"
-                if model["status"] not in STATUSES:
-                    errors.append(f"{where}: unknown status {model['status']!r}")
-                contracts = model.get("contracts") or []
-                if model["status"] == "mapped" and not contracts:
-                    errors.append(f"{where}: mapped without a contract")
-                if model["status"] != "mapped" and contracts:
-                    errors.append(f"{where}: contracts listed but status is {model['status']}")
-                if model["status"] != "mapped" and not model.get("notes"):
-                    errors.append(f"{where}: {model['status']} needs a reason in notes")
-                for path in contracts:
-                    if path not in produced:
-                        errors.append(f"{where}: {path} is not produced by any corpus source")
-                    claimed.add(path)
-    for extra in roster.get("extras", []):
-        for path in extra["contracts"]:
+    entries = [(f"class {klass['id']} {vendor['vendor']} {model['model']}", model)
+               for klass in roster["classes"] for vendor in klass["vendors"] for model in vendor["models"]]
+    entries += [(f"extra {extra['vendor']} {extra['model']}", extra) for extra in roster.get("extras", [])]
+    names = Counter(where for where, _ in entries)
+    errors += [f"{where}: listed {count} times" for where, count in names.items() if count > 1]
+    for where, model in entries:
+        if model["status"] not in STATUSES:
+            errors.append(f"{where}: unknown status {model['status']!r}")
+        contracts = model.get("contracts") or []
+        if model["status"] == "mapped" and not contracts:
+            errors.append(f"{where}: mapped without a contract")
+        if model["status"] != "mapped" and contracts:
+            errors.append(f"{where}: contracts listed but status is {model['status']}")
+        if model["status"] != "mapped" and not model.get("notes"):
+            errors.append(f"{where}: {model['status']} needs a reason in notes")
+        for path in contracts:
             if path not in produced:
-                errors.append(f"extra {extra['model']}: {path} is not produced by any corpus source")
+                errors.append(f"{where}: {path} is not produced by any corpus source")
+            if path in claimed:
+                errors.append(f"{where}: {path} is claimed twice")
             claimed.add(path)
     errors += [f"{path}: catalog contract missing from the roster" for path in sorted(set(produced) - claimed)]
     ids = Counter(item["id"] for item in roster.get("work_items", []))
@@ -134,6 +133,13 @@ def render_coverage(roster):
                      f"{row['check']} | {row['blocked']} | {row['layouts']} | {count} |")
     lines.append(f"| **Total** | {totals['vendors']} | {totals['models']} | {totals['mapped']} | {totals['check']} | "
                  f"{totals['blocked']} | {totals['layouts']} | {totals['points']} |")
+    extras = roster.get("extras", [])
+    if extras:
+        status = Counter(extra["status"] for extra in extras)
+        layouts = {extra.get("layout") or extra["model"] for extra in extras if extra["status"] == "mapped"}
+        count = sum(points(path) for extra in extras for path in extra.get("contracts") or [])
+        lines.append(f"| Outside the target roster | {len({extra['vendor'] for extra in extras})} | {len(extras)} | "
+                     f"{status['mapped']} | {status['needs-check']} | {status['blocked']} | {len(layouts)} | {count} |")
     for klass in roster["classes"]:
         lines += ["", f"## {klass['id']}. {klass['name']}", "",
                   "| Vendor | Model | Status | Contract | Points | Notes |", "|---|---|---|---|---|---|"]
@@ -144,14 +150,17 @@ def render_coverage(roster):
                 count = sum(points(path) for path in contracts) if contracts else ""
                 lines.append(f"| {cell(vendor['vendor'])} | {cell(model['model'])} | {model['status']} | {links} | "
                              f"{count} | {cell(first_sentence(model.get('notes')))} |")
-    if roster.get("extras"):
+    if extras:
         lines += ["", "## Outside the target roster", "",
-                  "| Vendor | Model | Class | Contract | Points | Notes |", "|---|---|---|---|---|---|"]
-        for extra in roster["extras"]:
-            links = "<br>".join(f"[{Path(path).relative_to('devices')}](../{path})" for path in extra["contracts"])
-            count = sum(points(path) for path in extra["contracts"])
-            lines.append(f"| {cell(extra['vendor'])} | {cell(extra['model'])} | {extra['class']} | {links} | {count} | "
-                         f"{cell(first_sentence(extra.get('notes')))} |")
+                  "Models that are not among the 150 roster targets, mapped from the same kind of pinned public "
+                  "vendor sources.", "",
+                  "| Class | Vendor | Model | Status | Contract | Points | Notes |", "|---|---|---|---|---|---|---|"]
+        for extra in extras:
+            contracts = extra.get("contracts") or []
+            links = "<br>".join(f"[{Path(path).relative_to('devices')}](../{path})" for path in contracts)
+            count = sum(points(path) for path in contracts) if contracts else ""
+            lines.append(f"| {extra['class']} | {cell(extra['vendor'])} | {cell(extra['model'])} | {extra['status']} | "
+                         f"{links} | {count} | {cell(first_sentence(extra.get('notes')))} |")
     return "\n".join(line.rstrip() for line in lines) + "\n"
 
 

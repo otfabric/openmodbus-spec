@@ -1,22 +1,29 @@
-"""ABB B21 and B23/B24 user manuals (PDF): chapter 9.3 Modbus mapping tables.
+"""ABB B21, B23/B24 and A43/A44 user manuals (PDF): chapter 9 Modbus mapping tables.
 
-The selector is the model: "b21", "b23" or "b24". B23 and B24 share one manual.
-Addresses come from the "Start Reg (Hex)" column, which the manual states is
-sent on the bus as is. Unused quantities read as the documented "invalid" value.
+The selector is the model: "b21", "b23", "b24", "a43" or "a44". B23 and B24 share one
+manual, as do A43 and A44. The mapping tables are section 9.3 in the B-series manuals and
+9.4 in the A43/A44 manual. Addresses come from the "Start Reg (Hex)" column, which the
+manual states is sent on the bus as is. Unused quantities read as the documented "invalid"
+value. The A43/A44 manual adds a harmonics table whose blocks start with the THD register.
 """
 from decimal import Decimal
 import re
 
 from sourcelib import pdf_page_count, pdf_pages, require
 
+# selector: (manual title, document ID, revision, number of the "Mapping Tables" section in chapter 9)
 DOCUMENTS = {
-    "b21": ("B21", "2CMC485004M0201"),
-    "b23": ("B23/B24", "2CMC485003M0201"),
-    "b24": ("B23/B24", "2CMC485003M0201"),
+    "b21": ("B21", "2CMC485004M0201", "A", 3),
+    "b23": ("B23/B24", "2CMC485003M0201", "A", 3),
+    "b24": ("B23/B24", "2CMC485003M0201", "A", 3),
+    "a43": ("A43/A44", "2CMC484001M0201", "E", 4),
+    "a44": ("A43/A44", "2CMC484001M0201", "E", 4),
 }
+SINGLE_PHASE = ("b21",)
+HARMONIC_MODELS = ("a43", "a44")
 SECTIONS = ("Total energy", "Energy accumulators divided into tariffs", "Energy accumulators per phase",
-            "Resettable energy accumulators", "Instantaneous values", "Inputs and", "Production data",
-            "Miscellaneous", "Settings", "Operations", "DMTME")
+            "Resettable energy accumulators", "Instantaneous values", "Harmonics", "Inputs and",
+            "Production data", "Miscellaneous", "Settings", "Operations", "DMTME")
 # (section, quantity, details) -> (point id, resolution, vendor unit, UCUM unit or None)
 MEASUREMENTS = {
     ("Total energy", "Active import", "kWh"): ("active_import_energy", "0.01", "kWh", "kW.h"),
@@ -37,6 +44,10 @@ THREE_PHASE = {
     ("Instantaneous values", "Current", "L2"): ("current_l2", "0.01", "A", "A"),
     ("Instantaneous values", "Current", "L3"): ("current_l3", "0.01", "A", "A"),
 }
+# The A43/A44 selection swaps the power phase angle for the first register of a harmonics block.
+HARMONIC_DROPPED = ("Instantaneous values", "Phase angle power", "Total")
+# row label in the Harmonics table: (point id, resolution, vendor unit, UCUM unit, harmonics per block)
+HARMONICS = {"Voltage harmonics L1-N": ("voltage_thd_l1_n", "0.1", "%", "%", 16)}
 STRINGS = {
     ("Production data", "Meter firmware version", None): ("firmware_version", "ASCII string (up to 16"),
     ("Production data", "Type designation", None): ("type_designation", "ASCII string (12 characters,"),
@@ -54,18 +65,18 @@ def require_text(text, pattern, message):
     require(re.search(pattern, normalized(text)), message)
 
 
-def mapping_rows(pages):
-    """Yield (section, tokens, next_line, page) for every register row of chapter 9.3."""
-    start = [number for number, page in pages if re.search(r"^9\.3 Mapping Tables$", page, re.MULTILINE)]
-    end = [number for number, page in pages if re.search(r"^9\.4 ", page, re.MULTILINE)]
-    require(len(start) == 1 and len(end) == 1 and start[0] < end[0], "ABB chapter 9.3 boundaries not found")
+def mapping_rows(pages, tables):
+    """Yield (section, tokens, next_line, page) for every register row of section 9.<tables>, Mapping Tables."""
+    start = [number for number, page in pages if re.search(rf"^9\.{tables} Mapping Tables$", page, re.MULTILINE)]
+    end = [number for number, page in pages if re.search(rf"^9\.{tables + 1} ", page, re.MULTILINE)]
+    require(len(start) == 1 and len(end) == 1 and start[0] < end[0], f"ABB chapter 9.{tables} boundaries not found")
     section = None
     for number, page in pages:
         if not start[0] <= number <= end[0]:
             continue
         lines = page.splitlines()
         for index, line in enumerate(lines):
-            if number == end[0] and re.match(r"9\.4 ", line):
+            if number == end[0] and re.match(rf"9\.{tables + 1} ", line):
                 return
             heading = [name for name in SECTIONS if re.match(re.escape(name) + r"(\s|$)", line)]
             if heading:
@@ -98,11 +109,11 @@ def invalid_value(kind, width):
 
 def extract(data, selector):
     require(selector in DOCUMENTS, f"Unknown ABB selector {selector!r}")
-    title, document_id = DOCUMENTS[selector]
+    title, document_id, revision, tables = DOCUMENTS[selector]
     count = pdf_page_count(data)
     pages = list(enumerate(pdf_pages(data, 1, count), start=1))
     require_text("\n".join(page for _, page in pages[:3]),
-                 re.escape(f"{title} User Manual Document ID: {document_id} Revision: A"),
+                 re.escape(f"{title} User Manual Document ID: {document_id} Revision: {revision}"),
                  f"ABB {title} manual title page not found")
     chapter = "\n".join(page for _, page in pages)
     require_text(chapter, r"It is expressed exactly as it is sent on the bus\. That is, it should not be "
@@ -125,12 +136,12 @@ def extract(data, selector):
     require(first < last, "ABB readable range is empty")
     constraints = {"ranges": [{
         "table": "holding_register", "start": first, "count": last - first + 1, "policy": "safe_gap",
-        "reason": f"Manual 9.2: reading any register in {readable.group(1)}-{readable.group(2)} (hex) returns a "
-                  "normal response; quantities the meter lacks read as invalid.",
+        "reason": f"Manual 9.{tables - 1}: reading any register in {readable.group(1)}-{readable.group(2)} (hex) "
+                  "returns a normal response; quantities the meter lacks read as invalid.",
     }]}
 
     rows = {}
-    for section, head, tail, following, page in mapping_rows(pages):
+    for section, head, tail, following, page in mapping_rows(pages, tables):
         quantity = head[0]
         details = head[1] if len(head) > 1 else None
         require(len(head) <= 2, f"ABB row with unexpected columns: {head + tail}")
@@ -142,8 +153,10 @@ def extract(data, selector):
         return found[0]
 
     selected = dict(MEASUREMENTS)
-    if selector != "b21":
+    if selector not in SINGLE_PHASE:
         selected.update(THREE_PHASE)
+    if selector in HARMONIC_MODELS:
+        del selected[HARMONIC_DROPPED]
     points = []
     for key, (point_id, expected_res, expected_unit, unit) in selected.items():
         tail, _, page = row(key)
@@ -167,6 +180,31 @@ def extract(data, selector):
         point["aliases"] = [" ".join(part for part in key[1:] if part)]
         point["source"] = {"address": tail[0], "page": page, "reference": f"{key[0]} table"}
         points.append(point)
+
+    if selector in HARMONIC_MODELS:
+        require_text(chapter, r"Harmonics are mapped in one register each, starting with THD and then "
+                              r"followed by 2nd, 3rd, 4th harmonic and so on\.",
+                     "ABB harmonics block layout statement missing")
+        blocks = {}
+        for key, found in rows.items():
+            if key[0] == "Harmonics":
+                blocks.setdefault(" ".join(part for part in key[1:] if part), []).extend(found)
+        for label, (point_id, expected_res, expected_unit, unit, harmonics) in HARMONICS.items():
+            found = blocks.get(label, [])
+            require(len(found) == 1, f"ABB harmonics {label!r}: {len(found)} rows")
+            tail, _, page = found[0]
+            require(tail[1:3] == ["1", str(harmonics)], f"ABB {point_id}: unexpected block shape {tail}")
+            res, words = resolution(" ".join(tail[3:]).split())
+            require(res == Decimal(expected_res) and words == [expected_unit, "Unsigned"],
+                    f"ABB {point_id}: unexpected resolution, unit or data type {tail}")
+            points.append({
+                "id": point_id, "address": int(tail[0], 16), "type": "u16",
+                "conversion": {"exponent10": exponent(res)}, "unit": unit,
+                "description": f"Total harmonic distortion: the first of the {harmonics} registers of the "
+                               f"{label} block; the 2nd and higher harmonics follow, one register each.",
+                "invalid": [invalid_value("u16", 1)], "aliases": [label],
+                "source": {"address": tail[0], "page": page, "reference": "Harmonics table"},
+            })
 
     for key, (point_id, data_type) in STRINGS.items():
         tail, _, page = row(key)

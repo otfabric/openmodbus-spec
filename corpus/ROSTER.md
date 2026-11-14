@@ -6,17 +6,18 @@ A model is **mapped** when a contract generated from a checksum-pinned public ve
 
 | Class | Vendors | Models | Mapped | Needs check | Blocked | Unique layouts | Points |
 |---|---|---|---|---|---|---|---|
-| 1. Electrical energy submeters | 5 | 15 | 9 | 3 | 3 | 5 | 141 |
-| 2. Multifunction power and power-quality meters | 5 | 15 | 6 | 4 | 5 | 3 | 108 |
-| 3. Grid-tied PV inverters | 5 | 15 | 6 | 3 | 6 | 2 | 111 |
+| 1. Electrical energy submeters | 5 | 15 | 12 | 0 | 3 | 7 | 195 |
+| 2. Multifunction power and power-quality meters | 5 | 15 | 8 | 4 | 3 | 4 | 146 |
+| 3. Grid-tied PV inverters | 5 | 15 | 6 | 0 | 9 | 2 | 111 |
 | 4. Battery energy storage interfaces | 5 | 15 | 8 | 4 | 3 | 3 | 134 |
 | 5. Transformer monitoring and tap-changer controllers | 5 | 15 | 9 | 3 | 3 | 8 | 126 |
 | 6. Protection relays | 5 | 15 | 12 | 0 | 3 | 8 | 156 |
 | 7. Remote I/O | 5 | 15 | 11 | 4 | 0 | 11 | 182 |
-| 8. Motor variable-frequency drives | 5 | 15 | 7 | 5 | 3 | 6 | 86 |
+| 8. Motor variable-frequency drives | 5 | 15 | 10 | 2 | 3 | 8 | 145 |
 | 9. Generator-set controllers | 5 | 15 | 11 | 4 | 0 | 6 | 172 |
 | 10. PV irradiance and reference sensors | 5 | 15 | 13 | 2 | 0 | 8 | 151 |
-| **Total** | 50 | 150 | 92 | 32 | 26 | 60 | 1367 |
+| **Total** | 50 | 150 | 100 | 23 | 27 | 65 | 1518 |
+| Outside the target roster | 13 | 55 | 39 | 10 | 6 | 32 | 657 |
 
 ## 1. Electrical energy submeters
 
@@ -31,9 +32,9 @@ A model is **mapped** when a contract generated from a checksum-pinned public ve
 | Eastron | SDM120 | mapped | [eastron/sdm120-modbus/telemetry.omb.yaml](../devices/eastron/sdm120-modbus/telemetry.omb.yaml) | 5 | Already mapped in the pilot; |
 | Eastron | SDM230 | mapped | [eastron/sdm230-modbus/telemetry.omb.yaml](../devices/eastron/sdm230-modbus/telemetry.omb.yaml) | 11 | Same input addresses as SDM120 for the common quantities. |
 | Eastron | SDM630 | mapped | [eastron/sdm630-modbus/telemetry.omb.yaml](../devices/eastron/sdm630-modbus/telemetry.omb.yaml) | 16 | Wiring-system validity columns (3P4W/3P3W/1P2W, X reads zero) copied into each point description. |
-| Schneider Electric | iEM3155 | needs-check |  |  | Every core quantity (current, voltage, power, frequency, energy) is Float32 or Int64 and the document never states the register order; |
-| Schneider Electric | iEM3255 | needs-check |  |  | Every core quantity (current, voltage, power, frequency, energy) is Float32 or Int64 and the document never states the register order; |
-| Schneider Electric | iEM3355 | needs-check |  |  | Every core quantity (current, voltage, power, frequency, energy) is Float32 or Int64 and the document never states the register order; |
+| Schneider Electric | iEM3155 | mapped | [schneider-electric/iem3155/status.omb.yaml](../devices/schneider-electric/iem3155/status.omb.yaml) | 17 | Partial contract: single-register UInt16 and Bitmap rows only (firmware version, clock bit fields, wiring, nominal frequency, tariff, serial settings, digital I/O mode, diagnostics bitmap, overload alarm status). |
+| Schneider Electric | iEM3255 | mapped | [schneider-electric/iem3255/status.omb.yaml](../devices/schneider-electric/iem3255/status.omb.yaml) | 20 | Partial contract: single-register UInt16 and Bitmap rows only (firmware version, clock bit fields, wiring, nominal frequency, tariff, serial settings, digital I/O mode, diagnostics bitmap, overload alarm status, VT secondary, CT primary and secondary). |
+| Schneider Electric | iEM3355 | mapped | [schneider-electric/iem3355/status.omb.yaml](../devices/schneider-electric/iem3355/status.omb.yaml) | 17 | Partial contract: single-register UInt16 and Bitmap rows only (firmware version, clock bit fields, wiring, nominal frequency, tariff, serial settings, digital I/O mode, diagnostics bitmap, overload alarm status). |
 | Socomec | COUNTIS E23 | blocked |  |  | Source returns HTTP 403 (Cloudflare challenge) from this machine; |
 | Socomec | COUNTIS E24 | blocked |  |  | Source returns HTTP 403 (Cloudflare challenge) from this machine; |
 | Socomec | COUNTIS E43 | blocked |  |  | Source returns HTTP 403 (Cloudflare challenge) from this machine; |
@@ -48,15 +49,15 @@ A model is **mapped** when a contract generated from a checksum-pinned public ve
 | Eaton | Power Xpert Meter 4000 | blocked |  |  | The source could not be fetched (c02-eaton-access). |
 | Eaton | Power Xpert Meter 6000 | blocked |  |  | The source could not be fetched (c02-eaton-access). |
 | Eaton | Power Xpert Meter 8000 | blocked |  |  | The source could not be fetched (c02-eaton-access). |
-| Janitza electronics | UMG 96RM | mapped | [janitza/umg-96rm/telemetry.omb.yaml](../devices/janitza/umg-96rm/telemetry.omb.yaml) | 17 | From the "Häufig benötigte Messwerte" block (19000 to 19116): phase and line voltage, phase currents, total P/Q/S, frequency, THD of U L1-N and I L1. |
-| Janitza electronics | UMG 96RM-E | mapped | [janitza/umg-96rm-e/telemetry.omb.yaml](../devices/janitza/umg-96rm-e/telemetry.omb.yaml) | 17 | Same rows and addresses as the UMG 96RM, read from the English UMG 96RM-E list. |
+| Janitza electronics | UMG 96RM | mapped | [janitza/umg-96rm/telemetry.omb.yaml](../devices/janitza/umg-96rm/telemetry.omb.yaml) | 17 | Existing contract, not rebuilt or changed in this pass; |
+| Janitza electronics | UMG 96RM-E | mapped | [janitza/umg-96rm-e/telemetry.omb.yaml](../devices/janitza/umg-96rm-e/telemetry.omb.yaml) | 17 | Existing contract, not rebuilt or changed in this pass; |
 | Janitza electronics | UMG 96RM-PN | mapped | [janitza/umg-96rm-pn/telemetry.omb.yaml](../devices/janitza/umg-96rm-pn/telemetry.omb.yaml) | 17 | The base-device list applies to the PN extension. |
-| Schneider Electric | PM5110 | blocked |  |  | The only register list found is the legacy .xls (c02-schneider-xls-reader). |
-| Schneider Electric | PM5330 | blocked |  |  | Same as PM5110. |
-| Schneider Electric | PM5560 | needs-check |  |  | The workbook is readable and lists the PM5560 (column L), but it states neither the address base nor the word order (c02-schneider-base-wordorder). |
-| Siemens | SENTRON PAC2200 | needs-check |  |  | Address base only inferable and multi-register word order unstated (c02-siemens-word-order). |
-| Siemens | SENTRON PAC3120 | needs-check |  |  | Same as PAC2200 (c02-siemens-word-order). |
-| Siemens | SENTRON PAC3220 | needs-check |  |  | Same as PAC2200 (c02-siemens-word-order). |
+| Schneider Electric | PM5110 | needs-check |  |  | The list is readable now (column E 'PM5110_11') but states neither the address base nor the word order, and no pinnable Schneider document states them for the PM5000 (p-schneider-meters-pmc-base, p-schneider-meters-word-order). |
+| Schneider Electric | PM5330 | needs-check |  |  | Same as PM5110 (column G 'PM5330_31'). |
+| Schneider Electric | PM5560 | needs-check |  |  | Unchanged verdict, with more evidence: the workbook, the PM5500 user manual and every FAQ attachment were searched; |
+| Siemens | SENTRON PAC2200 | needs-check |  |  | Rule 4. Every measured variable is a Float, Unsigned long or Double, and the manual states neither the meaning of "Offset" nor the register order. |
+| Siemens | SENTRON PAC3120 | mapped | [siemens/pac3120/telemetry.omb.yaml](../devices/siemens/pac3120/telemetry.omb.yaml) | 19 | Rule 3: the PAC3120 has a built-in RS485 interface and no expansion slot, so the RS485 module manual does not cover it; |
+| Siemens | SENTRON PAC3220 | mapped | [siemens/pac3220/telemetry.omb.yaml](../devices/siemens/pac3220/telemetry.omb.yaml) | 19 | Rule 2 through the named companion manual, whose frames were captured from a PAC3200 (p-siemens-pac-rs485-frames). |
 
 ## 3. Grid-tied PV inverters
 
@@ -68,9 +69,9 @@ A model is **mapped** when a contract generated from a checksum-pinned public ve
 | Schneider Electric | Conext CL 18000NA | blocked |  |  | Register map and application note return 403 to the corpus client (Akamai). |
 | Schneider Electric | Conext CL 25000NA | blocked |  |  | Register map and application note return 403 to the corpus client (Akamai). |
 | Schneider Electric | Conext CL 20000E | blocked |  |  | Register map and application note return 403 to the corpus client (Akamai). |
-| SMA | SB3.0-1AV-41 | needs-check |  |  | In scope of SunSpecModbus-TI-en-11 from firmware 4.00.23.R, but the vendor document requires SunSpec model discovery to locate any point (question c03-sma-sunspec-discovery). |
-| SMA | SB5.0-1AV-41 | needs-check |  |  | In scope of SunSpecModbus-TI-en-11 from firmware 4.00.23.R, but the vendor document requires SunSpec model discovery to locate any point (question c03-sma-sunspec-discovery). |
-| SMA | STP5.0-3AV-40 | needs-check |  |  | In scope of SunSpecModbus-TI-en-11 from firmware 4.00.02.R, but the vendor document requires SunSpec model discovery to locate any point (question c03-sma-sunspec-discovery). |
+| SMA | SB3.0-1AV-41 | blocked |  |  | Not mapped: the conventions of the SMA Modbus profile (address base, byte order, NaN values, FIXn decimals) are stated only in SMA's technical information SMA-Modbus-general-TI-en-10, whose legal provisions require SMA's prior written approval for any publication, whole or in part. |
+| SMA | SB5.0-1AV-41 | blocked |  |  | Not mapped: the conventions of the SMA Modbus profile (address base, byte order, NaN values, FIXn decimals) are stated only in SMA's technical information SMA-Modbus-general-TI-en-10, whose legal provisions require SMA's prior written approval for any publication, whole or in part. |
+| SMA | STP5.0-3AV-40 | blocked |  |  | Not mapped: the conventions of the SMA Modbus profile (address base, byte order, NaN values, FIXn decimals) are stated only in SMA's technical information SMA-Modbus-general-TI-en-10, whose legal provisions require SMA's prior written approval for any publication, whole or in part. |
 | SolarEdge | SE3000H-US | blocked |  |  | SunSpec technical note and model-scope datasheet return 403 (Cloudflare challenge). |
 | SolarEdge | SE5000H-US | blocked |  |  | SunSpec technical note and model-scope datasheet return 403 (Cloudflare challenge). |
 | SolarEdge | SE6000H-US | blocked |  |  | SunSpec technical note and model-scope datasheet return 403 (Cloudflare challenge). |
@@ -162,15 +163,15 @@ A model is **mapped** when a contract generated from a checksum-pinned public ve
 
 | Vendor | Model | Status | Contract | Points | Notes |
 |---|---|---|---|---|---|
-| ABB | ACS580 | needs-check |  |  | Needs the ACS580 firmware manual next to FSCA-01; |
-| ABB | ACH580 | needs-check |  |  | Needs the ACH580 firmware manual next to FSCA-01; |
-| ABB | ACS880 | needs-check |  |  | Needs the ACS880 firmware manual next to FSCA-01; |
+| ABB | ACS580 | mapped | [abb/acs580/status.omb.yaml](../devices/abb/acs580/status.omb.yaml) | 20 | Embedded fieldbus (EFB, Modbus RTU on the control unit), not the FSCA-01 adapter. |
+| ABB | ACH580 | mapped | [abb/ach580/status.omb.yaml](../devices/abb/ach580/status.omb.yaml) | 20 | Same points and addresses as ACS580; |
+| ABB | ACS880 | mapped | [abb/acs880/status.omb.yaml](../devices/abb/acs880/status.omb.yaml) | 19 | Embedded fieldbus (EFB, Modbus RTU on terminal XD2D of BCU/ZCU control units; |
 | AutomationDirect | GS20 | mapped | [automationdirect/gs20/status.omb.yaml](../devices/automationdirect/gs20/status.omb.yaml) | 12 | Fault code and warning code are the low and high bytes of 2100h as plain numbers. |
 | AutomationDirect | GS30 | mapped | [automationdirect/gs30/status.omb.yaml](../devices/automationdirect/gs30/status.omb.yaml) | 12 | Identical status map to the GS20. |
 | AutomationDirect | GS4 | mapped | [automationdirect/gs4/status.omb.yaml](../devices/automationdirect/gs4/status.omb.yaml) | 9 | 2100h error code is an enum of 71 codes parsed from the two-column list (reserved codes skipped). |
 | Danfoss | FC 51 | mapped | [danfoss/fc-51/status.omb.yaml](../devices/danfoss/fc-51/status.omb.yaml) | 10 | Status word (FC profile), power, motor voltage, frequency, motor current, DC link voltage (the manual states no unit), alarm word and warning word (flags), running hours and kWh counter. |
-| Danfoss | FC 301 | needs-check |  |  | Address base ambiguous in the Design Guide; |
-| Danfoss | FC 302 | needs-check |  |  | Address base ambiguous in the Design Guide; |
+| Danfoss | FC 301 | needs-check |  |  | The FC 301/302 Programming Guide (AU275636650261en, 2022.12, software 9.12 and 48.9X) is located but not mapped: the address base stays open as in c08-danfoss-fc300-address-base. |
+| Danfoss | FC 302 | needs-check |  |  | The FC 301/302 Programming Guide (AU275636650261en, 2022.12, software 9.12 and 48.9X) is located but not mapped: the address base stays open as in c08-danfoss-fc300-address-base. |
 | Rockwell Automation | PowerFlex 4 | blocked |  |  | Source blocked (HTTP 403); |
 | Rockwell Automation | PowerFlex 40 | blocked |  |  | Source blocked (HTTP 403); |
 | Rockwell Automation | PowerFlex 400 | blocked |  |  | Source blocked (HTTP 403); |
@@ -220,6 +221,62 @@ A model is **mapped** when a contract generated from a checksum-pinned public ve
 
 ## Outside the target roster
 
-| Vendor | Model | Class | Contract | Points | Notes |
-|---|---|---|---|---|---|
-| Victron Energy | Cerbo GX (GX system service) | 4 | [victron/cerbo-gx/system.omb.yaml](../devices/victron/cerbo-gx/system.omb.yaml) | 4 | Pilot contract from the pinned dbus_modbustcp attributes.csv; |
+Models that are not among the 150 roster targets, mapped from the same kind of pinned public vendor sources.
+
+| Class | Vendor | Model | Status | Contract | Points | Notes |
+|---|---|---|---|---|---|---|
+| 4 | Victron Energy | Cerbo GX (GX system service) | mapped | [victron/cerbo-gx/system.omb.yaml](../devices/victron/cerbo-gx/system.omb.yaml) | 4 | Pilot contract from the pinned dbus_modbustcp attributes.csv; |
+| 1 | ABB | A43 | mapped | [abb/a43/telemetry.omb.yaml](../devices/abb/a43/telemetry.omb.yaml) | 20 | Direct-connected meter. |
+| 1 | ABB | A44 | mapped | [abb/a44/telemetry.omb.yaml](../devices/abb/a44/telemetry.omb.yaml) | 20 | Transformer-connected meter. |
+| 1 | Carlo Gavazzi | EM111 | mapped | [carlo-gavazzi/em111/telemetry.omb.yaml](../devices/carlo-gavazzi/em111/telemetry.omb.yaml) | 15 | Table 2.4-1 (p.8) plus version and revision code (p.11). |
+| 1 | Carlo Gavazzi | EM112 | mapped | [carlo-gavazzi/em112/telemetry.omb.yaml](../devices/carlo-gavazzi/em112/telemetry.omb.yaml) | 15 | Same points as the EM111; |
+| 1 | Carlo Gavazzi | EM210 | mapped | [carlo-gavazzi/em210/telemetry.omb.yaml](../devices/carlo-gavazzi/em210/telemetry.omb.yaml) | 19 | Table 2.3-1 (p.8, grouped by variable type) plus version, revision, programming lock and identification code (p.10, each 'limited to a word at a time'). |
+| 1 | Carlo Gavazzi | EM24-DIN | mapped | [carlo-gavazzi/em24-din/telemetry.omb.yaml](../devices/carlo-gavazzi/em24-din/telemetry.omb.yaml) | 19 | Table 2.3-1 (p.8) plus digital input status (flags), current tariff, front selector status and identification code (p.8-9, each 'limited to a word at a time'). |
+| 1 | Carlo Gavazzi | EM24-IS | mapped | [carlo-gavazzi/em24-is/telemetry.omb.yaml](../devices/carlo-gavazzi/em24-is/telemetry.omb.yaml) | 20 | SFA and SFB versions only. |
+| 1 | Carlo Gavazzi | EM330 | mapped | [carlo-gavazzi/em330/telemetry.omb.yaml](../devices/carlo-gavazzi/em330/telemetry.omb.yaml) | 19 | Table 2.4-1 (p.9-10, grouped by variable type), version and revision code (p.13), identification code with the model's codes from Table 2.8-2 (p.14, one word at a time). |
+| 1 | Carlo Gavazzi | EM340 | mapped | [carlo-gavazzi/em340/telemetry.omb.yaml](../devices/carlo-gavazzi/em340/telemetry.omb.yaml) | 18 | As the EM330 contract without the neutral current (p.10: 'only ET series and EM330 (other cases: value =0)'). |
+| 1 | Carlo Gavazzi | ET330 | mapped | [carlo-gavazzi/et330/telemetry.omb.yaml](../devices/carlo-gavazzi/et330/telemetry.omb.yaml) | 19 | Table 2.4-1 (p.9-10, grouped by variable type), version and revision code (p.13), identification code with the model's codes from Table 2.8-2 (p.14, one word at a time). |
+| 1 | Carlo Gavazzi | ET340 | mapped | [carlo-gavazzi/et340/telemetry.omb.yaml](../devices/carlo-gavazzi/et340/telemetry.omb.yaml) | 19 | Table 2.4-1 (p.9-10, grouped by variable type), version and revision code (p.13), identification code with the model's codes from Table 2.8-2 (p.14, one word at a time). |
+| 1 | Eastron | SDM120CT-M | mapped | [eastron/sdm120ct-m/telemetry.omb.yaml](../devices/eastron/sdm120ct-m/telemetry.omb.yaml) | 14 | Input registers whose row is on one line (p.5-6). |
+| 1 | Eastron | SDM630MCT | blocked |  |  | See work item p-gavazzi-eastron-sdm630mct-scan. |
+| 1 | Eastron | SDM72D-M | needs-check |  |  | Two reasons, see work items p-gavazzi-eastron-sdm72d-register-order and p-gavazzi-eastron-sdm72d-scope. |
+| 1 | Fronius | Smart Meter | mapped | [fronius/smart-meter/telemetry.omb.yaml](../devices/fronius/smart-meter/telemetry.omb.yaml) | 14 | Mapped from the int+SF workbook of the same archive, not from the float workbook: every measurement of the float meter model is a float32 and no Fronius document states the register order of 32-bit values (c04-fronius-word-order, p-fronius-float-word-order). |
+| 1 | Janitza electronics | UMG 103-CBM | needs-check |  |  | Rule 4: the address base is neither stated nor forced. |
+| 2 | Janitza electronics | UMG 509-PRO | mapped | [janitza/umg-509-pro/telemetry.omb.yaml](../devices/janitza/umg-509-pro/telemetry.omb.yaml) | 20 | 13 rows of the 19000 block, total import and export energy from the Energy section (13995, 14007), system time (int), a digital input status (short enum), the event counter (uint), the differential-current alarm status (short with bits 0-3) and PF total (19636). |
+| 2 | Janitza electronics | UMG 604-PRO | mapped | [janitza/umg-604-pro/telemetry.omb.yaml](../devices/janitza/umg-604-pro/telemetry.omb.yaml) | 20 | Firmware 5.030 or later. |
+| 2 | Janitza electronics | UMG 96-PA | mapped | [janitza/umg-96-pa/telemetry.omb.yaml](../devices/janitza/umg-96-pa/telemetry.omb.yaml) | 20 | Firmware 3.54 or later. |
+| 2 | Klemsan | KLEA 320P | blocked |  |  | No Klemsan-owned host serves the manual without the Cloudflare challenge; |
+| 2 | Klemsan | KLEA 4 | blocked |  |  | No Klemsan-owned host serves the manual without the Cloudflare challenge; |
+| 2 | Klemsan | KLEA 6 | blocked |  |  | No Klemsan-owned host serves the manual without the Cloudflare challenge; |
+| 2 | Lovato Electric | DMG110 | mapped | [lovato-electric/dmg110/telemetry.omb.yaml](../devices/lovato-electric/dmg110/telemetry.omb.yaml) | 16 | Phase voltages and currents, L1-L2 voltage, frequency (Hz/1000), equivalent P/Q/S (W/100), equivalent PF, THD of L1 voltage and current, total hour meter and the phase-sequence status at 20F0H (enum). |
+| 2 | Lovato Electric | DMG210 | mapped | [lovato-electric/dmg210/telemetry.omb.yaml](../devices/lovato-electric/dmg210/telemetry.omb.yaml) | 18 | As the DMG110, with frequency in Hz/100 (the unit cell reads "Hz/1000" and "Hz/100 DMG210"), the 2-word import and export energy counters at 1A20H and 1A22H (roll over above 19 999 999.99 kWh) and the phase-sequence status at 2074H. |
+| 2 | Lovato Electric | DMG800 | mapped | [lovato-electric/dmg800/telemetry.omb.yaml](../devices/lovato-electric/dmg800/telemetry.omb.yaml) | 17 | Phase voltages and currents, L1-L2 voltage, frequency (Hz/1000), equivalent PF, THD, the 2-word energy counters, total hour meter, input 1, alarm 1 (bit 0 latched, bit 1 active, from the note on PDF p.15) and the clock year. |
+| 2 | Schneider Electric | EM6400NG | needs-check |  |  | The list names the model: column E 'EM6400 NG', and 'Meter Model' (register 50) default 'EM6400NG'. |
+| 2 | Schneider Electric | ION7400 | needs-check |  |  | Blocked only by the address base (p-schneider-ion-altivar-ion-address-base). |
+| 2 | Schneider Electric | ION9000 | needs-check |  |  | Same as ION7400; blocked only by p-schneider-ion-altivar-ion-address-base. |
+| 2 | Schneider Electric | PM2130 | needs-check |  |  | PM2100-series model the list names (column G). |
+| 2 | Schneider Electric | PM2230 | needs-check |  |  | PM2200-series model the list names (column I). |
+| 2 | Schneider Electric | PM3250 | mapped | [schneider-electric/pm3250/status.omb.yaml](../devices/schneider-electric/pm3250/status.omb.yaml) | 13 | Partial contract: single-register UInt16 rows (firmware and language version, clock bit fields, demand method and interval, active tariff, serial settings). |
+| 2 | Schneider Electric | PM3255 | mapped | [schneider-electric/pm3255/status.omb.yaml](../devices/schneider-electric/pm3255/status.omb.yaml) | 16 | As PM3250 plus the rows the manual marks for the PM3255 only: energy pulse duration, digital input 1 control mode, digital output 1 control mode. |
+| 2 | Schneider Electric | PM8000 | needs-check |  |  | Same as ION7400; blocked only by p-schneider-ion-altivar-ion-address-base. |
+| 2 | Siemens | SENTRON PAC2200CLP | needs-check |  |  | Same as the PAC2200 (p-siemens-pac2200-conventions). |
+| 2 | Siemens | SENTRON PAC3200 | mapped | [siemens/pac3200/telemetry.omb.yaml](../devices/siemens/pac3200/telemetry.omb.yaml) | 19 | Rule 2, evidence checked by the extractor. |
+| 2 | Siemens | SENTRON PAC4200 | mapped | [siemens/pac4200/telemetry.omb.yaml](../devices/siemens/pac4200/telemetry.omb.yaml) | 19 | Rule 2 through the named companion manual, whose frames were captured from a PAC3200 (p-siemens-pac-rs485-frames). |
+| 3 | Fronius | Primo GEN24 | mapped | [fronius/primo-gen24/inverter.omb.yaml](../devices/fronius/primo-gen24/inverter.omb.yaml) | 17 | ROW map for a GEN24 without battery (2 MPPT modules, End Block at address 40303 as the manual states). |
+| 3 | Fronius | Primo GEN24 Plus | mapped | [fronius/primo-gen24-plus/inverter.omb.yaml](../devices/fronius/primo-gen24-plus/inverter.omb.yaml) | 20 | ROW map with a battery configured (MPPT modules 3 and 4 are the battery ports, storage model 124 at address 40343 as the manual states). |
+| 3 | Fronius | Symo GEN24 | mapped | [fronius/symo-gen24/inverter.omb.yaml](../devices/fronius/symo-gen24/inverter.omb.yaml) | 17 | ROW map for a GEN24 without battery (2 MPPT modules, End Block at address 40303 as the manual states). |
+| 3 | Fronius | Symo GEN24 Plus | mapped | [fronius/symo-gen24-plus/inverter.omb.yaml](../devices/fronius/symo-gen24-plus/inverter.omb.yaml) | 20 | ROW map with a battery configured (MPPT modules 3 and 4 are the battery ports, storage model 124 at address 40343 as the manual states). |
+| 3 | Fronius | Tauro | mapped | [fronius/tauro/inverter.omb.yaml](../devices/fronius/tauro/inverter.omb.yaml) | 17 | 3 MPPT modules. Mapped from the int+SF workbook of the same archive, not from the float workbook: every measurement of the float inverter model is a float32 and no Fronius document states the register order of 32-bit values (c04-fronius-word-order, p-fronius-float-word-order). |
+| 3 | Fronius | Tauro ECO | mapped | [fronius/tauro-eco/inverter.omb.yaml](../devices/fronius/tauro-eco/inverter.omb.yaml) | 17 | 1 MPPT module; unlike the other series the inverter model's DCA and DCV are supported here (not selected, to keep one selection for all series). |
+| 3 | Fronius | Verto (3 MPPT) | mapped | [fronius/verto-3-mppt/inverter.omb.yaml](../devices/fronius/verto-3-mppt/inverter.omb.yaml) | 17 | 3 MPPT modules. Mapped from the int+SF workbook of the same archive, not from the float workbook: every measurement of the float inverter model is a float32 and no Fronius document states the register order of 32-bit values (c04-fronius-word-order, p-fronius-float-word-order). |
+| 3 | Fronius | Verto (4 MPPT) | mapped | [fronius/verto-4-mppt/inverter.omb.yaml](../devices/fronius/verto-4-mppt/inverter.omb.yaml) | 17 | 4 MPPT modules; the selected points are at the same addresses as in the 3 MPPT map (the fourth module only moves the End Block from 40323 to 40343). |
+| 3 | Fronius | Verto Plus | mapped | [fronius/verto-plus/inverter.omb.yaml](../devices/fronius/verto-plus/inverter.omb.yaml) | 20 | 3 MPPT modules plus battery modules 4 (StCha) and 5 (StDisCha); |
+| 3 | SMA | STP5.0-3SE-40 | blocked |  |  | Not mapped: the conventions of the SMA Modbus profile (address base, byte order, NaN values, FIXn decimals) are stated only in SMA's technical information SMA-Modbus-general-TI-en-10, whose legal provisions require SMA's prior written approval for any publication, whole or in part. |
+| 3 | SolarEdge | SolarEdge meter via inverter | blocked |  |  | See c03-solaredge-cloudflare. |
+| 8 | Danfoss | FC 102 | mapped | [danfoss/fc-102/status.omb.yaml](../devices/danfoss/fc-102/status.omb.yaml) | 5 | Built-in RS-485 Modbus RTU only (8-30 = Modbus RTU). |
+| 8 | Danfoss | FC 202 | needs-check |  |  | Programming Guide software 5.4X admitted as a source candidate, not mapped: the FC 202 Design Guide (MG20N602, 2014) states (10 x parameter number) and that holding register 40001 is addressed as register 0000, but has no request example, so whether "holding register 3120" is the PDU address or a register number stays open (p-danfoss-sma-solaredge-fc202-address-base). |
+| 8 | Schneider Electric | ATV61 | mapped | [schneider-electric/atv61/status.omb.yaml](../devices/schneider-electric/atv61/status.omb.yaml) | 12 | ETA (CiA402 flags, at 3201), HMIS (24 values), LFT (76 values), RFR, RFRD, LCR (0.1 A from the manual), UOP, OPR, ULN, THD, THR and the 32-bit CiA402 setting SPAL (low word first, read-only here although R/W). |
+| 8 | Schneider Electric | ATV71 | mapped | [schneider-electric/atv71/status.omb.yaml](../devices/schneider-electric/atv71/status.omb.yaml) | 12 | Same point set as ATV61: HMIS 23 values, LFT 75 values. |
+| 8 | Schneider Electric | ATV930 | mapped | [schneider-electric/atv930/status.omb.yaml](../devices/schneider-electric/atv930/status.omb.yaml) | 16 | Same point set as ATV340 and ATV630: ETA, HMIS (38 values), LFT, RFR, RFRD, OTR, UOP, OPR, ULN, THD, VBUS and IC0 to IC4 (R/WS, read-only here). |
+| 8 | Siemens | SINAMICS G120C | mapped | [siemens/sinamics-g120c/status.omb.yaml](../devices/siemens/sinamics-g120c/status.omb.yaml) | 18 | G120C USS/MB variant, firmware V4.7 SP13. |
+| 8 | Siemens | SINAMICS V20 | mapped | [siemens/sinamics-v20/status.omb.yaml](../devices/siemens/sinamics-v20/status.omb.yaml) | 19 | Base forced by the two register columns (rule 3), scaling direction stated ("Parameter scaling", PDF p.181), signedness from the documented ranges (p-siemens-v20-conventions). |

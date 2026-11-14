@@ -1,0 +1,397 @@
+openmodbus: 0.1.0
+info:
+  id: abb/acs880/status
+  title: ABB ACS880 drive status and actual values (embedded fieldbus)
+  version: 0.1.0
+  description: 'Read-only subset of the embedded fieldbus interface (EFB, Modbus RTU)
+    of the ACS880 primary control program for BCU and ZCU control units (loading package
+    AINL, firmware 3.47 or later on BCU and 3.48 or later on ZCU). The points hold
+    for the EFB defaults: 58.25 Control profile = ABB Drives, 58.33 Addressing mode
+    = Mode 0, 58.34 Word order = LO-HI, and Data I/O 4 and 5 (58.104, 58.105) unchanged.
+    The manual writes holding registers as the 6-digit numbers 400001 to 465536 for
+    a 16-bit address field, which puts 400001 at address 0; that base follows from
+    the manual''s ranges and is not spelled out in it. Parameters are read at 400000
+    + 100 x group + index (16-bit) or 420000 + 200 x group + 2 x index (32-bit, low-order
+    register first). The manual does not state how negative values of real32 parameters
+    are encoded, so only parameters with a stated integer type or a range that starts
+    at zero are included: speed, frequency, torque and power are the absolute-value
+    parameters 01.61 to 01.66.
+
+    '
+  attribution: Derived from ABB's ACS880 primary control program firmware manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: abb-acs880-firmware-manual
+device:
+  manufacturer: ABB
+  model: ACS880
+  classes:
+  - drive
+  transports:
+  - type: rtu
+    notes: Embedded fieldbus interface, enabled with parameter 58.01 Protocol enable
+      = Modbus RTU.
+  unitId:
+    mode: configurable
+    default: 1
+    notes: Parameter 58.03 Node address.
+  documentation:
+  - title: ACS880 primary control program for ZCU or BCU control unit (AINL) firmware
+      manual
+    url: https://search.abb.com/library/Download.aspx?DocumentID=3AUA0000085967&LanguageCode=en&DocumentPartId=1&Action=Launch
+    revision: 3AUA0000085967 Rev Z (effective 2026-11-10)
+defaults:
+  table: holding_register
+  access: r
+  byteOrder: big
+points:
+- id: status_word
+  address: 3
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: rdy_on
+      label: RDY_ON
+      description: '1: READY TO SWITCH ON; 0: NOT READY TO SWITCH ON'
+    - bit: 1
+      name: rdy_run
+      label: RDY_RUN
+      description: '1: READY TO OPERATE; 0: OFF1 ACTIVE'
+    - bit: 2
+      name: rdy_ref
+      label: RDY_REF
+      description: '1: OPERATION ENABLED; 0: OPERATION INHIBITED'
+    - bit: 3
+      name: tripped
+      label: TRIPPED
+      description: '1: FAULT; 0: No fault'
+    - bit: 4
+      name: off_2_sta
+      label: OFF_2_STA
+      description: '1: OFF2 inactive; 0: OFF2 ACTIVE'
+    - bit: 5
+      name: off_3_sta
+      label: OFF_3_STA
+      description: '1: OFF3 inactive; 0: OFF3 ACTIVE'
+    - bit: 6
+      name: swc_on_inhib
+      label: SWC_ON_INHIB
+      description: '1: SWITCH-ON INHIBITED'
+    - bit: 7
+      name: alarm
+      label: ALARM
+      description: '1: Warning/Alarm; 0: No warning/alarm'
+    - bit: 8
+      name: at_setpoint
+      label: AT_SETPOINT
+      description: '1: OPERATION. Actual value equals reference (= is within tolerance
+        limits, that is, in speed control, speed error is 10% max. of nominal motor
+        speed); 0: Actual value differs from reference (= is outside tolerance limits)'
+    - bit: 9
+      name: remote
+      label: REMOTE
+      description: '1: Drive control location: REMOTE (EXT1 or EXT2); 0: Drive control
+        location: LOCAL'
+    - bit: 10
+      name: above_limit
+      label: ABOVE_LIMIT
+      description: '1: The actual drive output frequency or motor speed equals or
+        exceeds the supervision limit (set by drive parameter). Valid in both directions
+        of rotation. User can select the drive status information that this bit indicates
+        (parameter 06.29). The default value is "Above limit"; 0: Actual frequency
+        or speed within supervision limit'
+  description: Status word of the ABB Drives profile, the default of 58.25 Control
+    profile and of 58.104 Data I/O 4. Bits 0 to 10 are listed.
+  aliases:
+  - Status Word (SW)
+  source:
+    address: '400004'
+    page: 668
+    reference: Modbus holding register addresses; Status word
+- id: actual_value_1
+  address: 4
+  type: i16
+  description: 'Raw fieldbus actual value 1, a signed integer. Its type and scaling
+    follow 58.28 EFB act1 type: for speed and frequency, 20000 stands for the value
+    of 46.01 Speed scaling or 46.02 Frequency scaling.'
+  aliases:
+  - Actual value 1 (ACT1)
+  source:
+    address: '400005'
+    page: 668
+    reference: Modbus holding register addresses
+- id: efb_error_code
+  address: 91
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: no_error
+      label: No error
+    - value: 2
+      name: low_high_limit_exceeded
+      label: Low/High limit exceeded
+    - value: 3
+      name: faulty_index
+      label: Faulty Index
+      description: Unavailable index of an array parameter
+    - value: 5
+      name: incorrect_data_type
+      label: Incorrect Data Type
+      description: Value does not match the data type of the parameter
+    - value: 101
+      name: general_error
+      label: General Error
+      description: Undefined error when handling query
+  description: Error of the last Modbus query that the drive answered with exception
+    code 04h; cleared when a query succeeds.
+  aliases:
+  - Error Code
+  source:
+    address: '92'
+    page: 674
+    reference: Error code registers (holding registers 400090…400100)
+- id: motoring_energy_gwh
+  address: 117
+  type: i16
+  unit: GW.h
+  aliases:
+  - 01.18 Inverter GWh motoring
+  source:
+    address: '400118'
+    page: 141
+    reference: 01.18 Inverter GWh motoring, 16-bit value (FbEq16), 58.33 Mode 0
+- id: motoring_energy_mwh
+  address: 118
+  type: i16
+  unit: MW.h
+  aliases:
+  - 01.19 Inverter MWh motoring
+  source:
+    address: '400119'
+    page: 141
+    reference: 01.19 Inverter MWh motoring, 16-bit value (FbEq16), 58.33 Mode 0
+- id: motoring_energy_kwh
+  address: 119
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: kW.h
+  aliases:
+  - 01.20 Inverter kWh motoring
+  source:
+    address: '400120'
+    page: 141
+    reference: 01.20 Inverter kWh motoring, 16-bit value (FbEq16), 58.33 Mode 0
+- id: tripping_fault
+  address: 400
+  type: u16
+  description: Code of the first active fault, the one that caused the trip.
+  aliases:
+  - 04.01 Tripping fault
+  source:
+    address: '400401'
+    page: 149
+    reference: 04.01 Tripping fault, 16-bit value (FbEq16), 58.33 Mode 0
+- id: on_time_counter
+  address: 500
+  type: u16
+  unit: d
+  aliases:
+  - 05.01 On-time counter
+  source:
+    address: '400501'
+    page: 162
+    reference: 05.01 On-time counter, 16-bit value (FbEq16), 58.33 Mode 0
+- id: drive_status_word_1
+  address: 615
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: enabled
+      label: Enabled
+    - bit: 1
+      name: inhibited
+      label: Inhibited
+    - bit: 2
+      name: dc_charged
+      label: DC charged
+    - bit: 3
+      name: ready_to_start
+      label: Ready to start
+    - bit: 4
+      name: following_reference
+      label: Following reference
+    - bit: 5
+      name: started
+      label: Started
+    - bit: 6
+      name: modulating
+      label: Modulating
+    - bit: 7
+      name: limiting
+      label: Limiting
+    - bit: 8
+      name: local_control
+      label: Local control
+    - bit: 9
+      name: network_control
+      label: Network control
+    - bit: 10
+      name: ext1_active
+      label: Ext1 active
+    - bit: 11
+      name: ext2_active
+      label: Ext2 active
+    - bit: 13
+      name: start_request
+      label: Start request
+  aliases:
+  - 06.16 Drive status word 1
+  source:
+    address: '400616'
+    page: 165
+    reference: 06.16 Drive status word 1, 16-bit value, 58.33 Mode 0
+- id: word_order
+  address: 5833
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: hi_lo
+      label: HI-LO
+      description: The first register contains the high order word, the second contains
+        the low order word.
+    - value: 1
+      name: lo_hi
+      label: LO-HI
+      description: The first register contains the low order word, the second contains
+        the high order word.
+  description: Register order of 32-bit parameter values. The 32-bit points here assume
+    LO-HI, the default.
+  aliases:
+  - 58.34 Word order
+  source:
+    address: '405834'
+    page: 472
+    reference: 58.34 Word order, 16-bit value, 58.33 Mode 0
+- id: motor_current
+  address: 20213
+  type: u32
+  wordOrder: little
+  conversion:
+    exponent10: -2
+  unit: A
+  aliases:
+  - 01.07 Motor current
+  source:
+    address: '420214'
+    page: 140
+    reference: 01.07 Motor current, 32-bit value (FbEq32), 58.33 Mode 0
+- id: dc_voltage
+  address: 20221
+  type: u32
+  wordOrder: little
+  conversion:
+    exponent10: -2
+  unit: V
+  aliases:
+  - 01.11 DC voltage
+  source:
+    address: '420222'
+    page: 141
+    reference: 01.11 DC voltage, 32-bit value (FbEq32), 58.33 Mode 0
+- id: output_voltage
+  address: 20225
+  type: u32
+  wordOrder: little
+  unit: V
+  aliases:
+  - 01.13 Output voltage
+  source:
+    address: '420226'
+    page: 141
+    reference: 01.13 Output voltage, 32-bit value (FbEq32), 58.33 Mode 0
+- id: abs_motor_speed
+  address: 20321
+  type: u32
+  wordOrder: little
+  conversion:
+    exponent10: -2
+  unit: /min
+  aliases:
+  - 01.61 Abs motor speed used
+  source:
+    address: '420322'
+    page: 143
+    reference: 01.61 Abs motor speed used, 32-bit value (FbEq32), 58.33 Mode 0
+- id: abs_output_frequency
+  address: 20325
+  type: u32
+  wordOrder: little
+  conversion:
+    exponent10: -2
+  unit: Hz
+  aliases:
+  - 01.63 Abs output frequency
+  source:
+    address: '420326'
+    page: 143
+    reference: 01.63 Abs output frequency, 32-bit value (FbEq32), 58.33 Mode 0
+- id: abs_motor_torque
+  address: 20327
+  type: u32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: '%'
+  aliases:
+  - 01.64 Abs motor torque
+  source:
+    address: '420328'
+    page: 143
+    reference: 01.64 Abs motor torque, 32-bit value (FbEq32), 58.33 Mode 0
+- id: abs_output_power_percent
+  address: 20331
+  type: u32
+  wordOrder: little
+  conversion:
+    exponent10: -2
+  unit: '%'
+  aliases:
+  - 01.66 Abs output power % motor nom
+  source:
+    address: '420332'
+    page: 144
+    reference: 01.66 Abs output power % motor nom, 32-bit value (FbEq32), 58.33 Mode
+      0
+- id: speed_scaling
+  address: 29201
+  type: u32
+  wordOrder: little
+  conversion:
+    exponent10: -2
+  unit: /min
+  description: The speed that the value 20000 stands for in 16-bit fieldbus values.
+  aliases:
+  - 46.01 Speed scaling
+  source:
+    address: '429202'
+    page: 434
+    reference: 46.01 Speed scaling, 32-bit value (FbEq32), 58.33 Mode 0
+- id: frequency_scaling
+  address: 29203
+  type: u32
+  wordOrder: little
+  conversion:
+    exponent10: -2
+  unit: Hz
+  description: The frequency that the value 20000 stands for in 16-bit fieldbus values.
+  aliases:
+  - 46.02 Frequency scaling
+  source:
+    address: '429204'
+    page: 434
+    reference: 46.02 Frequency scaling, 32-bit value (FbEq32), 58.33 Mode 0

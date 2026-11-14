@@ -1,0 +1,242 @@
+openmodbus: 0.1.0
+info:
+  id: fronius/smart-meter/telemetry
+  title: Fronius Smart Meter telemetry served by a GEN24 inverter (int+SF)
+  version: 0.1.0
+  description: 'Read-only subset of the SunSpec meter map that a Fronius GEN24 inverter
+    serves for a Fronius Smart Meter connected to it when the inverter''s Modbus setting
+    "SunSpec Model Type" is int + SF (meter model 201 to 204; map from the bundle
+    1.2.7-2 for GEN24 software 1.36.x). The default setting is float, with a different
+    register layout; the float map is not mapped because neither it nor the operating
+    instructions state the register order of 32-bit values, which also leaves out
+    the energy counters here. The operating instructions state that register addresses
+    depend on the composition of the SunSpec model chain: check that register number
+    40003 holds 1 and that meter_model (register number 40070) holds a meter model
+    ID before relying on these addresses. The map lists 1-based register numbers;
+    the operating instructions state that the address is the register number minus
+    1 and list the values returned for unavailable data. The sign of the power values
+    depends on the meter location set on the inverter (operating instructions, Meter
+    Model). Scale factors can change at runtime.'
+  attribution: Derived from Fronius's GEN24 Plus Modbus SunSpec Maps.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: fronius-gen24-modbus
+device:
+  manufacturer: Fronius
+  model: Smart Meter
+  classes:
+  - energy_meter
+  transports:
+  - type: tcp
+    notes: Served by the inverter the meter is connected to.
+  - type: rtu
+    notes: Served by the inverter the meter is connected to.
+  unitId:
+    mode: configurable
+    default: 200
+    notes: 'Set as "Meter address offset" in the inverter''s Modbus settings (factory
+      setting 200): the Smart Meter with address 1 is device ID 200, address 2 is
+      201, and so on.'
+  documentation:
+  - title: GEN24 Plus Modbus SunSpec Maps
+    url: https://www.fronius.com/de/~/downloads/Solar%20Energy/Operating%20Instructions/gen24-modbus-api-external-docs.zip
+    revision: 1.2.7-2
+  - title: Fronius GEN24 - Modbus TCP and RTU Operating instructions
+    url: https://manuals.fronius.com/html/4204102649/en-US.html
+    revision: 034-28092026
+defaults:
+  table: holding_register
+  access: r
+points:
+- id: model
+  address: 40020
+  type: string
+  registers: 16
+  description: Smart Meter Model
+  aliases:
+  - Md
+  source:
+    address: '40021'
+    reference: Smart_Meter_Register_Map_Int&SF.xlsx Complete Map!A10 (common (1))
+- id: meter_model
+  address: 40069
+  type: u16
+  enum:
+    values:
+    - value: 201
+      name: single_phase
+      label: Single Phase (AN or AB)
+    - value: 202
+      name: split_single_phase
+      label: Split Single Phase (ABN)
+    - value: 203
+      name: wye_connect_three_phase
+      label: WYE-Connect Three Phase (ABCN)
+    - value: 204
+      name: delta_connect_three_phase
+      label: Delta-Connect Three Phase (ABC)
+  invalid:
+  - 65535
+  description: Well-known value. Uniquely identifies this as a sunspec model ac_meter
+    (20x)
+  aliases:
+  - ID
+  source:
+    address: '40070'
+    reference: Smart_Meter_Register_Map_Int&SF.xlsx Complete Map!A17 (ac_meter (20x))
+- id: current_total
+  address: 40071
+  type: i16
+  unit: A
+  conversion:
+    exponent10:
+      point: a_sf
+  invalid:
+  - -32768
+  description: Total AC Current
+  aliases:
+  - A
+  source:
+    address: '40072'
+    reference: Smart_Meter_Register_Map_Int&SF.xlsx Complete Map!A19 (ac_meter (20x))
+- id: a_sf
+  address: 40075
+  type: i16
+  invalid:
+  - -32768
+  description: Current scale factor. auto-scaled on A, AphA, AphB and AphC
+  aliases:
+  - A_SF
+  source:
+    address: '40076'
+    reference: Smart_Meter_Register_Map_Int&SF.xlsx Complete Map!A23 (ac_meter (20x))
+- id: voltage_l1_n
+  address: 40077
+  type: i16
+  unit: V
+  conversion:
+    exponent10:
+      point: v_sf
+  invalid:
+  - -32768
+  description: Phase Voltage AN
+  aliases:
+  - PhVphA
+  source:
+    address: '40078'
+    reference: Smart_Meter_Register_Map_Int&SF.xlsx Complete Map!A25 (ac_meter (20x))
+- id: v_sf
+  address: 40084
+  type: i16
+  invalid:
+  - -32768
+  description: Voltage scale factor
+  aliases:
+  - V_SF
+  source:
+    address: '40085'
+    reference: Smart_Meter_Register_Map_Int&SF.xlsx Complete Map!A32 (ac_meter (20x))
+- id: frequency
+  address: 40085
+  type: i16
+  unit: Hz
+  conversion:
+    exponent10:
+      point: hz_sf
+  invalid:
+  - -32768
+  description: Frequency
+  aliases:
+  - Hz
+  source:
+    address: '40086'
+    reference: Smart_Meter_Register_Map_Int&SF.xlsx Complete Map!A33 (ac_meter (20x))
+- id: hz_sf
+  address: 40086
+  type: i16
+  invalid:
+  - -32768
+  description: Frequency scale factor
+  aliases:
+  - Hz_SF
+  source:
+    address: '40087'
+    reference: Smart_Meter_Register_Map_Int&SF.xlsx Complete Map!A34 (ac_meter (20x))
+- id: active_power_total
+  address: 40087
+  type: i16
+  unit: W
+  conversion:
+    exponent10:
+      point: w_sf
+  invalid:
+  - -32768
+  description: Total Real Power
+  aliases:
+  - W
+  source:
+    address: '40088'
+    reference: Smart_Meter_Register_Map_Int&SF.xlsx Complete Map!A35 (ac_meter (20x))
+- id: w_sf
+  address: 40091
+  type: i16
+  invalid:
+  - -32768
+  description: Real Power scale factor. auto-scaled on W, WphA, WphB and WphC
+  aliases:
+  - W_SF
+  source:
+    address: '40092'
+    reference: Smart_Meter_Register_Map_Int&SF.xlsx Complete Map!A39 (ac_meter (20x))
+- id: apparent_power_total
+  address: 40092
+  type: i16
+  unit: V.A
+  conversion:
+    exponent10:
+      point: va_sf
+  invalid:
+  - -32768
+  description: AC Apparent Power
+  aliases:
+  - VA
+  source:
+    address: '40093'
+    reference: Smart_Meter_Register_Map_Int&SF.xlsx Complete Map!A40 (ac_meter (20x))
+- id: va_sf
+  address: 40096
+  type: i16
+  invalid:
+  - -32768
+  description: Apparent Power scale factor. auto-scaled on VA, VAphA, VAphB and VAphC
+  aliases:
+  - VA_SF
+  source:
+    address: '40097'
+    reference: Smart_Meter_Register_Map_Int&SF.xlsx Complete Map!A44 (ac_meter (20x))
+- id: reactive_power_total
+  address: 40097
+  type: i16
+  conversion:
+    exponent10:
+      point: var_sf
+  invalid:
+  - -32768
+  description: 'Reactive Power. Vendor unit: var.'
+  aliases:
+  - VAR
+  source:
+    address: '40098'
+    reference: Smart_Meter_Register_Map_Int&SF.xlsx Complete Map!A45 (ac_meter (20x))
+- id: var_sf
+  address: 40101
+  type: i16
+  invalid:
+  - -32768
+  description: Reactive Power scale factor. auto-scaled on VAR, VARphA, VARphB and
+    VARphC
+  aliases:
+  - VAR_SF
+  source:
+    address: '40102'
+    reference: Smart_Meter_Register_Map_Int&SF.xlsx Complete Map!A49 (ac_meter (20x))

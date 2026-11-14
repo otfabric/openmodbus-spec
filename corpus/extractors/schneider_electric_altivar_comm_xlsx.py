@@ -1,12 +1,15 @@
 """Schneider Electric Altivar communication-parameter workbooks (XLSX): status and actual values.
 
-The selector names the workbook: atv320 (NVE41316), atv340 (NVE61728) or atv600 (EAV64332).
+The selector names the workbook: atv320 (NVE41316), atv340 (NVE61728), atv600 (EAV64332) or atv900
+(NHA80944).
 Cells are read as cached values only. The "Logic address" column gives the address used in Modbus
 messaging, in hexadecimal and decimal (Instructions sheet); both forms must agree. The table comes from
 the drive's Modbus serial link manual, pinned as evidence: its list of supported Modbus functions has
 Read Holding Registers (3) as the only read function, and the manual names the workbook as a related
 document. The same request table gives the register limit per read. The ATV600 workbook names no drive
-model; the ATV600 programming manual, pinned as evidence, names the models and the workbook.
+model; the ATV600 programming manual, pinned as evidence, names the models and the workbook. The ATV900
+workbook names no drive model either; the ATV900 Modbus manual lists the programming manual of the drive
+under a title that names the models.
 """
 import re
 
@@ -16,15 +19,20 @@ WORKBOOKS = {
     "atv320": ("NVE41316", "V3.5", "ATV320 - Communication Parameters"),
     "atv340": ("NVE61728", "v4.6", "ATV340 - Communication Parameters"),
     "atv600": ("EAV64332", "V4.6", "ATV600 - Communication Parameters"),
+    "atv900": ("NHA80944", "V4.6", "ATV900 - Communication Parameters"),
 }
 # selector: (evidence id, manual reference on the title page, manual title on the title page)
 MANUALS = {
     "atv320": ("schneider-electric-atv320-modbus-manual", "NVE41308", "Modbus Serial Link Manual"),
     "atv340": ("schneider-electric-atv340-modbus-manual", "NVE61654", "Modbus Serial Line Manual"),
     "atv600": ("schneider-electric-atv600-modbus-manual", "EAV64325", "Modbus Serial Link Manual (Embedded)"),
+    "atv900": ("schneider-electric-atv900-modbus-manual", "NHA80939", "Modbus SL Manual"),
 }
 # selector: (evidence id, manual reference, model the contract describes) where the workbook names no model
 SCOPE = {"atv600": ("schneider-electric-atv600-programming-manual", "EAV64318", "ATV630")}
+# selector: (programming manual reference, model the contract describes) where the Modbus manual's list of
+# the drive's user guides names the models in the title of the programming manual
+MANUAL_SCOPE = {"atv900": ("NHA80757", "ATV930")}
 FUNCTION_ROW = re.compile(r"^\s+(\S.*?)\s+(\d\d)\s+([0-9A-F]{2}) hex\s+(\S.*?)(?:\s{2,}|$)")
 HEADER = {"A": "Code", "B": "Name", "C": "Logic address", "F": "Link", "H": "Access", "I": "Type",
           "J": "Units", "L": "Range"}
@@ -62,6 +70,7 @@ SELECTED = {
     "atv320": {**COMMON, **CURRENT},
     "atv340": {**COMMON, **ENERGY},
     "atv600": {**COMMON, **ENERGY},
+    "atv900": {**COMMON, **ENERGY},
 }
 # ETA bits, CiA402 profile: bit -> (flag name, phrase the workbook text must contain)
 ETA_FLAGS = {
@@ -234,6 +243,13 @@ def read_function(evidence, selector):
     workbook = WORKBOOKS[selector][0]
     require(any(re.search(rf"Communication Parameters\s+{workbook}\b", page) for page in pages),
             f"Schneider {selector}: manual does not list workbook {workbook}")
+    if selector in MANUAL_SCOPE:
+        programming, model = MANUAL_SCOPE[selector]
+        titles = [match.group(1) for page in pages if re.search(rf"Communication Parameters\s+{workbook}\b", page)
+                  for match in re.finditer(rf"Altivar Process ((?:ATV\w+, )*ATV\w+) Programming(?: Manual)? "
+                                           rf"{programming} \(English\)", flat(page))]
+        require(titles and all(model in title.split(", ") for title in titles),
+                f"Schneider {selector}: manual does not list a programming manual {programming} for the {model}")
     tables = [function_table(page) for page in pages if "The drive supports the following Modbus functions:" in page]
     require(tables, f"Schneider {selector}: supported Modbus functions table missing")
     for rows in tables:
