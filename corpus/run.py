@@ -29,6 +29,9 @@ BIT_TABLES = ("coil", "discrete_input")
 REGISTER_TABLES = ("holding_register", "input_register")
 NOT_UCUM = {"kWh", "Wh", "MWh", "kVAh", "kvarh", "varh", "kVArh", "degC", "°C", "rpm", "RPM", "VA", "kVA",
             "var", "kvar", "VAr", "kVAr", "sec", "hrs", "W/m²", "Ω", "% RH", "%RH"}
+# Fields of a row dump, in output order. Values other than table and address are the document's own text.
+ROW_KEYS = ("table", "address", "vendor_address", "registers", "type", "label", "unit", "scale", "access",
+            "notes", "page", "reference")
 
 
 class ContractDumper(yaml.SafeDumper):
@@ -157,6 +160,7 @@ def load_extractor(name):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     require(callable(getattr(module, "extract", None)), f"{name}: no extract(data, selector) function")
+    require(not hasattr(module, "all_rows") or callable(module.all_rows), f"{name}: all_rows is not a function")
     return module
 
 
@@ -352,13 +356,55 @@ def check_manifest(manifest, lock):
     return errors
 
 
+def checked_rows(rows, where):
+    """The rows an extractor's all_rows() returned, each checked for the row-dump fields."""
+    require(isinstance(rows, list) and rows, f"{where}: all_rows() returned no list of rows")
+    for index, row in enumerate(rows):
+        ref = f"{where}: row {index}"
+        require(isinstance(row, dict) and row and set(row) <= set(ROW_KEYS), f"{ref}: unexpected fields")
+        require("label" in row or "vendor_address" in row, f"{ref}: needs a label or a vendor address")
+        for key, value in row.items():
+            require(type(value) in (str, int, float) or value is None, f"{ref}: {key} is not a scalar")
+        require(row.get("table", REGISTER_TABLES[0]) in BIT_TABLES + REGISTER_TABLES, f"{ref}: unknown table")
+        require("address" not in row or type(row["address"]) is int and 0 <= row["address"] <= 0xFFFF,
+                f"{ref}: address must be a protocol address from 0 to 65535")
+        require(all(type(row.get(key, 1)) is int and row.get(key, 1) >= 1 for key in ("registers", "page")),
+                f"{ref}: registers and page must be positive integers")
+    return rows
+
+
+def dump_rows(directory, source_id, contract, document, rows):
+    """Write every parsed row next to the contract's catalog path, under a directory outside the checkout.
+
+    A row with an address is marked selected when a contract point starts there in the same table (in
+    any register table when the row names none).
+    """
+    default = document.get("defaults", {}).get("table")
+    starts = {(point.get("table", default), point["address"]) for point in document["points"]}
+    dumped = []
+    for row in rows:
+        entry = {key: row[key] for key in ROW_KEYS if key in row}
+        if "address" in row:
+            tables = [row["table"]] if "table" in row else REGISTER_TABLES
+            entry["selected"] = any((table, row["address"]) in starts for table in tables)
+        dumped.append(entry)
+    relative = Path(contract["path"]).relative_to("devices")
+    path = directory / relative.parent / relative.name.replace(".omb.yaml", ".rows.yaml")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    header = {"source": source_id, "contract": document["info"]["id"], "selector": contract.get("selector"),
+              "count": len(dumped), "selected": sum(1 for entry in dumped if entry.get("selected"))}
+    path.write_text(yaml.dump({**header, "rows": dumped}, Dumper=ContractDumper, sort_keys=False,
+                              allow_unicode=True, width=120), encoding="utf-8")
+    return path
+
+
 def fetch_pinned(document, pin, cache, offline):
     require(re.fullmatch(r"[a-f0-9]{64}", pin["sha256"]), "Invalid SHA-256 in source lock")
     require(type(pin["size"]) is int and pin["size"] > 0, "Invalid byte size in source lock")
     return normalized(cached_source(document, pin, cache, offline), pin)
 
 
-def build_source(source_id, source, lock, cache, offline, validator, catalog, contract_ids):
+def build_source(source_id, source, lock, cache, offline, validator, catalog, contract_ids, rows_dir=None):
     devices = ROOT / "devices"
     extractor = load_extractor(source["extractor"])
     contracts = source.get("contracts")
@@ -380,29 +426,37 @@ def build_source(source_id, source, lock, cache, offline, validator, catalog, co
         document = build_contract(source_id, source, contract,
                                   extractor.extract(data, contract.get("selector"), **extra))
         verify_contract(validator, document, path.relative_to(ROOT))
+        if rows_dir and hasattr(extractor, "all_rows"):
+            rows = checked_rows(extractor.all_rows(data, contract.get("selector"), **extra),
+                                f"{source_id}: {contract['path']}")
+            written = dump_rows(rows_dir, source_id, contract, document, rows)
+            print(f"{source_id}: {len(rows)} rows of {contract['path']} in {written}")
         contract_id = document["info"]["id"]
         require(contract_id not in contract_ids, f"Duplicate catalog ID: {contract_id}")
         contract_ids.add(contract_id)
         catalog[path] = document
         built.append((path, document))
-    return built
+    return built, hasattr(extractor, "all_rows")
 
 
-def build_catalog(source_ids, sources, lock, cache, offline, write):
+def build_catalog(source_ids, sources, lock, cache, offline, write, rows_dir=None):
     validator = contract_validator()
     catalog = {}
     contract_ids = set()
     failures = []
+    without_rows = []
     for source_id in source_ids:
         try:
             require(source_id in lock, "Source has no lock entry")
-            built = build_source(source_id, sources[source_id], lock, cache, offline,
-                                 validator, catalog, contract_ids)
+            built, has_rows = build_source(source_id, sources[source_id], lock, cache, offline,
+                                           validator, catalog, contract_ids, rows_dir)
         except (CorpusError, OSError, KeyError, TypeError, ValueError, yaml.YAMLError,
                 subprocess.SubprocessError) as exc:
             failures.append(f"{source_id}: {type(exc).__name__}: {exc}")
             print(f"{source_id}: FAILED: {exc}", file=sys.stderr)
             continue
+        if not has_rows:
+            without_rows.append(source_id)
         for path, document in built:
             relative = path.relative_to(ROOT)
             if not write and not (path.is_file() and read_yaml(path) == document):
@@ -423,6 +477,8 @@ def build_catalog(source_ids, sources, lock, cache, offline, write):
                 temp.replace(path)
     print(f"Catalog {'built' if write else 'verified'}: {len(catalog)} contracts from "
           f"{len(source_ids) - len(failures)} of {len(source_ids)} sources")
+    if rows_dir and without_rows:
+        print(f"No row dump (extractor has no all_rows): {', '.join(without_rows)}")
     if failures:
         raise CorpusError("\n".join(["Failed sources:", *failures]))
 
@@ -437,6 +493,8 @@ def main():
     parser.add_argument("--offline", action="store_true")
     parser.add_argument("--write-catalog", action="store_true")
     parser.add_argument("--check-manifest", action="store_true", help="offline consistency check only")
+    parser.add_argument("--dump-rows", metavar="DIR", type=Path,
+                        help="also write every row the extractors parse, for cross-checks (outside the checkout)")
     args = parser.parse_args()
     manifest = read_yaml(args.manifest)
     lock = read_yaml(args.lock)
@@ -454,6 +512,9 @@ def main():
     if args.offline and not cache_dir:
         parser.error("--offline needs CORPUS_CACHE from a previous run")
     cache_context = nullcontext(cache_dir) if cache_dir else tempfile.TemporaryDirectory(prefix="openmodbus-")
+    rows_dir = args.dump_rows.expanduser().resolve() if args.dump_rows else None
+    if rows_dir and rows_dir.is_relative_to(ROOT):
+        parser.error("--dump-rows must name a directory outside the checkout")
     try:
         source_ids = select_sources(manifest, lock["sources"], args)
         if not source_ids:
@@ -461,7 +522,7 @@ def main():
             return
         with cache_context as cache:
             build_catalog(source_ids, manifest["sources"], lock["sources"], Path(cache),
-                          args.offline, args.write_catalog)
+                          args.offline, args.write_catalog, rows_dir)
     except (CorpusError, OSError, subprocess.SubprocessError) as exc:
         sys.exit(str(exc))
 

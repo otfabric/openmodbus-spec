@@ -47,7 +47,7 @@ jobs:
           CORPUS_CACHE: ${{ runner.temp }}/openmodbus-corpus
       - name: Rebuild changed sources offline and compare the catalog
         run: |
-          make corpus CORPUS_ARGS="--changed-from origin/$BASE_REF --offline"
+          make corpus CORPUS_ARGS="--changed-from origin/$BASE_REF --offline --dump-rows $RUNNER_TEMP/corpus-rows"
           if [ -n "$(git status --porcelain -- devices/)" ]; then
             git status --short -- devices/
             git diff -- devices/

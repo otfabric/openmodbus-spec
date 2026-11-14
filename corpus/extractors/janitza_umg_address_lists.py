@@ -303,8 +303,27 @@ def parse_flags(lines, expected, point_id):
     return {"flags": [{"bit": bit, "name": name, "label": text} for bit, (name, text) in sorted(expected.items())]}
 
 
+def pdf_list_rows(data, document):
+    """Every row of a PDF address list, and the number of table header lines.
+
+    A row is (page, address, format, access, designation, unit and note, the eight lines below it).
+    """
+    rows, headers = [], 0
+    for number, page in enumerate(pdf_pages(data, 12, pdf_page_count(data)), start=12):
+        lines = page.splitlines()
+        for index, line in enumerate(lines):
+            if re.match(document["header"], line.strip()):
+                headers += 1
+                continue
+            match = document["row"].match(line)
+            if match:
+                address, kind, access, designation, rest = match.groups()
+                rows.append((number, int(address), kind, access, designation, " ".join(rest.split()),
+                             lines[index + 1:index + 9]))
+    return rows, headers
+
+
 def extract_pdf_list(data, document, name, evidence):
-    count = pdf_page_count(data)
     pages = pdf_pages(data, 1, 12, layout=False)
     front = flat(" ".join(pages))
     for pattern in document["identity"]:
@@ -312,23 +331,14 @@ def extract_pdf_list(data, document, name, evidence):
     selected = document["rows"]
     check_statements(front, document["slave"], {kind for _, kind, _, _, _ in selected.values()}, name)
 
-    found, rule3, headers = {}, set(), 0
-    for number, page in enumerate(pdf_pages(data, 12, count), start=12):
-        lines = page.splitlines()
-        for index, line in enumerate(lines):
-            if re.match(document["header"], line.strip()):
-                headers += 1
-                continue
-            match = document["row"].match(line)
-            if not match:
-                continue
-            address, kind, access, designation, rest = match.groups()
-            rest = " ".join(rest.split())
-            if (int(address), kind, designation, rest) in (document["rule3"] or []):
-                rule3.add(int(address))
-            if designation in selected:
-                require(designation not in found, f"Janitza {name}: duplicate row {designation}")
-                found[designation] = (number, int(address), kind, access, rest, lines[index + 1:index + 9])
+    found, rule3 = {}, set()
+    rows, headers = pdf_list_rows(data, document)
+    for number, address, kind, access, designation, rest, following in rows:
+        if (address, kind, designation, rest) in (document["rule3"] or []):
+            rule3.add(address)
+        if designation in selected:
+            require(designation not in found, f"Janitza {name}: duplicate row {designation}")
+            found[designation] = (number, address, kind, access, rest, following)
     require(headers >= 20, f"Janitza {name}: address list table header not found")
     missing = sorted(set(selected) - found.keys())
     require(not missing, f"Janitza {name}: missing rows {missing}")
@@ -442,6 +452,38 @@ def extract_96pa(data, evidence):
     require((int(example["C"]), example["D"]) == (address, "float") and registers == 2,
             f"Janitza {name}: the manual's example does not read the list's L1-N voltage float")
     return sorted(points, key=lambda point: point["address"])
+
+
+def dump_row(address, fields):
+    """A row-dump entry: holding registers, as the contracts read them, and the address where it fits."""
+    entry = {"table": "holding_register", "address": address} if address <= 0xFFFF else {}
+    entry["vendor_address"] = str(address)
+    entry.update((key, value) for key, value in fields.items() if value)
+    return entry
+
+
+def all_rows(data, selector, evidence=None):
+    """Every row of the address list, for a row dump: the cells as printed, unselected."""
+    if selector == "umg96-pa":
+        pdf, workbook = zip_member(data, PA_PDF), zip_member(data, PA_XLSX)
+        listed = pdf_rows_96pa(pdf, pdf_page_count(pdf))
+        rows = list(xlsx_rows(workbook, PA_SHEET))
+        require(rows[0] == (1, PA_HEADER), "Janitza UMG 96-PA: unexpected workbook header")
+        result = []
+        for number, row in rows[1:]:
+            require(re.fullmatch(r"\d{1,5}", row.get("C", "")),
+                    f"Janitza UMG 96-PA: {PA_SHEET}!C{number} is not an address")
+            address = int(row["C"])
+            result.append(dump_row(address, {
+                "type": row.get("D"), "label": row.get("F"), "unit": row.get("G"), "access": row.get("E"),
+                "page": listed[address][0] if address in listed else None,
+                "reference": f"{PA_SHEET}!C{number}, {row.get('A')}"}))
+        return result
+    require(selector in DOCUMENTS, f"Unknown Janitza selector {selector!r}")
+    rows, _ = pdf_list_rows(data, DOCUMENTS[selector])
+    return [dump_row(address, {"type": kind, "label": designation, "access": access, "notes": rest, "page": number,
+                               "reference": f"Address list, {designation}"})
+            for number, address, kind, access, designation, rest, _ in rows]
 
 
 def extract(data, selector, evidence=None):
