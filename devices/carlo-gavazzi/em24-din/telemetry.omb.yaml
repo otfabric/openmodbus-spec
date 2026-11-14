@@ -1,0 +1,344 @@
+openmodbus: 0.1.0
+info:
+  id: carlo-gavazzi/em24-din/telemetry
+  title: Carlo Gavazzi EM24-DIN telemetry
+  version: 0.1.0
+  description: Read-only subset of the EM24-DIN (PFA, PFB and X models) Modbus RTU
+    map (Table 2.3-1). Function codes 03 and 04 return the same values; the points
+    use the input-register (function 04) table. 32-bit values are least significant
+    word first. A request reads at most 11 registers; the digital input, tariff, front
+    selector and identification registers must be read one word at a time. The document
+    says the display shows overflow when the MSB value of the relevant variable is
+    7FFFh; no `invalid` list here expresses that.
+  attribution: Derived from Carlo Gavazzi's EM24-DIN PFA, PFB & X models Communication
+    Protocol.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: carlo-gavazzi-em24-din-protocol
+device:
+  manufacturer: Carlo Gavazzi
+  model: EM24-DIN
+  classes:
+  - energy_meter
+  transports:
+  - type: rtu
+  documentation:
+  - title: EM24-DIN PFA, PFB & X models Communication Protocol
+    url: https://www.gavazziautomation.com/fileadmin/images/PIM/OTHERSTUFF/COMPRO/EM24_IS_CP.pdf
+    revision: Version 4 Revision 0 (2012-12-03)
+defaults:
+  table: input_register
+  access: r
+constraints:
+  maxReadRegisters: 11
+  ranges:
+  - table: input_register
+    start: 11
+    count: 1
+    policy: isolated
+    reason: 'Vendor: read only with function 03 or 04, limited to a word at a time.'
+  - table: input_register
+    start: 768
+    count: 1
+    policy: isolated
+    reason: 'Vendor: read only with function 03 or 04, limited to a word at a time.'
+  - table: input_register
+    start: 769
+    count: 1
+    policy: isolated
+    reason: 'Vendor: read only with function 03 or 04, limited to a word at a time.'
+  - table: input_register
+    start: 772
+    count: 1
+    policy: isolated
+    reason: 'Vendor: read only with function 03 or 04, limited to a word at a time.'
+points:
+- id: voltage_l1_n
+  address: 0
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  aliases:
+  - V L1-N
+  source:
+    address: 0000h
+    page: 8
+    reference: Table 2.3-1; 300001
+- id: voltage_l2_n
+  address: 2
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  aliases:
+  - V L2-N
+  source:
+    address: 0002h
+    page: 8
+    reference: Table 2.3-1; 300003
+- id: voltage_l3_n
+  address: 4
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  aliases:
+  - V L3-N
+  source:
+    address: 0004h
+    page: 8
+    reference: Table 2.3-1; 300005
+- id: voltage_l1_l2
+  address: 6
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  aliases:
+  - V L1-L2
+  source:
+    address: 0006h
+    page: 8
+    reference: Table 2.3-1; 300007
+- id: identification_code
+  address: 11
+  type: u16
+  enum:
+    values:
+    - value: 71
+      name: av9_av2_input
+      label: EM24-DIN AV9, AV2 input
+    - value: 72
+      name: av5_input
+      label: EM24-DIN AV5 input
+    - value: 73
+      name: av6_input
+      label: EM24-DIN AV6 input
+  stability: constant
+  aliases:
+  - Carlo Gavazzi Controls identification code
+  source:
+    address: 000Bh
+    page: 9
+    reference: Table 2.8-1; 300012
+- id: current_l1
+  address: 12
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  unit: A
+  aliases:
+  - A L1
+  source:
+    address: 000Ch
+    page: 8
+    reference: Table 2.3-1; 300013
+- id: current_l2
+  address: 14
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  unit: A
+  aliases:
+  - A L2
+  source:
+    address: 000Eh
+    page: 8
+    reference: Table 2.3-1; 300015
+- id: current_l3
+  address: 16
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  unit: A
+  aliases:
+  - A L3
+  source:
+    address: 0010h
+    page: 8
+    reference: Table 2.3-1; 300017
+- id: active_power_total
+  address: 40
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: W
+  aliases:
+  - W Σ
+  source:
+    address: 0028h
+    page: 8
+    reference: Table 2.3-1; 300041
+- id: apparent_power_total
+  address: 42
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V.A
+  aliases:
+  - VA Σ
+  source:
+    address: 002Ah
+    page: 8
+    reference: Table 2.3-1; 300043
+- id: reactive_power_total
+  address: 44
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  description: 'Vendor unit: var'
+  aliases:
+  - VAR Σ
+  source:
+    address: 002Ch
+    page: 8
+    reference: Table 2.3-1; 300045
+- id: power_factor_total
+  address: 53
+  type: i16
+  conversion:
+    exponent10: -3
+  description: 'Vendor: Negative values correspond to lead(C), positive value correspond
+    to lag(L).'
+  aliases:
+  - PF Σ
+  source:
+    address: 0035h
+    page: 8
+    reference: Table 2.3-1; 300054
+- id: phase_sequence
+  address: 54
+  type: i16
+  enum:
+    values:
+    - value: -1
+      name: l1_l3_l2
+      label: L1-L3-L2
+    - value: 0
+      name: l1_l2_l3
+      label: L1-L2-L3
+  description: Meaningful only in a 3-phase system.
+  aliases:
+  - Phase sequence
+  source:
+    address: 0036h
+    page: 8
+    reference: Table 2.3-1; 300055
+- id: frequency
+  address: 55
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: Hz
+  aliases:
+  - Hz
+  source:
+    address: 0037h
+    page: 8
+    reference: Table 2.3-1; 300056
+- id: import_active_energy
+  address: 62
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: kW.h
+  aliases:
+  - kWh(+) TOT
+  source:
+    address: 003Eh
+    page: 8
+    reference: Table 2.3-1; 300063
+- id: export_active_energy
+  address: 92
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: kW.h
+  aliases:
+  - kWh(-) TOT
+  source:
+    address: 005Ch
+    page: 8
+    reference: Table 2.3-1; 300093
+- id: digital_input_status
+  address: 768
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: ch1_open
+      label: input status Ch1
+      description: bit=0 input close, bit=1 input open
+    - bit: 1
+      name: ch2_open
+      label: input status Ch2
+      description: bit=0 input close, bit=1 input open
+    - bit: 2
+      name: ch3_open
+      label: input status Ch3
+      description: bit=0 input close, bit=1 input open
+  aliases:
+  - Digital input status
+  source:
+    address: 0300h
+    page: 8
+    reference: Table 2.4-1; 300769
+- id: current_tariff
+  address: 769
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: tariff_1
+      label: tariff 1
+    - value: 1
+      name: tariff_2
+      label: tariff 2
+    - value: 2
+      name: tariff_3
+      label: tariff 3
+    - value: 3
+      name: tariff_4
+      label: tariff 4
+  aliases:
+  - Current tariff
+  source:
+    address: 0301h
+    page: 9
+    reference: Table 2.5-1; 300770
+- id: front_selector_status
+  address: 772
+  type: u16
+  enum:
+    values:
+    - value: 3
+      name: keypad_locked
+      label: keypad locked
+    - value: 2
+      name: keypad_unlocked_2
+      label: keypad unlocked
+    - value: 1
+      name: keypad_unlocked_1
+      label: keypad unlocked
+    - value: 0
+      name: keypad_unlocked_0
+      label: keypad unlocked
+  aliases:
+  - Front selector status
+  source:
+    address: 0304h
+    page: 9
+    reference: Table 2.7-1; 300773

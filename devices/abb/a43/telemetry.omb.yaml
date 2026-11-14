@@ -1,0 +1,312 @@
+openmodbus: 0.1.0
+info:
+  id: abb/a43/telemetry
+  title: ABB A43 telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the A43/A44 Modbus mapping tables (function code
+    3) for the A43, the direct-connected three-phase meter; this applies to variants
+    with RS-485 set to the Modbus protocol. Quantities that the meter variant lacks
+    read as the documented "invalid" value: FFFF in every register for unsigned quantities,
+    the highest positive value for signed ones. The manual lists harmonics for the
+    Platinum subgroup only.
+
+    '
+  attribution: Derived from ABB's A43/A44 User Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: abb-a43-a44-manual
+device:
+  manufacturer: ABB
+  model: A43
+  classes:
+  - energy_meter
+  transports:
+  - type: rtu
+    notes: RS-485 with the protocol set to Modbus (manual chapter 9.1); frames carry
+      a CRC (chapter 9.2).
+  documentation:
+  - title: A43/A44 User Manual
+    url: https://search.abb.com/library/Download.aspx?DocumentID=2CMC484001M0201&LanguageCode=en&DocumentPartId=&Action=Launch
+    revision: 2CMC484001M0201 Revision E (2025-11-07)
+defaults:
+  table: holding_register
+  access: r
+constraints:
+  ranges:
+  - table: holding_register
+    start: 4096
+    count: 32512
+    policy: safe_gap
+    reason: 'Manual 9.3: reading any register in 1000-8EFF (hex) returns a normal
+      response; quantities the meter lacks read as invalid.'
+points:
+- id: active_import_energy
+  address: 20480
+  type: u64
+  conversion:
+    exponent10: -2
+  unit: kW.h
+  invalid:
+  - 18446744073709551615
+  aliases:
+  - Active import kWh
+  source:
+    address: '5000'
+    page: 108
+    reference: Total energy table
+- id: active_export_energy
+  address: 20484
+  type: u64
+  conversion:
+    exponent10: -2
+  unit: kW.h
+  invalid:
+  - 18446744073709551615
+  aliases:
+  - Active export kWh
+  source:
+    address: '5004'
+    page: 108
+    reference: Total energy table
+- id: active_net_energy
+  address: 20488
+  type: i64
+  conversion:
+    exponent10: -2
+  unit: kW.h
+  invalid:
+  - 9223372036854775807
+  aliases:
+  - Active net kWh
+  source:
+    address: '5008'
+    page: 108
+    reference: Total energy table
+- id: voltage_l1_n
+  address: 23296
+  type: u32
+  conversion:
+    exponent10: -1
+  unit: V
+  invalid:
+  - 4294967295
+  aliases:
+  - Voltage L1-N
+  source:
+    address: 5B00
+    page: 111
+    reference: Instantaneous values table
+- id: voltage_l2_n
+  address: 23298
+  type: u32
+  conversion:
+    exponent10: -1
+  unit: V
+  invalid:
+  - 4294967295
+  aliases:
+  - Voltage L2-N
+  source:
+    address: 5B02
+    page: 111
+    reference: Instantaneous values table
+- id: voltage_l3_n
+  address: 23300
+  type: u32
+  conversion:
+    exponent10: -1
+  unit: V
+  invalid:
+  - 4294967295
+  aliases:
+  - Voltage L3-N
+  source:
+    address: 5B04
+    page: 111
+    reference: Instantaneous values table
+- id: current_l1
+  address: 23308
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: A
+  invalid:
+  - 4294967295
+  aliases:
+  - Current L1
+  source:
+    address: 5B0C
+    page: 111
+    reference: Instantaneous values table
+- id: current_l2
+  address: 23310
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: A
+  invalid:
+  - 4294967295
+  aliases:
+  - Current L2
+  source:
+    address: 5B0E
+    page: 111
+    reference: Instantaneous values table
+- id: current_l3
+  address: 23312
+  type: u32
+  conversion:
+    exponent10: -2
+  unit: A
+  invalid:
+  - 4294967295
+  aliases:
+  - Current L3
+  source:
+    address: 5B10
+    page: 111
+    reference: Instantaneous values table
+- id: active_power_total
+  address: 23316
+  type: i32
+  conversion:
+    exponent10: -2
+  unit: W
+  invalid:
+  - 2147483647
+  aliases:
+  - Active power Total
+  source:
+    address: 5B14
+    page: 111
+    reference: Instantaneous values table
+- id: reactive_power_total
+  address: 23324
+  type: i32
+  conversion:
+    exponent10: -2
+  description: 'Vendor unit: var'
+  invalid:
+  - 2147483647
+  aliases:
+  - Reactive power Total
+  source:
+    address: 5B1C
+    page: 111
+    reference: Instantaneous values table
+- id: frequency
+  address: 23340
+  type: u16
+  conversion:
+    exponent10: -2
+  unit: Hz
+  invalid:
+  - 65535
+  aliases:
+  - Frequency
+  source:
+    address: 5B2C
+    page: 111
+    reference: Instantaneous values table
+- id: power_factor_total
+  address: 23354
+  type: i16
+  conversion:
+    exponent10: -3
+  invalid:
+  - 32767
+  aliases:
+  - Power factor Total
+  source:
+    address: 5B3A
+    page: 111
+    reference: Instantaneous values table
+- id: voltage_thd_l1_n
+  address: 23808
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: '%'
+  description: 'Total harmonic distortion: the first of the 16 registers of the Voltage
+    harmonics L1-N block; the 2nd and higher harmonics follow, one register each.'
+  invalid:
+  - 65535
+  aliases:
+  - Voltage harmonics L1-N
+  source:
+    address: 5D00
+    page: 112
+    reference: Harmonics table
+- id: serial_number
+  address: 35072
+  type: u32
+  invalid:
+  - 4294967295
+  aliases:
+  - Serial number
+  source:
+    address: '8900'
+    page: 113
+    reference: Production data table
+- id: firmware_version
+  address: 35080
+  type: string
+  registers: 8
+  stability: constant
+  aliases:
+  - Meter firmware version
+  source:
+    address: '8908'
+    page: 113
+    reference: Production data table
+- id: mapping_version_major
+  address: 35088
+  type: u16
+  mask: 65280
+  stability: constant
+  aliases:
+  - Modbus mapping version
+  source:
+    address: '8910'
+    page: 113
+    reference: Production data table
+- id: mapping_version_minor
+  address: 35088
+  type: u16
+  mask: 255
+  stability: constant
+  aliases:
+  - Modbus mapping version
+  source:
+    address: '8910'
+    page: 113
+    reference: Production data table
+- id: type_designation
+  address: 35168
+  type: string
+  registers: 6
+  stability: constant
+  aliases:
+  - Type designation
+  source:
+    address: '8960'
+    page: 113
+    reference: Production data table
+- id: led_source
+  address: 36068
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: active_energy
+      label: active energy
+    - value: 1
+      name: reactive_energy
+      label: reactive energy
+  aliases:
+  - LED source
+  description: Setting; the manual lists it as read and write. Exposed here read-only.
+  source:
+    address: 8CE4
+    page: 115
+    reference: Settings table

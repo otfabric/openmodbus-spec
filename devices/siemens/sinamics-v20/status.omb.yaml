@@ -1,0 +1,301 @@
+openmodbus: 0.1.0
+info:
+  id: siemens/sinamics-v20/status
+  title: Siemens SINAMICS V20 inverter status and actual values
+  version: 0.1.0
+  description: 'Read-only subset of the MODBUS mapping table (section 7.2): status
+    word, frequency, speed, current, torque, power, energy, voltages, analog input
+    and output, last fault and warning, inverter version and model. Registers are
+    holding registers read with FC 3. The table prints each register as an inverter
+    register number and as a MODBUS number, 0 and 40001 in its first row; the inverter
+    number is used as the address. A scaled register holds the value multiplied by
+    the scaling factor. The table states no data type: a register whose documented
+    range has a negative bound is decoded as signed, any other as unsigned, which
+    gives the same value over the documented range. Most values are listed a second
+    time from register 40200 on; the first listing is used. The status word flags
+    are the bits the table assigns to its single-bit registers; it does not state
+    which text of an ON/OFF pair stands for 1.
+
+    '
+  attribution: Derived from Siemens' SINAMICS V20 Inverter Operating Instructions.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: siemens-v20-operating-instructions
+device:
+  manufacturer: Siemens
+  family: SINAMICS V20
+  model: SINAMICS V20
+  classes:
+  - drive
+  transports:
+  - type: rtu
+    notes: RS485; select MODBUS with P2023 = 2.
+  documentation:
+  - title: SINAMICS V20 Inverter Operating Instructions
+    url: https://cache.industry.siemens.com/dl/files/193/109756193/att_942991/v1/V20_op_instr_0118_en-US.pdf
+    revision: A5E34559884-009, 01/2018
+defaults:
+  table: holding_register
+  access: r
+points:
+- id: output_frequency
+  address: 23
+  type: i16
+  conversion:
+    exponent10: -2
+  unit: Hz
+  aliases:
+  - Frequency output
+  description: Inverter parameter r0024; documented range -327.68 to 327.67.
+  source:
+    address: 23 (40024)
+    page: 178
+    reference: Mapping table, Frequency output
+- id: speed
+  address: 24
+  type: i16
+  unit: /min
+  aliases:
+  - Speed
+  description: Inverter parameter r0022; documented range -16250 to 16250.
+  source:
+    address: 24 (40025)
+    page: 178
+    reference: Mapping table, Speed
+- id: output_current
+  address: 25
+  type: u16
+  conversion:
+    exponent10: -2
+  unit: A
+  aliases:
+  - Current filtered
+  description: Inverter parameter r0027; documented range 0 to 163.83.
+  source:
+    address: 25 (40026)
+    page: 178
+    reference: Mapping table, Current filtered
+- id: torque
+  address: 26
+  type: i16
+  conversion:
+    exponent10: -2
+  unit: N.m
+  aliases:
+  - Torque
+  description: Inverter parameter r0031; documented range -325.00 to 325.00.
+  source:
+    address: 26 (40027)
+    page: 178
+    reference: Mapping table, Torque
+- id: active_power
+  address: 27
+  type: u16
+  conversion:
+    exponent10: -2
+  unit: kW
+  aliases:
+  - Actual power
+  description: Inverter parameter r0032; documented range 0 to 327.67.
+  source:
+    address: 27 (40028)
+    page: 178
+    reference: Mapping table, Actual power
+- id: energy_consumption
+  address: 28
+  type: u16
+  unit: kW.h
+  aliases:
+  - Total kWh
+  description: Inverter parameter r0039; documented range 0 to 32767.
+  source:
+    address: 28 (40029)
+    page: 178
+    reference: Mapping table, Total kWh
+- id: dc_bus_voltage
+  address: 29
+  type: u16
+  unit: V
+  aliases:
+  - DC bus voltage
+  description: Inverter parameter r0026; documented range 0 to 32767.
+  source:
+    address: 29 (40030)
+    page: 178
+    reference: Mapping table, DC bus voltage
+- id: frequency_reference
+  address: 30
+  type: i16
+  conversion:
+    exponent10: -2
+  unit: Hz
+  aliases:
+  - Reference
+  description: Inverter parameter r0020; documented range -327.68 to 327.67.
+  source:
+    address: 30 (40031)
+    page: 178
+    reference: Mapping table, Reference
+- id: rated_power
+  address: 31
+  type: u16
+  conversion:
+    exponent10: -2
+  unit: kW
+  aliases:
+  - Rated power
+  description: Inverter parameter r0206; documented range 0 to 327.67.
+  source:
+    address: 31 (40032)
+    page: 178
+    reference: Mapping table, Rated power
+- id: output_voltage
+  address: 32
+  type: u16
+  unit: V
+  aliases:
+  - Voltage output
+  description: Inverter parameter r0025; documented range 0 to 32767.
+  source:
+    address: 32 (40033)
+    page: 178
+    reference: Mapping table, Voltage output
+- id: analog_input_1
+  address: 39
+  type: i16
+  conversion:
+    exponent10: -2
+  unit: '%'
+  aliases:
+  - Analog input 1
+  description: Inverter parameter r0754[0]; documented range -300.0 to 300.0.
+  source:
+    address: 39 (40040)
+    page: 178
+    reference: Mapping table, Analog input 1
+- id: analog_output_1
+  address: 41
+  type: i16
+  conversion:
+    exponent10: -2
+  unit: '%'
+  aliases:
+  - Analog output 1
+  description: Inverter parameter r0774[0]; documented range -100.0 to 100.0.
+  source:
+    address: 41 (40042)
+    page: 178
+    reference: Mapping table, Analog output 1
+- id: actual_frequency
+  address: 43
+  type: i16
+  conversion:
+    exponent10: -2
+  unit: '%'
+  aliases:
+  - Actual frequency
+  description: Actual value (HIW); documented range -100.0 to 100.0.
+  source:
+    address: 43 (40044)
+    page: 178
+    reference: Mapping table, Actual frequency
+- id: last_fault
+  address: 54
+  type: u16
+  aliases:
+  - Last fault
+  description: Inverter parameter r0947[0]; documented range 0 to 32767.
+  source:
+    address: 54 (40055)
+    page: 178
+    reference: Mapping table, Last fault
+- id: last_warning
+  address: 59
+  type: u16
+  aliases:
+  - Last warning
+  description: Inverter parameter r2110; documented range 0 to 32767.
+  source:
+    address: 59 (40060)
+    page: 178
+    reference: Mapping table, Last warning
+- id: inverter_version
+  address: 60
+  type: u16
+  conversion:
+    exponent10: -2
+  aliases:
+  - Inverter version
+  description: Inverter parameter r0018; documented range 0.00 to 327.67.
+  source:
+    address: 60 (40061)
+    page: 178
+    reference: Mapping table, Inverter version
+- id: inverter_model
+  address: 61
+  type: u16
+  aliases:
+  - Inverter model
+  description: Inverter parameter r0201; documented range 0 to 32767.
+  source:
+    address: 61 (40062)
+    page: 178
+    reference: Mapping table, Inverter model
+- id: status_word
+  address: 109
+  type: u16
+  aliases:
+  - ZSW
+  flags:
+    flags:
+    - bit: 0
+      name: enabled
+      label: Enabled
+      description: ON/OFF texts ON / OFF; also readable as register 37 (40038).
+    - bit: 1
+      name: ready_to_run
+      label: Ready to run
+      description: ON/OFF texts READY / OFF; also readable as register 38 (40039).
+    - bit: 2
+      name: stop_run
+      label: Stop/run
+      description: ON/OFF texts STOP / RUN; also readable as register 34 (40035).
+    - bit: 3
+      name: fault
+      label: Fault
+      description: ON/OFF texts FAULT / OFF; also readable as register 53 (40054).
+    - bit: 7
+      name: warning
+      label: Warning
+      description: ON/OFF texts WARN / OK; also readable as register 58 (40059).
+    - bit: 9
+      name: control_mode
+      label: Control mode
+      description: ON/OFF texts SERIAL / LOCAL; also readable as register 36 (40037).
+    - bit: 10
+      name: run_at_maximum_frequency
+      label: Run at maximum frequency
+      description: ON/OFF texts MAX / NO; also readable as register 35 (40036).
+    - bit: 14
+      name: forward_reverse
+      label: Forward/reverse
+      description: ON/OFF texts FWD / REV; also readable as register 33 (40034).
+  description: Status word (ZSW, PZD 1). The mapping table assigns the listed bits;
+    it does not state which text of an ON/OFF pair stands for 1.
+  source:
+    address: 109 (40110)
+    page: 179
+    reference: Mapping table, ZSW
+- id: current_unfiltered
+  address: 349
+  type: u16
+  conversion:
+    exponent10: -2
+  unit: A
+  aliases:
+  - Current unfiltered
+  description: Inverter parameter r0068; documented range 0 to 163.83.
+  source:
+    address: 349 (40350)
+    page: 179
+    reference: Mapping table, Current unfiltered

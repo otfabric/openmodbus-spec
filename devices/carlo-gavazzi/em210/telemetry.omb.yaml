@@ -1,0 +1,311 @@
+openmodbus: 0.1.0
+info:
+  id: carlo-gavazzi/em210/telemetry
+  title: Carlo Gavazzi EM210 telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the EM210 Modbus RTU map (Table 2.3-1, grouped
+    by variable type); the document is titled EM210_AV. Function codes 03 and 04 return
+    the same values; the points use the input-register (function 04) table. 32-bit
+    values are least significant word first. The firmware, programming lock and identification
+    registers must be read one word at a time. The document says the display shows
+    overflow when the MSB value of the relevant variable is 7FFFh; no `invalid` list
+    here expresses that. Frequency is left out: the document gives its weight as Hz
+    without a factor. The document gives two request limits (61 registers in the text,
+    11 in the frame tables); none is set here.'
+  attribution: Derived from Carlo Gavazzi's EM210_AV Communication Protocol.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: carlo-gavazzi-em210-protocol
+device:
+  manufacturer: Carlo Gavazzi
+  model: EM210
+  classes:
+  - energy_meter
+  transports:
+  - type: rtu
+  documentation:
+  - title: EM210_AV Communication Protocol
+    url: https://www.gavazziautomation.com/fileadmin/images/PIM/OTHERSTUFF/COMPRO/EM210_CP.pdf
+    revision: Version 4 Revision 3 (2018-05-10)
+defaults:
+  table: input_register
+  access: r
+constraints:
+  ranges:
+  - table: input_register
+    start: 11
+    count: 1
+    policy: isolated
+    reason: 'Vendor: read only with function 03 or 04, limited to a word at a time.'
+  - table: input_register
+    start: 770
+    count: 1
+    policy: isolated
+    reason: 'Vendor: read only with function 03 or 04, limited to a word at a time.'
+  - table: input_register
+    start: 771
+    count: 1
+    policy: isolated
+    reason: 'Vendor: read only with function 03 or 04, limited to a word at a time.'
+  - table: input_register
+    start: 772
+    count: 1
+    policy: isolated
+    reason: 'Vendor: read only with function 03 or 04, limited to a word at a time.'
+points:
+- id: voltage_l1_n
+  address: 0
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  aliases:
+  - V L1-N
+  source:
+    address: 0000h
+    page: 8
+    reference: Table 2.3-1; 300001
+- id: voltage_l2_n
+  address: 2
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  aliases:
+  - V L2-N
+  source:
+    address: 0002h
+    page: 8
+    reference: Table 2.3-1; 300003
+- id: voltage_l3_n
+  address: 4
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  aliases:
+  - V L3-N
+  source:
+    address: 0004h
+    page: 8
+    reference: Table 2.3-1; 300005
+- id: voltage_l1_l2
+  address: 6
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  aliases:
+  - V L1-L2
+  source:
+    address: 0006h
+    page: 8
+    reference: Table 2.3-1; 300007
+- id: identification_code
+  address: 11
+  type: u16
+  enum:
+    values:
+    - value: 210
+      name: em210_standard
+      label: EM210 standard
+  description: Special versions use other codes (vendor ID table).
+  stability: constant
+  aliases:
+  - Carlo Gavazzi Controls identification code
+  source:
+    address: 000Bh
+    page: 10
+    reference: Table 2.7-1; 300012
+- id: current_l1
+  address: 12
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  unit: A
+  aliases:
+  - A L1
+  source:
+    address: 000Ch
+    page: 8
+    reference: Table 2.3-1; 300013
+- id: current_l2
+  address: 14
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  unit: A
+  aliases:
+  - A L2
+  source:
+    address: 000Eh
+    page: 8
+    reference: Table 2.3-1; 300015
+- id: current_l3
+  address: 16
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  unit: A
+  aliases:
+  - A L3
+  source:
+    address: 0010h
+    page: 8
+    reference: Table 2.3-1; 300017
+- id: active_power_total
+  address: 40
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: W
+  aliases:
+  - W Σ
+  source:
+    address: 0028h
+    page: 8
+    reference: Table 2.3-1; 300041
+- id: apparent_power_total
+  address: 42
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V.A
+  aliases:
+  - VA Σ
+  source:
+    address: 002Ah
+    page: 8
+    reference: Table 2.3-1; 300043
+- id: reactive_power_total
+  address: 44
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  description: 'Vendor unit: Var'
+  aliases:
+  - VAR Σ
+  source:
+    address: 002Ch
+    page: 8
+    reference: Table 2.3-1; 300045
+- id: power_factor_total
+  address: 49
+  type: i16
+  conversion:
+    exponent10: -3
+  description: 'Vendor: Negative values correspond to exported active power, positive
+    values correspond to imported active power.'
+  aliases:
+  - PF Σ
+  source:
+    address: 0031h
+    page: 8
+    reference: Table 2.3-1; 300050
+- id: phase_sequence
+  address: 50
+  type: i16
+  enum:
+    values:
+    - value: -1
+      name: l1_l3_l2
+      label: L1-L3-L2
+    - value: 0
+      name: l1_l2_l3
+      label: L1-L2-L3
+  description: Meaningful only in a 3-phase system.
+  aliases:
+  - Phase sequence
+  source:
+    address: 0032h
+    page: 8
+    reference: Table 2.3-1; 300051
+- id: import_active_energy
+  address: 52
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: kW.h
+  aliases:
+  - kWh(+) TOT
+  source:
+    address: 0034h
+    page: 8
+    reference: Table 2.3-1; 300053
+- id: export_active_energy
+  address: 78
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: kW.h
+  aliases:
+  - kWh(-) TOT
+  source:
+    address: 004Eh
+    page: 8
+    reference: Table 2.3-1; 300079
+- id: neutral_current
+  address: 152
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  unit: A
+  aliases:
+  - Neutral current (In)
+  source:
+    address: 0098h
+    page: 8
+    reference: Table 2.3-1; 300153
+  description: Calculated. Available from firmware revision A.5.
+- id: firmware_version_code
+  address: 770
+  type: u16
+  description: 'Vendor: Value=0: Version "A" Value=1: Version "B" ...'
+  stability: constant
+  aliases:
+  - Version code
+  source:
+    address: 0302h
+    page: 10
+    reference: Table 2.5-1; 300771
+- id: firmware_revision_code
+  address: 771
+  type: u16
+  description: 'Vendor: Value=0: Revision 0 Value=1: Revision 1 ...'
+  stability: constant
+  aliases:
+  - Revision code
+  source:
+    address: 0303h
+    page: 10
+    reference: Table 2.5-1; 300772
+- id: programming_lock
+  address: 772
+  type: u16
+  enum:
+    values:
+    - value: 1
+      name: programming_locked
+      label: programming locked
+    - value: 0
+      name: programming_unlocked
+      label: programming unlocked
+  aliases:
+  - Programming lock (trimmer position in the rear of the display)
+  source:
+    address: 0304h
+    page: 10
+    reference: Table 2.6-1; 300773

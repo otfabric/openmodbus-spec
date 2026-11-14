@@ -39,8 +39,9 @@ It receives the verified source bytes and the contract's optional `selector`
 with `points` and optional `components` and `constraints`. Extractors select
 rows by their vendor label and parse address, width, type and scale from the
 document. They fail on anything unexpected. [sourcelib.py](sourcelib.py) reads
-PDF pages through `pdftotext`, HTML tables, CSV, ZIP members in memory, and XLSX
-cached cell values. It never evaluates formulas or macros.
+PDF pages through `pdftotext`, HTML tables, CSV, ZIP members in memory, and the
+cached cell values of XLSX and legacy XLS workbooks. It uses the standard
+library only and never evaluates formulas or macros.
 
 Vendors often state a convention the mapping depends on, such as the address
 base, the function code or the word order, in a companion manual rather than
@@ -89,6 +90,12 @@ grouped by kind, with spec-gap candidates and questions grouped by theme). With
 produced by the manifest, when a catalog contract is missing from the roster, or
 when a spec-gap or question item is in no theme. The sets `class-01` to
 `class-10` in the manifest select one class's sources.
+
+Models outside the 150 targets are listed under `extras`, each with the
+`origin` that prompted it. The sets `parity-<group>` hold the sources added to
+cover the devices of a third-party register-map collection. A third-party map
+is never a source or evidence: it is used only to cross-check a contract, and
+the vendor document decides.
 
 ## Findings
 

@@ -1,0 +1,293 @@
+openmodbus: 0.1.0
+info:
+  id: siemens/pac3120/telemetry
+  title: Siemens SENTRON PAC3120 telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the measured variables (appendix A.1.3): voltages,
+    currents, power, power factor, frequency, device status, active tariff, operating
+    hours and the float copies of the tariff 1 energy counters, which the manual recommends
+    for display only. Function codes 0x03 and 0x04 read the same values; the points
+    use the input-register (0x04) table. The manual does not say what an "Offset"
+    is on the wire or how multi-register values are ordered. Its one table serves
+    the PAC3120 and the PAC3220, and for the PAC3220 it names the PAC RS485 expansion
+    module manual, which prints a captured exchange (from a PAC3200) that reads "offset
+    0001: voltage Va-n" at start address 00 01 and returns 43 68 70 22 for 232.4 V;
+    the same reading of the shared table is applied to the PAC3120: the offset is
+    the PDU address, and float and Unsigned long values are most significant word
+    first. The energy counters in double format are left out: no Siemens document
+    shows the register order of a double. A read that starts or ends inside a multi-register
+    value returns an error code.
+
+    '
+  attribution: Derived from Siemens' SENTRON 7KM PAC3120 and PAC3220 Power Monitoring
+    Device Equipment Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: siemens-pac3120-pac3220-manual
+device:
+  manufacturer: Siemens
+  family: SENTRON PAC
+  model: PAC3120
+  classes:
+  - power_meter
+  transports:
+  - type: rtu
+    notes: Built-in RS485 interface; default 19200 baud, 8N2.
+  unitId:
+    mode: configurable
+    default: 126
+  documentation:
+  - title: SENTRON 7KM PAC3120 and PAC3220 Power Monitoring Device Equipment Manual
+    url: https://cache.industry.siemens.com/dl/files/307/109767307/att_1298442/v1/MAN_L1V30425208F_RS-AA_002_en_en-US.pdf
+    revision: L1V30425208F_RS-AA_002, 07/2024
+  - title: SENTRON Expansion Module PAC RS485 Manual
+    url: https://support.industry.siemens.com/cs/ww/en/view/28865965
+    revision: A5E02091800B-01, 02/2008
+defaults:
+  table: input_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+points:
+- id: voltage_l1_n
+  address: 1
+  type: f32
+  unit: V
+  aliases:
+  - Voltage L1-N
+  source:
+    address: '1'
+    page: 113
+    reference: 'Available measured variables: Voltage L1-N'
+- id: voltage_l2_n
+  address: 3
+  type: f32
+  unit: V
+  aliases:
+  - Voltage L2-N
+  source:
+    address: '3'
+    page: 113
+    reference: 'Available measured variables: Voltage L2-N'
+- id: voltage_l3_n
+  address: 5
+  type: f32
+  unit: V
+  aliases:
+  - Voltage L3-N
+  source:
+    address: '5'
+    page: 113
+    reference: 'Available measured variables: Voltage L3-N'
+- id: voltage_l1_l2
+  address: 7
+  type: f32
+  unit: V
+  aliases:
+  - Voltage L1-L2
+  source:
+    address: '7'
+    page: 113
+    reference: 'Available measured variables: Voltage L1-L2'
+- id: current_l1
+  address: 13
+  type: f32
+  unit: A
+  aliases:
+  - Current L1
+  source:
+    address: '13'
+    page: 113
+    reference: 'Available measured variables: Current L1'
+- id: current_l2
+  address: 15
+  type: f32
+  unit: A
+  aliases:
+  - Current L2
+  source:
+    address: '15'
+    page: 113
+    reference: 'Available measured variables: Current L2'
+- id: current_l3
+  address: 17
+  type: f32
+  unit: A
+  aliases:
+  - Current L3
+  source:
+    address: '17'
+    page: 113
+    reference: 'Available measured variables: Current L3'
+- id: frequency
+  address: 55
+  type: f32
+  unit: Hz
+  aliases:
+  - Frequency
+  source:
+    address: '55'
+    page: 114
+    reference: 'Available measured variables: Frequency'
+- id: apparent_power_total
+  address: 63
+  type: f32
+  unit: V.A
+  aliases:
+  - Total apparent power
+  source:
+    address: '63'
+    page: 114
+    reference: 'Available measured variables: Total apparent power'
+- id: active_power_total
+  address: 65
+  type: f32
+  unit: W
+  aliases:
+  - Total active power
+  source:
+    address: '65'
+    page: 114
+    reference: 'Available measured variables: Total active power'
+- id: reactive_power_total
+  address: 67
+  type: f32
+  aliases:
+  - Total reactive power
+  description: 'Vendor unit: var.'
+  source:
+    address: '67'
+    page: 114
+    reference: 'Available measured variables: Total reactive power'
+- id: power_factor_total
+  address: 69
+  type: f32
+  aliases:
+  - Total power factor
+  source:
+    address: '69'
+    page: 114
+    reference: 'Available measured variables: Total power factor'
+- id: device_status
+  address: 205
+  type: u32
+  aliases:
+  - PMD diagnostics and status
+  flags:
+    flags:
+    - bit: 8
+      name: parameters_changed_stored
+      label: Relevant parameter changes
+      description: Byte 2, bit 0, mask 0x00000100; type Stored.
+    - bit: 10
+      name: pulse_rate_exceeded_stored
+      label: Maximum pulse rate exceeded
+      description: Byte 2, bit 2, mask 0x00000400; type Stored.
+    - bit: 11
+      name: device_restarted_stored
+      label: Restart of the device
+      description: Byte 2, bit 3, mask 0x00000800; type Stored.
+    - bit: 12
+      name: energy_counters_reset_stored
+      label: Resetting of energy counters by user
+      description: Byte 2, bit 4, mask 0x00001000; type Stored.
+    - bit: 17
+      name: pulse_rate_exceeded
+      label: Maximum pulse rate exceeded
+      description: Byte 1, bit 1, mask 0x00020000; type Status.
+    - bit: 24
+      name: no_synchronization_pulse
+      label: No synchronization pulse
+      description: Byte 0, bit 0, mask 0x01000000; type Status.
+    - bit: 25
+      name: configuration_menu_active
+      label: Device configuration menu is active
+      description: Byte 0, bit 1, mask 0x02000000; type Status.
+    - bit: 26
+      name: voltage_overload
+      label: Voltage overload
+      description: Byte 0, bit 2, mask 0x04000000; type Status.
+    - bit: 27
+      name: current_overload
+      label: Current overload
+      description: Byte 0, bit 3, mask 0x08000000; type Status.
+  description: Bits as listed in the device status table on page 121.
+  source:
+    address: '205'
+    page: 116
+    reference: 'Available measured variables: PMD diagnostics and status'
+- id: active_tariff
+  address: 211
+  type: u32
+  aliases:
+  - Active tariff
+  enum:
+    values:
+    - value: 0
+      name: tariff_1
+      label: Tariff 1
+    - value: 1
+      name: tariff_2
+      label: Tariff 2
+  source:
+    address: '211'
+    page: 116
+    reference: 'Available measured variables: Active tariff'
+- id: operating_hours_counter
+  address: 213
+  type: u32
+  unit: s
+  aliases:
+  - Operating hours counter
+  source:
+    address: '213'
+    page: 116
+    reference: 'Available measured variables: Operating hours counter'
+- id: current_n
+  address: 223
+  type: f32
+  unit: A
+  aliases:
+  - Current N
+  source:
+    address: '223'
+    page: 116
+    reference: 'Available measured variables: Current N'
+- id: active_energy_import_tariff_1
+  address: 2801
+  type: f32
+  unit: W.h
+  aliases:
+  - Total active energy - import tariff 1
+  description: Float copy of the energy counter in double format; the manual recommends
+    the float values for display purposes only.
+  source:
+    address: '2801'
+    page: 119
+    reference: 'Available measured variables: Total active energy - import tariff
+      1'
+- id: active_energy_export_tariff_1
+  address: 2805
+  type: f32
+  unit: W.h
+  aliases:
+  - Total active energy - export tariff 1
+  description: Float copy of the energy counter in double format; the manual recommends
+    the float values for display purposes only.
+  source:
+    address: '2805'
+    page: 119
+    reference: 'Available measured variables: Total active energy - export tariff
+      1'
+- id: apparent_energy_tariff_1
+  address: 2817
+  type: f32
+  unit: V.A.h
+  aliases:
+  - Total apparent energy - tariff 1
+  description: Float copy of the energy counter in double format; the manual recommends
+    the float values for display purposes only.
+  source:
+    address: '2817'
+    page: 119
+    reference: 'Available measured variables: Total apparent energy - tariff 1'

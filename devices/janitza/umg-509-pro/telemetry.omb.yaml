@@ -1,0 +1,281 @@
+openmodbus: 0.1.0
+info:
+  id: janitza/umg-509-pro/telemetry
+  title: Janitza UMG 509-PRO telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the UMG 509-PRO address list. Floats return big-endian
+    data at the listed addresses (the list mirrors them in little-endian at address
+    + 32768) and include the transformer ratios. The list states neither the address
+    base nor the register table; both come from the user manual''s request example,
+    which reads list address 19000 with function 03 and the start address bytes 4A
+    38. The differential current alarm status belongs to the residual current inputs.
+
+    '
+  attribution: Derived from Janitza's UMG 509-PRO Modbus-address and Formulary.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: janitza-umg509pro-modbus
+device:
+  manufacturer: Janitza electronics
+  family: UMG 509
+  model: UMG 509-PRO
+  classes:
+  - power_meter
+  transports:
+  - type: rtu
+    notes: RS-485.
+  - type: tcp
+    notes: Ethernet.
+  - type: rtu_over_tcp
+    notes: Ethernet.
+  documentation:
+  - title: UMG 509-PRO Modbus-address and Formulary
+    url: https://assets.janitza.com/ce18jq9ih0x6/5c8ee9f3d1da8aad64bfd2/dfeccbf4f7f8abca71d0c3c0f7ae8b78/janitza-mal-umg509pro-en.pdf
+    revision: Dok. Nr. 1.059.004.2.o, 06/2025
+  - title: UMG 509-PRO User manual and technical data
+    url: https://www.janitza.com/en-us/products/umg-509-pro/downloads
+    revision: Doc. no. 2.059.011.3.a, 12/2025
+defaults:
+  table: holding_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+points:
+- id: system_time
+  address: 4
+  type: i32
+  unit: s
+  aliases:
+  - _SYSTIME
+  - time (UTC)
+  source:
+    address: '4'
+    page: 13
+    reference: Address list, _SYSTIME
+- id: active_energy_import
+  address: 13995
+  type: f32
+  unit: W.h
+  aliases:
+  - _WH_V[4]
+  - Real energy L1..L3, consumed
+  source:
+    address: '13995'
+    page: 26
+    reference: Address list, _WH_V[4]
+- id: active_energy_export
+  address: 14007
+  type: f32
+  unit: W.h
+  aliases:
+  - _WH_Z[4]
+  - Real energy L1..L3, delivered
+  source:
+    address: '14007'
+    page: 26
+    reference: Address list, _WH_Z[4]
+- id: digital_input_1
+  address: 14119
+  type: i16
+  enum:
+    values:
+    - value: 0
+      name: not_active
+      label: not active
+    - value: 1
+      name: active
+      label: active
+  aliases:
+  - _DIGIN_STAT[0]
+  - Status digital input, 0=not active, 1=active
+  source:
+    address: '14119'
+    page: 30
+    reference: Address list, _DIGIN_STAT[0]
+- id: event_counter
+  address: 14121
+  type: u32
+  aliases:
+  - _EVT_COUNT
+  - Event counter
+  source:
+    address: '14121'
+    page: 30
+    reference: Address list, _EVT_COUNT
+- id: voltage_l1_n
+  address: 19000
+  type: f32
+  unit: V
+  aliases:
+  - _G_ULN[0]
+  - Voltage L1-N
+  source:
+    address: '19000'
+    page: 12
+    reference: Address list, _G_ULN[0]
+- id: voltage_l2_n
+  address: 19002
+  type: f32
+  unit: V
+  aliases:
+  - _G_ULN[1]
+  - Voltage L2-N
+  source:
+    address: '19002'
+    page: 12
+    reference: Address list, _G_ULN[1]
+- id: voltage_l3_n
+  address: 19004
+  type: f32
+  unit: V
+  aliases:
+  - _G_ULN[2]
+  - Voltage L3-N
+  source:
+    address: '19004'
+    page: 12
+    reference: Address list, _G_ULN[2]
+- id: voltage_l1_l2
+  address: 19006
+  type: f32
+  unit: V
+  aliases:
+  - _G_ULL[0]
+  - Voltage L1-L2
+  source:
+    address: '19006'
+    page: 12
+    reference: Address list, _G_ULL[0]
+- id: current_l1
+  address: 19012
+  type: f32
+  unit: A
+  aliases:
+  - _G_ILN[0]
+  - Apparent current, L1
+  source:
+    address: '19012'
+    page: 12
+    reference: Address list, _G_ILN[0]
+- id: current_l2
+  address: 19014
+  type: f32
+  unit: A
+  aliases:
+  - _G_ILN[1]
+  - Apparent current, L2
+  source:
+    address: '19014'
+    page: 12
+    reference: Address list, _G_ILN[1]
+- id: current_l3
+  address: 19016
+  type: f32
+  unit: A
+  aliases:
+  - _G_ILN[2]
+  - Apparent current, L3
+  source:
+    address: '19016'
+    page: 12
+    reference: Address list, _G_ILN[2]
+- id: active_power_total
+  address: 19026
+  type: f32
+  unit: W
+  aliases:
+  - _G_P_SUM3
+  - Sum; Psum3=P1+P2+P3
+  source:
+    address: '19026'
+    page: 12
+    reference: Address list, _G_P_SUM3
+- id: apparent_power_total
+  address: 19034
+  type: f32
+  unit: V.A
+  aliases:
+  - _G_S_SUM3
+  - Sum; Ssum3=S1+S2+S3
+  source:
+    address: '19034'
+    page: 12
+    reference: Address list, _G_S_SUM3
+- id: reactive_power_total
+  address: 19042
+  type: f32
+  description: 'Vendor unit: var.'
+  aliases:
+  - _G_Q_SUM3
+  - Sum; Qsum3=Q1+Q2+Q3
+  source:
+    address: '19042'
+    page: 12
+    reference: Address list, _G_Q_SUM3
+- id: frequency
+  address: 19050
+  type: f32
+  unit: Hz
+  aliases:
+  - _G_FREQ
+  - Measured frequency
+  source:
+    address: '19050'
+    page: 12
+    reference: Address list, _G_FREQ
+- id: voltage_thd_l1_n
+  address: 19110
+  type: f32
+  unit: '%'
+  aliases:
+  - _G_THD_ULN[0]
+  - Harmonic, THD,U L1-N
+  source:
+    address: '19110'
+    page: 12
+    reference: Address list, _G_THD_ULN[0]
+- id: current_thd_l1
+  address: 19116
+  type: f32
+  unit: '%'
+  aliases:
+  - _G_THD_ILN[0]
+  - Harmonic, THD,I L1
+  source:
+    address: '19116'
+    page: 12
+    reference: Address list, _G_THD_ILN[0]
+- id: differential_current_1_alarm_status
+  address: 19224
+  type: i16
+  flags:
+    flags:
+    - bit: 0
+      name: warning
+      label: Warning
+    - bit: 1
+      name: overcurrent
+      label: Overcurrent
+    - bit: 2
+      name: alarm
+      label: Alarm
+    - bit: 3
+      name: ct_not_connected
+      label: CT not connected
+  aliases:
+  - _COMP_DIFF_STATUS[0]
+  - Alarm status for diff 1 with
+  source:
+    address: '19224'
+    page: 32
+    reference: Address list, _COMP_DIFF_STATUS[0]
+- id: power_factor_total
+  address: 19636
+  type: f32
+  aliases:
+  - _PF_TOTAL
+  - PF Total, PF_Total=P_Sum3/S_Sum3
+  source:
+    address: '19636'
+    page: 15
+    reference: Address list, _PF_TOTAL

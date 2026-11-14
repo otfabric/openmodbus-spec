@@ -219,23 +219,44 @@ classes:
     slug: schneider-electric
     models:
     - model: iEM3155
-      status: needs-check
+      status: mapped
+      contracts: [devices/schneider-electric/iem3155/status.omb.yaml]
+      source: schneider-electric-iem3000-user-manual
+      layout: schneider-iem3000-doca0005en-16-direct
+      encodings: [u16, mask, offset, enum, flags]
       notes: >-
-        Every core quantity (current, voltage, power, frequency, energy) is Float32 or Int64 and the document never
-        states the register order; only single-register settings would be mappable, which is not a representative
-        energy-meter contract.
+        Partial contract: single-register UInt16 and Bitmap rows only (firmware version, clock bit fields, wiring,
+        nominal frequency, tariff, serial settings, digital I/O mode, diagnostics bitmap, overload alarm status).
+        Left out because the manual does not state the register order: every measurement and energy (Float32, Int64),
+        the serial number (UInt32) and the UTF8 strings (p-schneider-meters-word-order). Also left out: the UInt16
+        power factor registers 3196/3197 (no scale stated) and Digital Input Status (two-register Bitmap, and its
+        Address 0x22C8 and Register 8906 disagree).
     - model: iEM3255
-      status: needs-check
+      status: mapped
+      contracts: [devices/schneider-electric/iem3255/status.omb.yaml]
+      source: schneider-electric-iem3000-user-manual
+      layout: schneider-iem3000-doca0005en-16-ct-vt
+      encodings: [u16, mask, offset, enum, flags]
       notes: >-
-        Every core quantity (current, voltage, power, frequency, energy) is Float32 or Int64 and the document never
-        states the register order; only single-register settings would be mappable, which is not a representative
-        energy-meter contract.
+        Partial contract: single-register UInt16 and Bitmap rows only (firmware version, clock bit fields, wiring,
+        nominal frequency, tariff, serial settings, digital I/O mode, diagnostics bitmap, overload alarm status,
+        VT secondary, CT primary and secondary). Left out because the manual does not state the register order:
+        every measurement and energy (Float32, Int64), the serial number (UInt32) and the UTF8 strings (p-schneider-meters-word-order).
+        Also left out: the UInt16 power factor registers 3196/3197 (no scale stated) and Digital Input Status (two-register
+        Bitmap, and its Address 0x22C8 and Register 8906 disagree).
     - model: iEM3355
-      status: needs-check
+      status: mapped
+      contracts: [devices/schneider-electric/iem3355/status.omb.yaml]
+      source: schneider-electric-iem3000-user-manual
+      layout: schneider-iem3000-doca0005en-16-direct
+      encodings: [u16, mask, offset, enum, flags]
       notes: >-
-        Every core quantity (current, voltage, power, frequency, energy) is Float32 or Int64 and the document never
-        states the register order; only single-register settings would be mappable, which is not a representative
-        energy-meter contract.
+        Partial contract: single-register UInt16 and Bitmap rows only (firmware version, clock bit fields, wiring,
+        nominal frequency, tariff, serial settings, digital I/O mode, diagnostics bitmap, overload alarm status).
+        Left out because the manual does not state the register order: every measurement and energy (Float32, Int64),
+        the serial number (UInt32) and the UTF8 strings (p-schneider-meters-word-order). Also left out: the UInt16
+        power factor registers 3196/3197 (no scale stated) and Digital Input Status (two-register Bitmap, and its
+        Address 0x22C8 and Register 8906 disagree).
     sources:
     - title: Energy meters iEM3100 / iEM3200 / iEM3300 series User manual
       revision: DOCA0005EN-16 (05/2026)
@@ -248,6 +269,17 @@ classes:
         Download is admissible (direct, credential-free, stable over two fetches; the roster URL serves the same
         bytes as the edition-pinned URL). Not added to the manifest because no model could be mapped (doc-ambiguity
         c01-schneider-word-order).
+    - id: schneider-electric-iem3000-user-manual
+      title: Energy meters iEM3100 / iEM3200 / iEM3300 series User manual
+      revision: DOCA0005EN-16, 05/2026
+      url: https://download.se.com/files?p_Doc_Ref=DOCA0005EN&p_enDocType=User+guide&p_File_Name=DOCA0005EN-16.pdf
+      landing_url: https://www.se.com/ww/en/download/document/DOCA0005EN/
+      format: pdf
+      http_status: 200
+      admitted: true
+      notes: >-
+        Proxus pinned the -07 edition (FAQ attachment), a different file. Word order of Float32, UInt32 and Int64
+        is not stated anywhere in the manual.
   - vendor: Socomec
     slug: socomec
     models:
@@ -397,23 +429,16 @@ classes:
       status: mapped
       contracts: [devices/janitza/umg-96rm/telemetry.omb.yaml]
       source: janitza-umg96rm-modbus-de
-      layout: janitza-umg96rm-fw1.14
+      layout: see corpus/roster.yaml
       encodings: [f32, i16, exponent10]
-      notes: >-
-        From the "Häufig benötigte Messwerte" block (19000 to 19116): phase and line voltage, phase currents, total
-        P/Q/S, frequency, THD of U L1-N and I L1. Total PF from "Messwerte, Typ Float" (834); import and export
-        energy, rate 0, from "Energie, Typ Float" (5352, 5368); one short value (3530, 0.1 V) that excludes the
-        transformer ratio. Floats need no invalid sentinel (non-finite floats are invalid by §6.6). Left out: the
-        rotation field (a float carrying 1/0/-1, c02-janitza-rotation-float-enum), integer energy and the mirrored
-        little-endian range. Address base and register table are mapped under rule 3 and info.description says so
-        (c02-janitza-base-inferred).
+      notes: Existing contract, not rebuilt or changed in this pass; only cross-checked.
     - model: UMG 96RM-E
       status: mapped
       contracts: [devices/janitza/umg-96rm-e/telemetry.omb.yaml]
       source: janitza-umg96rm-e-modbus
-      layout: janitza-umg96rm-e-fw3.01
+      layout: see corpus/roster.yaml
       encodings: [f32, i16, exponent10]
-      notes: Same rows and addresses as the UMG 96RM, read from the English UMG 96RM-E list.
+      notes: Existing contract, not rebuilt or changed in this pass; only cross-checked.
     - model: UMG 96RM-PN
       status: mapped
       contracts: [devices/janitza/umg-96rm-pn/telemetry.omb.yaml]
@@ -450,16 +475,20 @@ classes:
     slug: schneider-electric
     models:
     - model: PM5110
-      status: blocked
+      status: needs-check
       notes: >-
-        The only register list found is the legacy .xls (c02-schneider-xls-reader). Even with a reader, the base
-        and word order would still need evidence (c02-schneider-base-wordorder).
-    - {model: PM5330, status: blocked, notes: Same as PM5110.}
+        The list is readable now (column E 'PM5110_11') but states neither the address base nor the word order,
+        and no pinnable Schneider document states them for the PM5000 (p-schneider-meters-pmc-base, p-schneider-meters-word-order).
+        Was 'blocked' on the .xls reader; that part is solved.
+    - model: PM5330
+      status: needs-check
+      notes: Same as PM5110 (column G 'PM5330_31').
     - model: PM5560
       status: needs-check
       notes: >-
-        The workbook is readable and lists the PM5560 (column L), but it states neither the address base nor the
-        word order (c02-schneider-base-wordorder). Not mapped.
+        Unchanged verdict, with more evidence: the workbook, the PM5500 user manual and every FAQ attachment were
+        searched; the only Schneider statements found are a FAQ web page that cannot be pinned (word order) and
+        the manuals of sibling meters (base). See p-schneider-meters-pmc-base and p-schneider-meters-word-order.
     sources:
     - title: PM556x_PublicModbusRegisterList_10th_August-23
       revision: Revision sheet 1.4 (PM5560 firmware 4.1.8), workbook modified 2023-08-10
@@ -498,13 +527,30 @@ classes:
     - model: SENTRON PAC2200
       status: needs-check
       notes: >-
-        Address base only inferable and multi-register word order unstated (c02-siemens-word-order).
+        Rule 4. Every measured variable is a Float, Unsigned long or Double, and the manual states neither the meaning
+        of "Offset" nor the register order. The PAC RS485 expansion module manual, which settles both for the PAC3200,
+        PAC4200 and PAC3220, is not named by the PAC2200 manual and does not cover a device without expansion slot.
+        See work item p-siemens-pac2200-conventions.
     - model: SENTRON PAC3120
-      status: needs-check
-      notes: Same as PAC2200 (c02-siemens-word-order).
+      status: mapped
+      contracts: [devices/siemens/pac3120/telemetry.omb.yaml]
+      source: siemens-pac3120-pac3220-manual
+      layout: siemens-sentron-pac3120-pac3220-appendix-a1
+      encodings: [f32, u32, enum, flags]
+      notes: >-
+        Rule 3: the PAC3120 has a built-in RS485 interface and no expansion slot, so the RS485 module manual does
+        not cover it; the mapping follows from the single table the manual gives for both models. Said in info.description;
+        confirmation asked in p-siemens-pac-rs485-frames. Default slave address 126 (section 2.5).
     - model: SENTRON PAC3220
-      status: needs-check
-      notes: Same as PAC2200 (c02-siemens-word-order).
+      status: mapped
+      contracts: [devices/siemens/pac3220/telemetry.omb.yaml]
+      source: siemens-pac3120-pac3220-manual
+      layout: siemens-sentron-pac3120-pac3220-appendix-a1
+      encodings: [f32, u32, enum, flags]
+      notes: >-
+        Rule 2 through the named companion manual, whose frames were captured from a PAC3200 (p-siemens-pac-rs485-frames).
+        Energy from the float copies (2801, 2805, 2817), which the manual recommends for display only; the double
+        counters are left out (p-siemens-pac-double-order). Expansion-module status registers (233-239) left out.
     sources:
     - title: SENTRON PAC2200 Equipment Manual
       revision: 12/2022, L1V30415167B-06
@@ -524,6 +570,26 @@ classes:
       notes: >-
         The LED example text extracts garbled (shifted font); the page was rendered and read as an image. Tables
         A-3 to A-5 carry wrong bit masks (c02-siemens-bitmask-erratum).
+    - id: siemens-pac3120-pac3220-manual
+      title: SENTRON 7KM PAC3120 and PAC3220 Power Monitoring Device Equipment Manual
+      revision: L1V30425208F_RS-AA_002, 07/2024
+      url: https://cache.industry.siemens.com/dl/files/307/109767307/att_1298442/v1/MAN_L1V30425208F_RS-AA_002_en_en-US.pdf
+      landing_url: https://support.industry.siemens.com/cs/ww/en/view/109767307
+      format: pdf
+      http_status: 200
+      admitted: true
+      notes: >-
+        Newest public edition. Proxus used the 10/2019 edition (L1V30425208F-01) from assets.new.siemens.com, which
+        is also Siemens-hosted and stable (probe 049) but older: it lacks the float energy copies at 2801-2879.
+    - id: siemens-pac-rs485-manual
+      title: SENTRON Expansion Module PAC RS485 Manual
+      revision: A5E02091800B-01, 02/2008
+      url: https://cache.industry.siemens.com/dl/files/965/28865965/att_37895/v1/SENTRON_PAC_RS485-Modul_Manual_01_US.pdf
+      landing_url: https://support.industry.siemens.com/cs/ww/en/view/28865965
+      format: pdf
+      http_status: 200
+      admitted: true
+      notes: Shared evidence.
 - id: 3
   name: Grid-tied PV inverters
   vendors:
@@ -654,20 +720,27 @@ classes:
     slug: sma
     models:
     - model: SB3.0-1AV-41
-      status: needs-check
+      status: blocked
       notes: >-
-        In scope of SunSpecModbus-TI-en-11 from firmware 4.00.23.R, but the vendor document requires SunSpec model
-        discovery to locate any point (question c03-sma-sunspec-discovery).
+        Not mapped: the conventions of the SMA Modbus profile (address base, byte order, NaN values, FIXn decimals)
+        are stated only in SMA's technical information SMA-Modbus-general-TI-en-10, whose legal provisions require
+        SMA's prior written approval for any publication, whole or in part. Contracts derived from it are not published
+        (maintainer decision, 2026-11-14); see p-danfoss-sma-solaredge-sma-legal-provisions.
     - model: SB5.0-1AV-41
-      status: needs-check
+      status: blocked
       notes: >-
-        In scope of SunSpecModbus-TI-en-11 from firmware 4.00.23.R, but the vendor document requires SunSpec model
-        discovery to locate any point (question c03-sma-sunspec-discovery).
+        Not mapped: the conventions of the SMA Modbus profile (address base, byte order, NaN values, FIXn decimals)
+        are stated only in SMA's technical information SMA-Modbus-general-TI-en-10, whose legal provisions require
+        SMA's prior written approval for any publication, whole or in part. Contracts derived from it are not published
+        (maintainer decision, 2026-11-14); see p-danfoss-sma-solaredge-sma-legal-provisions.
     - model: STP5.0-3AV-40
-      status: needs-check
+      status: blocked
       notes: >-
-        In scope of SunSpecModbus-TI-en-11 from firmware 4.00.02.R, but the vendor document requires SunSpec model
-        discovery to locate any point (question c03-sma-sunspec-discovery).
+        Not mapped: the conventions of the SMA Modbus profile (address base, byte order, NaN values, FIXn decimals)
+        are stated only in SMA's technical information SMA-Modbus-general-TI-en-10, whose legal provisions require
+        SMA's prior written approval for any publication, whole or in part. Contracts derived from it are not published
+        (maintainer decision, 2026-11-14); see p-danfoss-sma-solaredge-sma-legal-provisions. The parameter list
+        for this model was not found on files.sma.de either.
     sources:
     - title: >-
         Technical Information SUNSPEC MODBUS - Sunny Boy / Sunny Tripower / Sunny Highpower (SunSpecModbus-TI-en-11)
@@ -681,6 +754,29 @@ classes:
         Downloadable and stable (two identical fetches) but not mappable: no fixed addresses. A SunSpec models release
         would give offsets inside models, not the absolute chain. The product's 'Parameters and Measured Values'
         / 'SMA MODBUS' register lists are named on manuals.sma.de without a direct download link; not located.
+    - id: sma-sbxx-1av-41-parameters
+      title: >-
+        Parameters and Measured Values: SB3.0-1AV-41 / SB3.6-1AV-41 / SB4.0-1AV-41 / SB5.0-1AV-41 / SB6.0-1AV-41
+      revision: V16, valid from firmware 4.01.15.R (SMA Grid Guard 10.0)
+      url: https://files.sma.de/downloads/PARAMETER-HTML_SBxx-1AV-41-GG10_V16.zip
+      landing_url: https://www.sma.de/en/products/solarinverters/sunny-boy-30-36-40-50-60
+      format: zip
+      http_status: 200
+      admitted: false
+      notes: >-
+        Not used (maintainer decision, 2026-11-14): the SMA technical information that states the Modbus conventions
+        requires SMA's prior written approval for any publication, whole or in part.
+    - id: sma-modbus-general-ti
+      title: Technical Information - SMA and SunSpec Modbus Interface
+      revision: SMA-Modbus-general-TI-en-10, Version 1.0 (2018-05-24)
+      url: https://files.sma.de/downloads/SMA-Modbus-general-TI-en-10.pdf
+      landing_url: https://files.sma.de/downloads/SMA-Modbus-general-TI-en-10.pdf
+      format: pdf
+      http_status: 200
+      admitted: false
+      notes: >-
+        Not used (maintainer decision, 2026-11-14): the SMA technical information that states the Modbus conventions
+        requires SMA's prior written approval for any publication, whole or in part.
   - vendor: SolarEdge
     slug: solaredge
     models:
@@ -1891,14 +1987,43 @@ classes:
     slug: abb
     models:
     - model: ACS580
-      status: needs-check
-      notes: Needs the ACS580 firmware manual next to FSCA-01; see c08-abb-fsca01-scope.
+      status: mapped
+      contracts: [devices/abb/acs580/status.omb.yaml]
+      source: abb-acs580-firmware-manual
+      layout: abb-efb-acx580
+      encodings: &id001 [u16, i16, u32_cdab, exponent10, flags, enum]
+      notes: >-
+        Embedded fieldbus (EFB, Modbus RTU on the control unit), not the FSCA-01 adapter. Written for ASCKX 2.20.
+        Depends on the EFB defaults, which the extractor requires from the manual: 58.25 = ABB Drives, 58.33 = Mode
+        0, 58.34 = LO-HI, 58.104/58.105 = SW 16bit/Act1 16bit. Address base derived (p-abb-efb-address-base). Left
+        out: every parameter whose range starts below zero (speed 01.01, frequency 01.06, torque 01.10, power 01.14,
+        inverter temperature 05.11), because the manual does not state the encoding of negative parameter values
+        (p-abb-efb-negative-encoding); the absolute-value parameters 01.61-01.65 are mapped instead. Also left out:
+        control word and references (written by the master), coils and discrete inputs (p-abb-efb-bit-references),
+        16-bit values that scale to another parameter (c08-abb-ratio-scaling). actual_value_1 is exposed raw.
     - model: ACH580
-      status: needs-check
-      notes: Needs the ACH580 firmware manual next to FSCA-01; see c08-abb-fsca01-scope.
+      status: mapped
+      contracts: [devices/abb/ach580/status.omb.yaml]
+      source: abb-ach580-firmware-manual
+      layout: abb-efb-acx580
+      encodings: *id001
+      notes: >-
+        No Proxus map for the ACH580. Against the Proxus ACS580 map, for information only: 8 OK, 12 not in Proxus,
+        0 DIFF. Same points and addresses as ACS580; the EFB must be set to Modbus RTU (it also offers BACnet MS/TP
+        and N2). Version 2.22 and later. Same omissions and work items as ACS580.
     - model: ACS880
-      status: needs-check
-      notes: Needs the ACS880 firmware manual next to FSCA-01; see c08-abb-fsca01-scope.
+      status: mapped
+      contracts: [devices/abb/acs880/status.omb.yaml]
+      source: abb-acs880-firmware-manual
+      layout: abb-efb-acs880
+      encodings: *id001
+      notes: >-
+        Embedded fieldbus (EFB, Modbus RTU on terminal XD2D of BCU/ZCU control units; enabling it disables the drive-to-drive
+        link), not the FSCA-01 adapter. AINL firmware 3.47+ (BCU) / 3.48+ (ZCU); drives with other control units
+        have other manuals. Same default dependencies and omissions as ACS580. Differences: motoring energy counters
+        01.18-01.20 (01.18 and 01.19 are stated int16), power as 01.66 Abs output power % motor nom (the kW/hp row
+        01.65 wraps its scaling over two lines and its unit depends on 96.16), no 05.03 Hours run, 06.16 has no
+        Running bit. Status word bit 12 (EXT_RUN_ENABLE) is not listed (p-abb-acs880-status-bit-12).
     sources:
     - title: FSCA-01 RS-485 adapter module user's manual
       revision: 3AUA0000109533 Rev C, 2019-01-03
@@ -1913,6 +2038,49 @@ classes:
         3AXD50000027537, ACS880 3AUA0000085967. Those were not fetched. From this manual alone only the status word,
         Act1 and Act2 can be defined, which is below the 6-point minimum, and Act1/Act2 scaling depends on drive
         parameters.
+    - id: abb-acs580-firmware-manual
+      title: ACS580 standard control program firmware manual
+      revision: 3AXD50000016097 Rev J (effective 2025-10-01)
+      url: https://library.e.abb.com/public/d03c76db17d34239a838ed3baf814028/EN_ACS580_FW_J_A5.pdf
+      landing_url: https://library.abb.com/d/3AXD50000016097
+      format: pdf
+      http_status: 200
+      admitted: true
+      notes: >-
+        Direct URL found through search.abb.com/library/Download.aspx?DocumentID=3AXD50000016097&LanguageCode=en&DocumentPartId=1&Action=Launch
+        (drive manuals need DocumentPartId=1; an empty one returns 404). Fetched twice with curl and once by corpus/run.py:
+        identical bytes. In the chapters used, PDF page = printed page - 2. The chapter 'Fieldbus control through
+        the embedded fieldbus interface (EFB)' states its own register addressing, so the FSCA-01 adapter manual
+        is not needed for this contract.
+    - id: abb-ach580-firmware-manual
+      title: ACH580 HVAC control program firmware manual
+      revision: 3AXD50000027537 Rev J (effective 2026-02-23)
+      url: https://library.e.abb.com/public/c896544ee053430081a08ac378039428/EN_ACH580_FW_J_A5.pdf
+      landing_url: https://library.abb.com/d/3AXD50000027537
+      format: pdf
+      http_status: 200
+      admitted: true
+      notes: >-
+        Not in Proxus. Same layout as the ACS580 manual, chapter title 'Modbus RTU control through the embedded
+        fieldbus interface (EFB)'. The pages carry a thumb index of chapter numbers in the outer margins, which
+        plain pdftotext -layout mixes into table rows; the extractor reads the page body (x 23 to 396 pt) and requires,
+        from pdftotext -bbox, that every word outside it is a one- or two-digit number (p-abb-pdf-body-crop). Fetched
+        twice with curl and once by corpus/run.py: identical bytes. PDF page = printed page.
+    - id: abb-acs880-firmware-manual
+      title: >-
+        ACS880 primary control program for ZCU or BCU control unit (AINL) firmware manual
+      revision: 3AUA0000085967 Rev Z (effective 2026-11-10)
+      url: https://library.e.abb.com/public/5891e85183434c358f1776536c7cbda8/EN_ACS880_primary_ctrl_prg_AINL_FW_Z_A5.pdf
+      landing_url: https://library.abb.com/d/3AUA0000085967
+      format: pdf
+      http_status: 200
+      admitted: true
+      notes: >-
+        Different edition from Proxus: they pinned Rev Y of 2024-03-12 (sha256 f5f3751a...), accessed 2026-11-09;
+        ABB published Rev Z on 2026-11-10 and the document alias now serves only that. We could not obtain Rev Y
+        to compare bytes or pages. Rev Z has one parameter listing with 'Def / Type' and 'FbEq 16b / 32b' columns,
+        so it states a type (uint16, int16, uint32, real32) per parameter. Fetched twice with curl and once by corpus/run.py:
+        identical bytes. PDF page = printed page.
   - vendor: AutomationDirect
     slug: automationdirect
     models:
@@ -1991,11 +2159,17 @@ classes:
     - model: FC 301
       status: needs-check
       notes: >-
-        Address base ambiguous in the Design Guide; needs the FC 301/302 Programming Guide.
+        The FC 301/302 Programming Guide (AU275636650261en, 2022.12, software 9.12 and 48.9X) is located but not
+        mapped: the address base stays open as in c08-danfoss-fc300-address-base. The FC Series Modbus RTU Operating
+        Instructions MG92B102 (2011) have a byte-level example but are not accepted as evidence for this model (maintainer
+        decision, 2026-11-14).
     - model: FC 302
       status: needs-check
       notes: >-
-        Address base ambiguous in the Design Guide; needs the FC 301/302 Programming Guide.
+        The FC 301/302 Programming Guide (AU275636650261en, 2022.12, software 9.12 and 48.9X) is located but not
+        mapped: the address base stays open as in c08-danfoss-fc300-address-base. The FC Series Modbus RTU Operating
+        Instructions MG92B102 (2011) have a byte-level example but are not accepted as evidence for this model (maintainer
+        decision, 2026-11-14).
     sources:
     - id: danfoss-fc51-oi
       title: VLT Micro Drive FC 51 Operating Instructions
@@ -2019,6 +2193,36 @@ classes:
       notes: >-
         Not admitted: the address base is ambiguous, and parameter sizes and conversion indexes are deferred to
         "the product relevant programming guide".
+    - id: danfoss-fc301-302-pg
+      title: VLT AutomationDrive FC 301/302 Programming Guide
+      revision: AU275636650261en-000101 / 130R0334, 2022.12, software versions 9.12 and 48.9X
+      url: https://assets.danfoss.com/documents/271671/AU275636650261en-003001.pdf
+      landing_url: https://assets.danfoss.com/documents/271671/AU275636650261en-003001.pdf
+      format: pdf
+      http_status: 200
+      admitted: true
+      notes: >-
+        Resolves roster work item c08-danfoss-fc300-programming-guide. Same edition and bytes as Proxus.
+    - id: danfoss-fc301-302-design-guide
+      title: VLT AutomationDrive FC 301/FC 302 Design Guide, 0.25-75 kW
+      revision: MG33BF02, Rev. 2013-12-20
+      url: https://assets.danfoss.com/documents/272493/AJ286655760917en-000301.pdf
+      landing_url: https://assets.danfoss.com/documents/272493/AJ286655760917en-000301.pdf
+      format: pdf
+      http_status: 200
+      admitted: true
+      notes: Pinned as evidence, not mapped. Not cited by Proxus.
+    - id: danfoss-modbus-rtu-oi
+      title: Modbus RTU Operating Instructions
+      revision: MG92B102, Rev. 2011-10-31
+      url: https://assets.danfoss.com/documents/271338/AQ361181101347en-000101.pdf
+      landing_url: https://assets.danfoss.com/documents/271338/AQ361181101347en-000101.pdf
+      format: pdf
+      http_status: 200
+      admitted: false
+      notes: >-
+        Not used (maintainer decision, 2026-11-14): written for the FC Series as a whole, not for this model, and
+        older than the Programming Guide.
   - vendor: Rockwell Automation
     slug: rockwell-automation
     models:
@@ -2755,10 +2959,859 @@ extras:
 - vendor: Victron Energy
   model: Cerbo GX (GX system service)
   class: 4
+  status: mapped
   contracts: [devices/victron/cerbo-gx/system.omb.yaml]
   notes: >-
     Pilot contract from the pinned dbus_modbustcp attributes.csv; the GX gateway itself, not one of the three class
     4 target models.
+- vendor: ABB
+  model: A43
+  class: 1
+  status: mapped
+  contracts: [devices/abb/a43/telemetry.omb.yaml]
+  source: abb-a43-a44-manual
+  layout: abb-eq-a4x
+  encodings:
+  - u64
+  - i64
+  - u32
+  - i32
+  - u16
+  - i16
+  - exponent10
+  - invalid
+  - string
+  - mask
+  - enum
+  - safe_gap_range
+  origin: proxus-io/modbus-register-maps devices/abb/a43-a44.yaml
+  notes: >-
+    Direct-connected meter. Applies to variants with RS-485 set to Modbus. Same selection as B23/B24 except that
+    the power phase angle is replaced by the first register of the voltage harmonics block L1-N (THD, Platinum subgroup
+    only; other subgroups read invalid). Left out: tariff, per-phase and resettable energies, phase angles, quadrants,
+    I/O, 64-bit flag words without bit definitions, byte-packed Date/time, DMTME map, write-only operations, historical
+    data.
+- vendor: ABB
+  model: A44
+  class: 1
+  status: mapped
+  contracts: [devices/abb/a44/telemetry.omb.yaml]
+  source: abb-a43-a44-manual
+  layout: abb-eq-a4x
+  encodings:
+  - u64
+  - i64
+  - u32
+  - i32
+  - u16
+  - i16
+  - exponent10
+  - invalid
+  - string
+  - mask
+  - enum
+  - safe_gap_range
+  origin: proxus-io/modbus-register-maps devices/abb/a43-a44.yaml
+  notes: >-
+    Transformer-connected meter. Identical points to A43 (one manual, one map). CT/VT ratio settings (8C04-8C0A)
+    not selected.
+- vendor: Carlo Gavazzi
+  model: EM111
+  class: 1
+  status: mapped
+  contracts: [devices/carlo-gavazzi/em111/telemetry.omb.yaml]
+  source: carlo-gavazzi-em100-et100-protocol
+  layout: carlo-gavazzi-em100
+  encodings: [i32_cdab, i16, u16, exponent10, invalid]
+  origin: proxus-io/modbus-register-maps devices/carlo-gavazzi/em111-em112.yaml
+  notes: >-
+    Table 2.4-1 (p.8) plus version and revision code (p.11). invalid 7FFFFFFFh on V, A, W, VA, var from p.8 section
+    2.3 ('7FFFFFFFh (word order FFFF 7FFF)'). Left out: identification code 000Bh, which lies inside W dmd 000Ah-000Bh
+    and has no one-word read rule in this document (see c01-request-shape-dependent-register); the integer/decimal
+    totalizers at 0400h and the INT64 totalizers at 0500h (firmware b.10, meters made from 2020; the INT64 rows
+    carry no value weight); the hour counter (ET112 only). No maxReadRegisters: text says 50, frame tables say 20.
+- vendor: Carlo Gavazzi
+  model: EM112
+  class: 1
+  status: mapped
+  contracts: [devices/carlo-gavazzi/em112/telemetry.omb.yaml]
+  source: carlo-gavazzi-em100-et100-protocol
+  layout: carlo-gavazzi-em100
+  encodings: [i32_cdab, i16, u16, exponent10, invalid]
+  origin: proxus-io/modbus-register-maps devices/carlo-gavazzi/em111-em112.yaml
+  notes: >-
+    Same points as the EM111; the document separates the two only in the sign table (p.7) and in setup registers.
+- vendor: Carlo Gavazzi
+  model: EM210
+  class: 1
+  status: mapped
+  contracts: [devices/carlo-gavazzi/em210/telemetry.omb.yaml]
+  source: carlo-gavazzi-em210-protocol
+  layout: carlo-gavazzi-em210
+  encodings: [i32_cdab, i16, u16, exponent10, enum, isolated]
+  origin: proxus-io/modbus-register-maps devices/carlo-gavazzi/em210.yaml
+  notes: >-
+    Table 2.3-1 (p.8, grouped by variable type) plus version, revision, programming lock and identification code
+    (p.10, each 'limited to a word at a time'). Scope: the cover says EM210_AV. Neutral current needs firmware A.5
+    (revision history p.14). Left out: frequency (weight printed as 'Hz' without factor), V L3-L1 000Ah (overlaps
+    the identification code, c01-request-shape-dependent-register), THD, hour counters. No invalid list: overflow
+    is 'MSB value ... 7FFFh' (p.7, c01-msw-overflow-sentinel). No maxReadRegisters: text says 61, frame tables say
+    11.
+- vendor: Carlo Gavazzi
+  model: EM24-DIN
+  class: 1
+  status: mapped
+  contracts: [devices/carlo-gavazzi/em24-din/telemetry.omb.yaml]
+  source: carlo-gavazzi-em24-din-protocol
+  layout: carlo-gavazzi-em24-din
+  encodings:
+  - i32_cdab
+  - i16
+  - u16
+  - exponent10
+  - enum
+  - flags
+  - isolated
+  - max_read_registers
+  origin: proxus-io/modbus-register-maps devices/carlo-gavazzi/em24-din.yaml
+  notes: >-
+    Table 2.3-1 (p.8) plus digital input status (flags), current tariff, front selector status and identification
+    code (p.8-9, each 'limited to a word at a time'). maxReadRegisters 11: text and frame tables agree on 11 (the
+    hex '10h' beside it is a misprint). Left out: V L3-L1 (identification code overlap), version code (codes offset
+    by 128 for PFB and 64 for X models) and revision code, demand, tariff and phase energies, counters. No invalid
+    list ('MSB value ... 7FFFh', p.7).
+- vendor: Carlo Gavazzi
+  model: EM24-IS
+  class: 1
+  status: mapped
+  contracts: [devices/carlo-gavazzi/em24-is/telemetry.omb.yaml]
+  source: carlo-gavazzi-em24-is-protocol
+  layout: carlo-gavazzi-em24-is
+  encodings:
+  - i32_cdab
+  - i16
+  - u16
+  - exponent10
+  - enum
+  - flags
+  - mask
+  - isolated
+  - max_read_registers
+  origin: proxus-io/modbus-register-maps devices/carlo-gavazzi/em24-is.yaml
+  notes: >-
+    SFA and SFB versions only. Table 2.3-1 (p.8): voltages, currents, system voltages, power factor, phase sequence,
+    frequency, kWh(+) TOT; the document marks power, demand and the other energy rows as Reserved. Firmware major/minor/revision
+    are masks of 0302h; the extractor checks the document's example (43h = 4.3). maxReadRegisters 11. Left out:
+    V L3-L1 (identification code overlap).
+- vendor: Carlo Gavazzi
+  model: EM330
+  class: 1
+  status: mapped
+  contracts: [devices/carlo-gavazzi/em330/telemetry.omb.yaml]
+  source: carlo-gavazzi-em300-et300-protocol
+  layout: carlo-gavazzi-em300
+  encodings: [i32_cdab, i16, u16, exponent10, enum, invalid, isolated]
+  origin: proxus-io/modbus-register-maps devices/carlo-gavazzi/em330-et330.yaml
+  notes: >-
+    Table 2.4-1 (p.9-10, grouped by variable type), version and revision code (p.13), identification code with the
+    model's codes from Table 2.8-2 (p.14, one word at a time). invalid 7FFFFFFFh on V, A, W, VA, var (p.8). Neutral
+    current An is mapped for ET series and EM330 as its Notes cell says. Left out: V L3-L1 (identification code
+    overlap), run hour meter (its row is not on one baseline; ET series and EM330 only), per-phase export energies
+    (ET only), the 0400h/0500h totalizers (EM340 / EM330 made from October 2018; the INT64 rows carry no weight),
+    THD (not available). No maxReadRegisters: text says 50, frame tables say 20.
+- vendor: Carlo Gavazzi
+  model: EM340
+  class: 1
+  status: mapped
+  contracts: [devices/carlo-gavazzi/em340/telemetry.omb.yaml]
+  source: carlo-gavazzi-em300-et300-protocol
+  layout: carlo-gavazzi-em340
+  encodings: [i32_cdab, i16, u16, exponent10, enum, invalid, isolated]
+  origin: proxus-io/modbus-register-maps devices/carlo-gavazzi/em340-et340.yaml
+  notes: >-
+    As the EM330 contract without the neutral current (p.10: 'only ET series and EM330 (other cases: value =0)').
+    The identification enumeration has 341 (production) and 340, which p.14 calls 'ENGINEERING SAMPLE ONLY (with
+    MSW-LSW word order)': the contract describes production meters and says so. The document says the 0400h integer/decimal
+    totalizers exist only on EM340 meters made from 1 October 2018 (p.11); they are left out (the split value is
+    the composite-values theme, e.g. c02-schneider-mod10k).
+- vendor: Carlo Gavazzi
+  model: ET330
+  class: 1
+  status: mapped
+  contracts: [devices/carlo-gavazzi/et330/telemetry.omb.yaml]
+  source: carlo-gavazzi-em300-et300-protocol
+  layout: carlo-gavazzi-em300
+  encodings: [i32_cdab, i16, u16, exponent10, enum, invalid, isolated]
+  origin: proxus-io/modbus-register-maps devices/carlo-gavazzi/em330-et330.yaml
+  notes: >-
+    Table 2.4-1 (p.9-10, grouped by variable type), version and revision code (p.13), identification code with the
+    model's codes from Table 2.8-2 (p.14, one word at a time). invalid 7FFFFFFFh on V, A, W, VA, var (p.8). Neutral
+    current An is mapped for ET series and EM330 as its Notes cell says. Left out: V L3-L1 (identification code
+    overlap), run hour meter (its row is not on one baseline; ET series and EM330 only), per-phase export energies
+    (ET only), the 0400h/0500h totalizers (EM340 / EM330 made from October 2018; the INT64 rows carry no weight),
+    THD (not available). No maxReadRegisters: text says 50, frame tables say 20.
+- vendor: Carlo Gavazzi
+  model: ET340
+  class: 1
+  status: mapped
+  contracts: [devices/carlo-gavazzi/et340/telemetry.omb.yaml]
+  source: carlo-gavazzi-em300-et300-protocol
+  layout: carlo-gavazzi-em300
+  encodings: [i32_cdab, i16, u16, exponent10, enum, invalid, isolated]
+  origin: proxus-io/modbus-register-maps devices/carlo-gavazzi/em340-et340.yaml
+  notes: >-
+    Table 2.4-1 (p.9-10, grouped by variable type), version and revision code (p.13), identification code with the
+    model's codes from Table 2.8-2 (p.14, one word at a time). invalid 7FFFFFFFh on V, A, W, VA, var (p.8). Neutral
+    current An is mapped for ET series and EM330 as its Notes cell says. Left out: V L3-L1 (identification code
+    overlap), run hour meter (its row is not on one baseline; ET series and EM330 only), per-phase export energies
+    (ET only), the 0400h/0500h totalizers (EM340 / EM330 made from October 2018; the INT64 rows carry no weight),
+    THD (not available). No maxReadRegisters: text says 50, frame tables say 20.
+- vendor: Eastron
+  model: SDM120CT-M
+  class: 1
+  status: mapped
+  contracts: [devices/eastron/sdm120ct-m/telemetry.omb.yaml]
+  source: eastron-sdm120ctm-modbus
+  layout: eastron-sdm-single-phase
+  encodings: [f32]
+  origin: proxus-io/modbus-register-maps devices/eastron/sdm120ct-m.yaml
+  notes: >-
+    Input registers whose row is on one line (p.5-6). Left out: the six power demand rows and maximum current demand
+    (cells wrap over lines), holding registers (float-coded settings, CT1/CT2, BCD scroll time: c01-float-coded-enum,
+    c01-bcd-setting). The register order rests on the worked response only: see work item p-gavazzi-eastron-sdm120ctm-register-order.
+- vendor: Eastron
+  model: SDM630MCT
+  class: 1
+  status: blocked
+  origin: proxus-io/modbus-register-maps devices/eastron/sdm630mct.yaml
+  notes: See work item p-gavazzi-eastron-sdm630mct-scan.
+- vendor: Eastron
+  model: SDM72D-M
+  class: 1
+  status: needs-check
+  origin: proxus-io/modbus-register-maps devices/eastron/sdm72d-m.yaml
+  notes: >-
+    Two reasons, see work items p-gavazzi-eastron-sdm72d-register-order and p-gavazzi-eastron-sdm72d-scope. Every
+    register is a float, so no partial contract is possible.
+- vendor: Fronius
+  model: Smart Meter
+  class: 1
+  status: mapped
+  contracts: [devices/fronius/smart-meter/telemetry.omb.yaml]
+  source: fronius-gen24-modbus
+  layout: fronius-smart-meter-intsf-1.2.7-2
+  encodings: [u16, i16, exponent10_point, enum, flags, invalid, string]
+  origin: proxus-io/modbus-register-maps devices/fronius/smart-meter.yaml
+  notes: >-
+    Mapped from the int+SF workbook of the same archive, not from the float workbook Proxus used: every measurement
+    of the float meter model is a float32 and no Fronius document states the register order of 32-bit values (c04-fronius-word-order,
+    p-fronius-float-word-order). The contract is therefore valid only while the Modbus setting 'SunSpec Model Type'
+    is int + SF; the manual names float as the default. Selected: Md (string); the meter model ID (register 40070,
+    enum 201-204: connection type, reads 0xFFFF = not available when no meter model follows); A, PhVphA, Hz, W,
+    VA, VAR with their scale-factor registers (VAR without unit: UCUM has no var). Left out: all energy counters
+    (acc32) and Evt (bitfield32, 'currently hardcoded to zero') for the word order; PF (vendor unit 'Pct'); per-phase
+    values. The meter is read through the inverter (device ID 200 by default); power signs depend on the meter location
+    set on the inverter. Cross-check: the standard tool compares by address and reports 2 OK, 8 DIFF, 4 NOT-IN-PROXUS
+    by construction (int+SF layout here, float layout there; the OKs are Md and the model ID register, which do
+    not move). By SunSpec point through the vendor's float workbook (Smart_Meter_Register_Map_Float.xlsx; staging
+    work/xcheck.py): 2 points like for like with the same width, type and scale-factor register (Md and the model
+    ID register, which are at the same address in both model types), 6 points are the same SunSpec point as float32
+    in the Proxus map, 6 scale-factor registers exist only in the int+SF model; no disagreement.
+- vendor: Janitza electronics
+  model: UMG 103-CBM
+  class: 1
+  status: needs-check
+  origin: proxus-io/modbus-register-maps devices/janitza/umg-103-cbm.yaml
+  notes: >-
+    Rule 4: the address base is neither stated nor forced. The list's lowest address is 8, so the address-0 argument
+    of c02-janitza-base-inferred does not apply, and the device's own manual has no request example. The table would
+    be forced the same way as for the other lists (writable rows share the list; the manual tells the reader to
+    write to address 8 and 9). See work item p-janitza-lovato-klemsan-umg103cbm-base.
+- vendor: Janitza electronics
+  model: UMG 509-PRO
+  class: 2
+  status: mapped
+  contracts: [devices/janitza/umg-509-pro/telemetry.omb.yaml]
+  source: janitza-umg509pro-modbus
+  layout: janitza-umg509pro
+  encodings: [f32, i32, u32, i16, enum, flags]
+  origin: proxus-io/modbus-register-maps devices/janitza/umg-509-pro.yaml
+  notes: >-
+    13 rows of the 19000 block, total import and export energy from the Energy section (13995, 14007), system time
+    (int), a digital input status (short enum), the event counter (uint), the differential-current alarm status
+    (short with bits 0-3) and PF total (19636). Transports rtu (RS-485), tcp and rtu_over_tcp (Ethernet), each required
+    from the manual (PDF p.17, p.105). Left out: 19068 (rate-1 energy, see c02-janitza-19068-erratum), the rotation
+    field (c02-janitza-rotation-float-enum), long64 _REALTIME (unit column reads "2 ns"), byte and string rows (the
+    list defines neither how an 8-bit value sits in a register nor a string format), and the little-endian mirror.
+- vendor: Janitza electronics
+  model: UMG 604-PRO
+  class: 2
+  status: mapped
+  contracts: [devices/janitza/umg-604-pro/telemetry.omb.yaml]
+  source: janitza-umg604pro-modbus
+  layout: janitza-umg604pro-fw5.030
+  encodings: [f32, i32, u32, i16]
+  origin: proxus-io/modbus-register-maps devices/janitza/umg-604-pro.yaml
+  notes: >-
+    Firmware 5.030 or later. 13 rows of the 19000 block, total consumed and supplied energy (9851, 9863), system
+    time (int), the temperature input (float, Cel), a digital input status (short), the event counter (uint) and
+    the average PF (19636). Base and table are mapped under rule 3 and info.description says so; see work item p-janitza-lovato-klemsan-umg604pro-base-inferred,
+    which extends c02-janitza-base-inferred. Transports rtu (RS-485, RS-232), tcp (port 502) and rtu_over_tcp (port
+    8000), each required from the manual (PDF p.18, p.71). Left out: rotation field, long64 rows, byte/string rows,
+    the little-endian mirror.
+- vendor: Janitza electronics
+  model: UMG 96-PA
+  class: 2
+  status: mapped
+  contracts: [devices/janitza/umg-96-pa/telemetry.omb.yaml]
+  source: janitza-umg96pa-modbus
+  layout: janitza-umg96pa-fw3.54
+  encodings: [f32, f64, u32, i16, u16, exponent10, enum]
+  origin: proxus-io/modbus-register-maps devices/janitza/umg-96-pa.yaml
+  notes: >-
+    Firmware 3.54 or later. 13 rows of the 19000 block, cos(phi) sum (1050), total consumed and delivered energy
+    as double (6012, 6156), two short values with the stated factors x10 and x1000 (11000, 11006; without the transformer
+    ratio, see c02-janitza-short-ratio), the serial number (uint) and the device type ID (ushort enum 19/30/32/34/38).
+    The archive also covers the UMG 96-PAMID+ and the RCM module; no MID+ or RCM rows are selected. Left out: rotation
+    field (c02-janitza-rotation-float-enum), long64 rows (the number-format table defines "long", the rows say "long64"),
+    char and string rows.
+- vendor: Klemsan
+  model: KLEA 320P
+  class: 2
+  status: blocked
+  origin: proxus-io/modbus-register-maps devices/klemsan/klea-320p.yaml
+  notes: >-
+    No Klemsan-owned host serves the manual without the Cloudflare challenge; see work item p-janitza-lovato-klemsan-klemsan-cloudflare.
+    The Proxus map was not checked: we have no vendor bytes to check it against.
+- vendor: Klemsan
+  model: KLEA 4
+  class: 2
+  status: blocked
+  origin: proxus-io/modbus-register-maps devices/klemsan/klea-4.yaml
+  notes: >-
+    No Klemsan-owned host serves the manual without the Cloudflare challenge; see work item p-janitza-lovato-klemsan-klemsan-cloudflare.
+    The Proxus map was not checked: we have no vendor bytes to check it against.
+- vendor: Klemsan
+  model: KLEA 6
+  class: 2
+  status: blocked
+  origin: proxus-io/modbus-register-maps devices/klemsan/klea-6.yaml
+  notes: >-
+    No Klemsan-owned host serves the manual without the Cloudflare challenge; see work item p-janitza-lovato-klemsan-klemsan-cloudflare.
+    The Proxus map was not checked: we have no vendor bytes to check it against.
+- vendor: Lovato Electric
+  model: DMG110
+  class: 2
+  status: mapped
+  contracts: [devices/lovato-electric/dmg110/telemetry.omb.yaml]
+  source: lovato-electric-dmg-modbus
+  layout: lovato-dmg-i317-dmg110
+  encodings: [u32, i32, u16, exponent10, enum]
+  origin: proxus-io/modbus-register-maps devices/lovato-electric/dmg110.yaml
+  notes: >-
+    Phase voltages and currents, L1-L2 voltage, frequency (Hz/1000), equivalent P/Q/S (W/100), equivalent PF, THD
+    of L1 voltage and current, total hour meter and the phase-sequence status at 20F0H (enum). constraints.maxReadRegisters
+    64 is parsed from PDF p.3. Transports rtu and ascii on RS-485 (PDF p.2). No energy: the DMG110 has only the
+    4-word counters (p-janitza-lovato-klemsan-lovato-4word-order). The power note on p.9 names only the DMG700,
+    DMG800 and DMG900 (p-janitza-lovato-klemsan-lovato-power-resolution).
+- vendor: Lovato Electric
+  model: DMG210
+  class: 2
+  status: mapped
+  contracts: [devices/lovato-electric/dmg210/telemetry.omb.yaml]
+  source: lovato-electric-dmg-modbus
+  layout: lovato-dmg-i317-dmg210
+  encodings: [u32, i32, u16, exponent10, enum]
+  origin: proxus-io/modbus-register-maps devices/lovato-electric/dmg210.yaml
+  notes: >-
+    As the DMG110, with frequency in Hz/100 (the unit cell reads "Hz/1000" and "Hz/100 DMG210"), the 2-word import
+    and export energy counters at 1A20H and 1A22H (roll over above 19 999 999.99 kWh) and the phase-sequence status
+    at 2074H. The 4-word counters (software revision 07 or later) are left out.
+- vendor: Lovato Electric
+  model: DMG800
+  class: 2
+  status: mapped
+  contracts: [devices/lovato-electric/dmg800/telemetry.omb.yaml]
+  source: lovato-electric-dmg-modbus
+  layout: lovato-dmg-i317-dmg800
+  encodings: [u32, i32, u16, exponent10, flags]
+  origin: proxus-io/modbus-register-maps devices/lovato-electric/dmg800.yaml
+  notes: >-
+    Phase voltages and currents, L1-L2 voltage, frequency (Hz/1000), equivalent PF, THD, the 2-word energy counters,
+    total hour meter, input 1, alarm 1 (bit 0 latched, bit 1 active, from the note on PDF p.15) and the clock year.
+    constraints.maxReadRegisters 80. Transports rtu, ascii and tcp as PDF p.2 states for the DMG6.., DMG700, DMG800
+    and DMG900 (see p-janitza-lovato-klemsan-lovato-dmg800-port). No power rows: from software revision 09 their
+    resolution depends on register 2F70H (p-janitza-lovato-klemsan-lovato-power-resolution).
+- vendor: Schneider Electric
+  model: EM6400NG
+  class: 2
+  status: needs-check
+  origin: proxus-io/modbus-register-maps devices/schneider-electric/em6400ng.yaml
+  notes: >-
+    The list names the model: column E 'EM6400 NG', and 'Meter Model' (register 50) default 'EM6400NG'. Base and
+    word order unstated, as for the PM2000. No EM6400NG user manual could be fetched (download.se.com 404 for NHA2768503;
+    the se.com document page needs JavaScript).
+- vendor: Schneider Electric
+  model: ION7400
+  class: 2
+  status: needs-check
+  origin: proxus-io/modbus-register-maps devices/schneider-electric/ion7400.yaml
+  notes: >-
+    Blocked only by the address base (p-schneider-ion-altivar-ion-address-base). Stated and ready for an extractor:
+    holding registers (function 3), MSW-first 32-bit integers and floats, the invalid patterns, and that the map
+    is the factory default and can be modified, replaced or disabled by configuration (compare c06-configured-default-scaling,
+    c03-config-dependent-layout). INT64 energies also need the 64-bit order (p-schneider-ion-altivar-ion-int64-order);
+    float kWh energies at 2700 onwards do not. Same finding for the PM5000 lists: c02-schneider-base-wordorder.
+- vendor: Schneider Electric
+  model: ION9000
+  class: 2
+  status: needs-check
+  origin: proxus-io/modbus-register-maps devices/schneider-electric/ion9000.yaml
+  notes: Same as ION7400; blocked only by p-schneider-ion-altivar-ion-address-base.
+- vendor: Schneider Electric
+  model: PM2130
+  class: 2
+  status: needs-check
+  origin: proxus-io/modbus-register-maps devices/schneider-electric/pm2100-pm2200.yaml
+  notes: >-
+    PM2100-series model the list names (column G). Base and word order unstated (p-schneider-meters-pmc-base, p-schneider-meters-word-order).
+- vendor: Schneider Electric
+  model: PM2230
+  class: 2
+  status: needs-check
+  origin: proxus-io/modbus-register-maps devices/schneider-electric/pm2100-pm2200.yaml
+  notes: PM2200-series model the list names (column I). Same reason as PM2130.
+- vendor: Schneider Electric
+  model: PM3250
+  class: 2
+  status: mapped
+  contracts: [devices/schneider-electric/pm3250/status.omb.yaml]
+  source: schneider-electric-pm3200-user-manual
+  layout: schneider-pm3250-doca0006en-09
+  encodings: [u16, mask, offset, enum]
+  origin: proxus-io/modbus-register-maps devices/schneider-electric/pm3250-pm3255.yaml
+  notes: >-
+    Partial contract: single-register UInt16 rows (firmware and language version, clock bit fields, demand method
+    and interval, active tariff, serial settings). Measurements, energies, demand values, min/max and THD are Float32,
+    Int64 or '4Q FP PF' and are left out (p-schneider-meters-word-order). The alarm tables were not parsed.
+- vendor: Schneider Electric
+  model: PM3255
+  class: 2
+  status: mapped
+  contracts: [devices/schneider-electric/pm3255/status.omb.yaml]
+  source: schneider-electric-pm3200-user-manual
+  layout: schneider-pm3255-doca0006en-09
+  encodings: [u16, mask, offset, enum]
+  origin: proxus-io/modbus-register-maps devices/schneider-electric/pm3250-pm3255.yaml
+  notes: >-
+    As PM3250 plus the rows the manual marks for the PM3255 only: energy pulse duration, digital input 1 control
+    mode, digital output 1 control mode.
+- vendor: Schneider Electric
+  model: PM8000
+  class: 2
+  status: needs-check
+  origin: proxus-io/modbus-register-maps devices/schneider-electric/pm8000.yaml
+  notes: Same as ION7400; blocked only by p-schneider-ion-altivar-ion-address-base.
+- vendor: Siemens
+  model: SENTRON PAC2200CLP
+  class: 2
+  status: needs-check
+  origin: proxus-io/modbus-register-maps devices/siemens/pac2200clp.yaml
+  notes: Same as the PAC2200 (p-siemens-pac2200-conventions). Modbus TCP only.
+- vendor: Siemens
+  model: SENTRON PAC3200
+  class: 2
+  status: mapped
+  contracts: [devices/siemens/pac3200/telemetry.omb.yaml]
+  source: siemens-pac3200-manual
+  layout: siemens-sentron-pac3200-table-3-6
+  encodings: [f32, u32, enum, flags]
+  origin: proxus-io/modbus-register-maps devices/siemens/pac3200.yaml
+  notes: >-
+    Rule 2, evidence checked by the extractor. No energy point: the counters exist only as Double (offsets 801-837)
+    and no Siemens document shows a Double's register order (p-siemens-pac-double-order). Digital input and output
+    status (207, 209) and limit violations (203) left out. Modbus RTU needs firmware V2.0x or later (RS485 manual
+    section 3.5).
+- vendor: Siemens
+  model: SENTRON PAC4200
+  class: 2
+  status: mapped
+  contracts: [devices/siemens/pac4200/telemetry.omb.yaml]
+  source: siemens-pac4200-manual
+  layout: siemens-sentron-pac4200-appendix-a2
+  encodings: [f32, u32, enum, flags]
+  origin: proxus-io/modbus-register-maps devices/siemens/pac4200.yaml
+  notes: >-
+    Rule 2 through the named companion manual, whose frames were captured from a PAC3200 (p-siemens-pac-rs485-frames).
+    Energy from the float table A-14; the double table A-12 is left out (p-siemens-pac-double-order). Values with
+    time stamp, harmonics, load profile and settings left out.
+- vendor: Fronius
+  model: Primo GEN24
+  class: 3
+  status: mapped
+  contracts: [devices/fronius/primo-gen24/inverter.omb.yaml]
+  source: fronius-gen24-modbus
+  layout: fronius-gen24-intsf-row-1.2.7-2
+  encodings: [u16, i16, exponent10_point, enum, flags, invalid, string]
+  origin: proxus-io/modbus-register-maps devices/fronius/primo-gen24-symo-gen24.yaml
+  notes: >-
+    ROW map for a GEN24 without battery (2 MPPT modules, End Block at address 40303 as the manual states). Mapped
+    from the int+SF workbook of the same archive, not from the float workbook Proxus used: every measurement of
+    the float inverter model is a float32 and no Fronius document states the register order of 32-bit values (c04-fronius-word-order,
+    p-fronius-float-word-order). The contract is therefore valid only while the Modbus setting 'SunSpec Model Type'
+    is int + SF; the manual names float as the default. Selected: Md (string); A, PhVphA, W, Hz, DCW with their
+    scale-factor registers; St (enum from the manual's SunSpec Operating Codes table); PVConn (bit flags) from model
+    122; MPPT 1 current and voltage with DCA_SF/DCV_SF from model 160. Left out: WH (acc32), Evt1/EvtVnd1-2 (bitfield32),
+    ActWh (acc64), DCWH and Tms (32-bit) for the word order; PF (vendor unit 'Pct'); writable controls of model
+    123. Addresses depend on the SunSpec model chain (c04-fronius-dynamic-model-chain, c03-config-dependent-layout);
+    scale factors change at runtime (c04-fronius-scale-factor-coherence). Cross-check: the standard tool compares
+    by address and reports 1 OK, 12 DIFF, 4 NOT-IN-PROXUS by construction (int+SF layout here, float layout there).
+    By SunSpec point through the vendor's float workbook (Gen24_Primo_Symo_Inverter_Register_Map_Float_ROW.xlsx;
+    staging work/xcheck.py): 7 points like for like with the same width, type and scale-factor register (6 of them
+    at address + 10, because inverter model 10x has 50 registers and 11x has 60), 5 points are the same SunSpec
+    point as float32 in the Proxus map, 5 scale-factor registers exist only in the int+SF model; no disagreement.
+- vendor: Fronius
+  model: Primo GEN24 Plus
+  class: 3
+  status: mapped
+  contracts: [devices/fronius/primo-gen24-plus/inverter.omb.yaml]
+  source: fronius-gen24-modbus
+  layout: fronius-gen24-intsf-storage-row-1.2.7-2-inverter
+  encodings: [u16, i16, exponent10_point, enum, flags, invalid, string]
+  origin: >-
+    proxus-io/modbus-register-maps devices/fronius/primo-gen24-plus-symo-gen24-plus.yaml
+  notes: >-
+    ROW map with a battery configured (MPPT modules 3 and 4 are the battery ports, storage model 124 at address
+    40343 as the manual states). Same workbook as the existing symo-gen24-{6,8,10}-0-plus storage contracts, which
+    stay byte-identical. Mapped from the int+SF workbook of the same archive, not from the float workbook Proxus
+    used: every measurement of the float inverter model is a float32 and no Fronius document states the register
+    order of 32-bit values (c04-fronius-word-order, p-fronius-float-word-order). The contract is therefore valid
+    only while the Modbus setting 'SunSpec Model Type' is int + SF; the manual names float as the default. Selected:
+    Md (string); A, PhVphA, W, Hz, DCW with their scale-factor registers; St (enum from the manual's SunSpec Operating
+    Codes table); PVConn (bit flags) from model 122; MPPT 1 current and voltage with DCA_SF/DCV_SF from model 160;
+    ChaState with ChaState_SF and ChaSt (enum) from model 124. Left out: WH (acc32), Evt1/EvtVnd1-2 (bitfield32),
+    ActWh (acc64), DCWH and Tms (32-bit) for the word order; PF (vendor unit 'Pct'); writable controls of model
+    123 and 124. Addresses depend on the SunSpec model chain (c04-fronius-dynamic-model-chain, c03-config-dependent-layout);
+    scale factors change at runtime (c04-fronius-scale-factor-coherence). Cross-check: the standard tool compares
+    by address and reports 2 OK, 14 DIFF, 4 NOT-IN-PROXUS by construction (int+SF layout here, float layout there;
+    the second OK is battery_charge_status hitting their storage_l by coincidence). By SunSpec point through the
+    vendor's float workbook (Gen24_Primo_Symo_Inverter_Register_Map_Float_storage_ROW.xlsx; staging work/xcheck.py):
+    10 points like for like with the same width, type and scale-factor register (9 of them at address + 10, because
+    inverter model 10x has 50 registers and 11x has 60), 5 points are the same SunSpec point as float32 in the Proxus
+    map, 5 scale-factor registers exist only in the int+SF model; no disagreement.
+- vendor: Fronius
+  model: Symo GEN24
+  class: 3
+  status: mapped
+  contracts: [devices/fronius/symo-gen24/inverter.omb.yaml]
+  source: fronius-gen24-modbus
+  layout: fronius-gen24-intsf-row-1.2.7-2
+  encodings: [u16, i16, exponent10_point, enum, flags, invalid, string]
+  origin: proxus-io/modbus-register-maps devices/fronius/primo-gen24-symo-gen24.yaml
+  notes: >-
+    ROW map for a GEN24 without battery (2 MPPT modules, End Block at address 40303 as the manual states). Mapped
+    from the int+SF workbook of the same archive, not from the float workbook Proxus used: every measurement of
+    the float inverter model is a float32 and no Fronius document states the register order of 32-bit values (c04-fronius-word-order,
+    p-fronius-float-word-order). The contract is therefore valid only while the Modbus setting 'SunSpec Model Type'
+    is int + SF; the manual names float as the default. Selected: Md (string); A, PhVphA, W, Hz, DCW with their
+    scale-factor registers; St (enum from the manual's SunSpec Operating Codes table); PVConn (bit flags) from model
+    122; MPPT 1 current and voltage with DCA_SF/DCV_SF from model 160. Left out: WH (acc32), Evt1/EvtVnd1-2 (bitfield32),
+    ActWh (acc64), DCWH and Tms (32-bit) for the word order; PF (vendor unit 'Pct'); writable controls of model
+    123. Addresses depend on the SunSpec model chain (c04-fronius-dynamic-model-chain, c03-config-dependent-layout);
+    scale factors change at runtime (c04-fronius-scale-factor-coherence). Cross-check: the standard tool compares
+    by address and reports 1 OK, 12 DIFF, 4 NOT-IN-PROXUS by construction (int+SF layout here, float layout there).
+    By SunSpec point through the vendor's float workbook (Gen24_Primo_Symo_Inverter_Register_Map_Float_ROW.xlsx;
+    staging work/xcheck.py): 7 points like for like with the same width, type and scale-factor register (6 of them
+    at address + 10, because inverter model 10x has 50 registers and 11x has 60), 5 points are the same SunSpec
+    point as float32 in the Proxus map, 5 scale-factor registers exist only in the int+SF model; no disagreement.
+- vendor: Fronius
+  model: Symo GEN24 Plus
+  class: 3
+  status: mapped
+  contracts: [devices/fronius/symo-gen24-plus/inverter.omb.yaml]
+  source: fronius-gen24-modbus
+  layout: fronius-gen24-intsf-storage-row-1.2.7-2-inverter
+  encodings: [u16, i16, exponent10_point, enum, flags, invalid, string]
+  origin: >-
+    proxus-io/modbus-register-maps devices/fronius/primo-gen24-plus-symo-gen24-plus.yaml
+  notes: >-
+    ROW map with a battery configured (MPPT modules 3 and 4 are the battery ports, storage model 124 at address
+    40343 as the manual states). Same workbook as the existing symo-gen24-{6,8,10}-0-plus storage contracts, which
+    stay byte-identical. Mapped from the int+SF workbook of the same archive, not from the float workbook Proxus
+    used: every measurement of the float inverter model is a float32 and no Fronius document states the register
+    order of 32-bit values (c04-fronius-word-order, p-fronius-float-word-order). The contract is therefore valid
+    only while the Modbus setting 'SunSpec Model Type' is int + SF; the manual names float as the default. Selected:
+    Md (string); A, PhVphA, W, Hz, DCW with their scale-factor registers; St (enum from the manual's SunSpec Operating
+    Codes table); PVConn (bit flags) from model 122; MPPT 1 current and voltage with DCA_SF/DCV_SF from model 160;
+    ChaState with ChaState_SF and ChaSt (enum) from model 124. Left out: WH (acc32), Evt1/EvtVnd1-2 (bitfield32),
+    ActWh (acc64), DCWH and Tms (32-bit) for the word order; PF (vendor unit 'Pct'); writable controls of model
+    123 and 124. Addresses depend on the SunSpec model chain (c04-fronius-dynamic-model-chain, c03-config-dependent-layout);
+    scale factors change at runtime (c04-fronius-scale-factor-coherence). Cross-check: the standard tool compares
+    by address and reports 2 OK, 14 DIFF, 4 NOT-IN-PROXUS by construction (int+SF layout here, float layout there;
+    the second OK is battery_charge_status hitting their storage_l by coincidence). By SunSpec point through the
+    vendor's float workbook (Gen24_Primo_Symo_Inverter_Register_Map_Float_storage_ROW.xlsx; staging work/xcheck.py):
+    10 points like for like with the same width, type and scale-factor register (9 of them at address + 10, because
+    inverter model 10x has 50 registers and 11x has 60), 5 points are the same SunSpec point as float32 in the Proxus
+    map, 5 scale-factor registers exist only in the int+SF model; no disagreement.
+- vendor: Fronius
+  model: Tauro
+  class: 3
+  status: mapped
+  contracts: [devices/fronius/tauro/inverter.omb.yaml]
+  source: fronius-gen24-modbus
+  layout: fronius-tauro-intsf-row-1.2.7-2
+  encodings: [u16, i16, exponent10_point, enum, flags, invalid, string]
+  origin: proxus-io/modbus-register-maps devices/fronius/tauro.yaml
+  notes: >-
+    3 MPPT modules. Mapped from the int+SF workbook of the same archive, not from the float workbook Proxus used:
+    every measurement of the float inverter model is a float32 and no Fronius document states the register order
+    of 32-bit values (c04-fronius-word-order, p-fronius-float-word-order). The contract is therefore valid only
+    while the Modbus setting 'SunSpec Model Type' is int + SF; the manual names float as the default. Selected:
+    Md (string); A, PhVphA, W, Hz, DCW with their scale-factor registers; St (enum from the manual's SunSpec Operating
+    Codes table); PVConn (bit flags) from model 122; MPPT 1 current and voltage with DCA_SF/DCV_SF from model 160.
+    Left out: WH (acc32), Evt1/EvtVnd1-2 (bitfield32), ActWh (acc64), DCWH and Tms (32-bit) for the word order;
+    PF (vendor unit 'Pct'); writable controls of model 123. Addresses depend on the SunSpec model chain (c04-fronius-dynamic-model-chain,
+    c03-config-dependent-layout); scale factors change at runtime (c04-fronius-scale-factor-coherence). Cross-check:
+    the standard tool compares by address and reports 1 OK, 12 DIFF, 4 NOT-IN-PROXUS by construction (int+SF layout
+    here, float layout there). By SunSpec point through the vendor's float workbook (Tauro_Inverter_Register_Map_Float_ROW.xlsx;
+    staging work/xcheck.py): 7 points like for like with the same width, type and scale-factor register (6 of them
+    at address + 10, because inverter model 10x has 50 registers and 11x has 60), 5 points are the same SunSpec
+    point as float32 in the Proxus map, 5 scale-factor registers exist only in the int+SF model; no disagreement.
+- vendor: Fronius
+  model: Tauro ECO
+  class: 3
+  status: mapped
+  contracts: [devices/fronius/tauro-eco/inverter.omb.yaml]
+  source: fronius-gen24-modbus
+  layout: fronius-tauro-eco-intsf-row-1.2.7-2
+  encodings: [u16, i16, exponent10_point, enum, flags, invalid, string]
+  origin: proxus-io/modbus-register-maps devices/fronius/tauro-eco.yaml
+  notes: >-
+    1 MPPT module; unlike the other series the inverter model's DCA and DCV are supported here (not selected, to
+    keep one selection for all series). Mapped from the int+SF workbook of the same archive, not from the float
+    workbook Proxus used: every measurement of the float inverter model is a float32 and no Fronius document states
+    the register order of 32-bit values (c04-fronius-word-order, p-fronius-float-word-order). The contract is therefore
+    valid only while the Modbus setting 'SunSpec Model Type' is int + SF; the manual names float as the default.
+    Selected: Md (string); A, PhVphA, W, Hz, DCW with their scale-factor registers; St (enum from the manual's SunSpec
+    Operating Codes table); PVConn (bit flags) from model 122; MPPT 1 current and voltage with DCA_SF/DCV_SF from
+    model 160. Left out: WH (acc32), Evt1/EvtVnd1-2 (bitfield32), ActWh (acc64), DCWH and Tms (32-bit) for the word
+    order; PF (vendor unit 'Pct'); writable controls of model 123. Addresses depend on the SunSpec model chain (c04-fronius-dynamic-model-chain,
+    c03-config-dependent-layout); scale factors change at runtime (c04-fronius-scale-factor-coherence). Cross-check:
+    the standard tool compares by address and reports 1 OK, 12 DIFF, 4 NOT-IN-PROXUS by construction (int+SF layout
+    here, float layout there). By SunSpec point through the vendor's float workbook (Tauro_ECO_Inverter_Register_Map_Float_ROW.xlsx;
+    staging work/xcheck.py): 7 points like for like with the same width, type and scale-factor register (6 of them
+    at address + 10, because inverter model 10x has 50 registers and 11x has 60), 5 points are the same SunSpec
+    point as float32 in the Proxus map, 5 scale-factor registers exist only in the int+SF model; no disagreement.
+- vendor: Fronius
+  model: Verto (3 MPPT)
+  class: 3
+  status: mapped
+  contracts: [devices/fronius/verto-3-mppt/inverter.omb.yaml]
+  source: fronius-gen24-modbus
+  layout: fronius-verto-3mppt-intsf-row-1.2.7-2
+  encodings: [u16, i16, exponent10_point, enum, flags, invalid, string]
+  origin: proxus-io/modbus-register-maps devices/fronius/verto-3-mppt.yaml
+  notes: >-
+    3 MPPT modules. Mapped from the int+SF workbook of the same archive, not from the float workbook Proxus used:
+    every measurement of the float inverter model is a float32 and no Fronius document states the register order
+    of 32-bit values (c04-fronius-word-order, p-fronius-float-word-order). The contract is therefore valid only
+    while the Modbus setting 'SunSpec Model Type' is int + SF; the manual names float as the default. Selected:
+    Md (string); A, PhVphA, W, Hz, DCW with their scale-factor registers; St (enum from the manual's SunSpec Operating
+    Codes table); PVConn (bit flags) from model 122; MPPT 1 current and voltage with DCA_SF/DCV_SF from model 160.
+    Left out: WH (acc32), Evt1/EvtVnd1-2 (bitfield32), ActWh (acc64), DCWH and Tms (32-bit) for the word order;
+    PF (vendor unit 'Pct'); writable controls of model 123. Addresses depend on the SunSpec model chain (c04-fronius-dynamic-model-chain,
+    c03-config-dependent-layout); scale factors change at runtime (c04-fronius-scale-factor-coherence). Cross-check:
+    the standard tool compares by address and reports 1 OK, 12 DIFF, 4 NOT-IN-PROXUS by construction (int+SF layout
+    here, float layout there). By SunSpec point through the vendor's float workbook (Verto_Inverter_Register_Map_3MPPT_Float_ROW.xlsx;
+    staging work/xcheck.py): 7 points like for like with the same width, type and scale-factor register (6 of them
+    at address + 10, because inverter model 10x has 50 registers and 11x has 60), 5 points are the same SunSpec
+    point as float32 in the Proxus map, 5 scale-factor registers exist only in the int+SF model; no disagreement.
+- vendor: Fronius
+  model: Verto (4 MPPT)
+  class: 3
+  status: mapped
+  contracts: [devices/fronius/verto-4-mppt/inverter.omb.yaml]
+  source: fronius-gen24-modbus
+  layout: fronius-verto-4mppt-intsf-row-1.2.7-2
+  encodings: [u16, i16, exponent10_point, enum, flags, invalid, string]
+  origin: proxus-io/modbus-register-maps devices/fronius/verto-4-mppt.yaml
+  notes: >-
+    4 MPPT modules; the selected points are at the same addresses as in the 3 MPPT map (the fourth module only moves
+    the End Block from 40323 to 40343). Mapped from the int+SF workbook of the same archive, not from the float
+    workbook Proxus used: every measurement of the float inverter model is a float32 and no Fronius document states
+    the register order of 32-bit values (c04-fronius-word-order, p-fronius-float-word-order). The contract is therefore
+    valid only while the Modbus setting 'SunSpec Model Type' is int + SF; the manual names float as the default.
+    Selected: Md (string); A, PhVphA, W, Hz, DCW with their scale-factor registers; St (enum from the manual's SunSpec
+    Operating Codes table); PVConn (bit flags) from model 122; MPPT 1 current and voltage with DCA_SF/DCV_SF from
+    model 160. Left out: WH (acc32), Evt1/EvtVnd1-2 (bitfield32), ActWh (acc64), DCWH and Tms (32-bit) for the word
+    order; PF (vendor unit 'Pct'); writable controls of model 123. Addresses depend on the SunSpec model chain (c04-fronius-dynamic-model-chain,
+    c03-config-dependent-layout); scale factors change at runtime (c04-fronius-scale-factor-coherence). Cross-check:
+    the standard tool compares by address and reports 1 OK, 12 DIFF, 4 NOT-IN-PROXUS by construction (int+SF layout
+    here, float layout there). By SunSpec point through the vendor's float workbook (Verto_Inverter_Register_Map_4MPPT_Float_ROW.xlsx;
+    staging work/xcheck.py): 7 points like for like with the same width, type and scale-factor register (6 of them
+    at address + 10, because inverter model 10x has 50 registers and 11x has 60), 5 points are the same SunSpec
+    point as float32 in the Proxus map, 5 scale-factor registers exist only in the int+SF model; no disagreement.
+- vendor: Fronius
+  model: Verto Plus
+  class: 3
+  status: mapped
+  contracts: [devices/fronius/verto-plus/inverter.omb.yaml]
+  source: fronius-gen24-modbus
+  layout: fronius-verto-3mppt-intsf-storage-row-1.2.7-2
+  encodings: [u16, i16, exponent10_point, enum, flags, invalid, string]
+  origin: proxus-io/modbus-register-maps devices/fronius/verto-plus.yaml
+  notes: >-
+    3 MPPT modules plus battery modules 4 (StCha) and 5 (StDisCha); storage model 124 at address 40363. Valid only
+    for 3 MPP trackers with a battery configured. Mapped from the int+SF workbook of the same archive, not from
+    the float workbook Proxus used: every measurement of the float inverter model is a float32 and no Fronius document
+    states the register order of 32-bit values (c04-fronius-word-order, p-fronius-float-word-order). The contract
+    is therefore valid only while the Modbus setting 'SunSpec Model Type' is int + SF; the manual names float as
+    the default. Selected: Md (string); A, PhVphA, W, Hz, DCW with their scale-factor registers; St (enum from the
+    manual's SunSpec Operating Codes table); PVConn (bit flags) from model 122; MPPT 1 current and voltage with
+    DCA_SF/DCV_SF from model 160; ChaState with ChaState_SF and ChaSt (enum) from model 124. Left out: WH (acc32),
+    Evt1/EvtVnd1-2 (bitfield32), ActWh (acc64), DCWH and Tms (32-bit) for the word order; PF (vendor unit 'Pct');
+    writable controls of model 123 and 124. Addresses depend on the SunSpec model chain (c04-fronius-dynamic-model-chain,
+    c03-config-dependent-layout); scale factors change at runtime (c04-fronius-scale-factor-coherence). Cross-check:
+    the standard tool compares by address and reports 2 OK, 14 DIFF, 4 NOT-IN-PROXUS by construction (int+SF layout
+    here, float layout there; the second OK is battery_charge_status hitting their storage_l by coincidence). By
+    SunSpec point through the vendor's float workbook (Verto_Inverter_Register_Map_3MPPT_Float_storage_ROW.xlsx;
+    staging work/xcheck.py): 10 points like for like with the same width, type and scale-factor register (9 of them
+    at address + 10, because inverter model 10x has 50 registers and 11x has 60), 5 points are the same SunSpec
+    point as float32 in the Proxus map, 5 scale-factor registers exist only in the int+SF model; no disagreement.
+- vendor: SMA
+  model: STP5.0-3SE-40
+  class: 3
+  status: blocked
+  origin: proxus-io/modbus-register-maps devices/sma/sunny-tripower-smart-energy.yaml
+  notes: >-
+    Not mapped: the conventions of the SMA Modbus profile (address base, byte order, NaN values, FIXn decimals)
+    are stated only in SMA's technical information SMA-Modbus-general-TI-en-10, whose legal provisions require SMA's
+    prior written approval for any publication, whole or in part. Contracts derived from it are not published (maintainer
+    decision, 2026-11-14); see p-danfoss-sma-solaredge-sma-legal-provisions.
+- vendor: SolarEdge
+  model: SolarEdge meter via inverter
+  class: 3
+  status: blocked
+  origin: proxus-io/modbus-register-maps devices/solaredge/meter-via-inverter.yaml
+  notes: >-
+    See c03-solaredge-cloudflare. The second Proxus source (SunSpec model_203.json) is not a SolarEdge document.
+- vendor: Danfoss
+  model: FC 102
+  class: 8
+  status: mapped
+  contracts: [devices/danfoss/fc-102/status.omb.yaml]
+  source: danfoss-fc102-pg
+  layout: danfoss-fc-pg-readouts
+  encodings: [u16, i16, exponent10]
+  origin: proxus-io/modbus-register-maps devices/danfoss/vlt-hvac-drive-fc-102.yaml
+  notes: >-
+    Built-in RS-485 Modbus RTU only (8-30 = Modbus RTU). Programming Guide software 7.3X; address rule and conversion
+    factors from the FC 102 Design Guide MG11BB22, which the guide names for Modbus RTU and which gives request
+    examples. Only 16-bit parameters with a defined data type: MG11BB22 does not state the register order of 32-bit
+    parameters or where an 8-bit value sits, and V2 (16-03 Status Word) is not defined (p-danfoss-sma-solaredge-fc102-register-order).
+    Left out as well: parameters whose conversion index has no stated factor (15-00, 15-02, 16-17, 16-34), 16-01
+    (unit depends on configuration), N2 percentages (16-05, 16-15), array parameters. The Modbus RTU Operating Instructions
+    MG92B102 are not used (maintainer decision, 2026-11-14).
+- vendor: Danfoss
+  model: FC 202
+  class: 8
+  status: needs-check
+  origin: proxus-io/modbus-register-maps devices/danfoss/vlt-aqua-drive-fc-202.yaml
+  notes: >-
+    Programming Guide software 5.4X admitted as a source candidate, not mapped: the FC 202 Design Guide (MG20N602,
+    2014) states (10 x parameter number) and that holding register 40001 is addressed as register 0000, but has
+    no request example, so whether "holding register 3120" is the PDU address or a register number stays open (p-danfoss-sma-solaredge-fc202-address-base).
+    The FC Series Modbus RTU Operating Instructions MG92B102 (2011) are not accepted as evidence for this model
+    (maintainer decision, 2026-11-14).
+- vendor: Schneider Electric
+  model: ATV61
+  class: 8
+  status: mapped
+  contracts: [devices/schneider-electric/atv61/status.omb.yaml]
+  source: schneider-electric-atv61-comm
+  layout: schneider-electric-altivar-61-71-comm
+  encodings:
+  - u16
+  - i16
+  - u32_word_order_little
+  - exponent10
+  - enum
+  - flags
+  - max_read_registers
+  origin: proxus-io/modbus-register-maps devices/schneider-electric/atv61.yaml
+  notes: >-
+    ETA (CiA402 flags, at 3201), HMIS (24 values), LFT (76 values), RFR, RFRD, LCR (0.1 A from the manual), UOP,
+    OPR, ULN, THD, THR and the 32-bit CiA402 setting SPAL (low word first, read-only here although R/W). maxReadRegisters
+    63. Function 3 is evidenced through the Ethernet card manual; the contract says that the built-in serial ports
+    are documented only for the Altivar 71. Left out: OTR (unit "0.001 Nominal motor torque", compare c08-abb-ratio-scaling),
+    RTH, PTH and IPHR (unit selected by the UNT bit fields, seconds / minutes / hours or Wh / kWh / MWh, compare
+    c07-enum-selected-scale-unit), SMAL and SMIL (names swapped in the workbook, p-schneider-ion-altivar-atv61-smal-smil),
+    ETA bit 5 (polarity not stated). The RFR scale assumes CMI bit 9 = 0 (c08-schneider-cmi-frequency-unit). HMIS
+    is not described in the manual, so it is the one point without a cross-check.
+- vendor: Schneider Electric
+  model: ATV71
+  class: 8
+  status: mapped
+  contracts: [devices/schneider-electric/atv71/status.omb.yaml]
+  source: schneider-electric-atv71-comm
+  layout: schneider-electric-altivar-61-71-comm
+  encodings:
+  - u16
+  - i16
+  - u32_word_order_little
+  - exponent10
+  - enum
+  - flags
+  - max_read_registers
+  origin: proxus-io/modbus-register-maps devices/schneider-electric/atv71.yaml
+  notes: >-
+    Same point set as ATV61: HMIS 23 values, LFT 75 values. Function 3, the 63-register limit and the address base
+    come from the Altivar 71 Integrated Modbus manual. Left out for the same reasons: OTR, RTH, PTH, APH, SMAL,
+    SMIL, ETA bit 5.
+- vendor: Schneider Electric
+  model: ATV930
+  class: 8
+  status: mapped
+  contracts: [devices/schneider-electric/atv930/status.omb.yaml]
+  source: schneider-electric-atv900-comm
+  layout: schneider-electric-atv900-comm
+  encodings: [u16, i16, exponent10, enum, flags, max_read_registers]
+  origin: proxus-io/modbus-register-maps devices/schneider-electric/atv900.yaml
+  notes: >-
+    Same point set as ATV340 and ATV630: ETA, HMIS (38 values), LFT, RFR, RFRD, OTR, UOP, OPR, ULN, THD, VBUS and
+    IC0 to IC4 (R/WS, read-only here). Existing work items apply unchanged: c08-schneider-energy-decades, c08-schneider-cmi-frequency-unit,
+    c08-schneider-lcr-scale and c08-schneider-current-decade (LCR left out), c08-schneider-word-order (32-bit RTH,
+    PTH and others left out; neither manual defines TWO). ATV950, ATV960 and ATV980 are named in the same title
+    and could get contracts from the same source.
+- vendor: Siemens
+  model: SINAMICS G120C
+  class: 8
+  status: mapped
+  contracts: [devices/siemens/sinamics-g120c/status.omb.yaml]
+  source: siemens-g120-fieldbus-manual
+  layout: siemens-sinamics-g120-modbus-rtu-tables
+  encodings: [u16, i16, exponent10]
+  origin: proxus-io/modbus-register-maps devices/siemens/sinamics-g120c.yaml
+  notes: >-
+    G120C USS/MB variant, firmware V4.7 SP13. Base from the worked frames (rule 3), scaling direction and signedness
+    from the documented ranges (p-siemens-g120-conventions). Left out: main actual value 40111 (no unit, range or
+    type), ON/OFF registers (values unstated, p-siemens-sinamics-on-off-values), technology controller, DS47 acyclic
+    access, multi-pump registers, I/O registers beyond AI 0 and AO 0. The status word is a plain u16 without flags.
+- vendor: Siemens
+  model: SINAMICS V20
+  class: 8
+  status: mapped
+  contracts: [devices/siemens/sinamics-v20/status.omb.yaml]
+  source: siemens-v20-operating-instructions
+  layout: siemens-sinamics-v20-mapping-table
+  encodings: [u16, i16, exponent10, flags]
+  origin: proxus-io/modbus-register-maps devices/siemens/sinamics-v20.yaml
+  notes: >-
+    Base forced by the two register columns (rule 3), scaling direction stated ("Parameter scaling", PDF p.181),
+    signedness from the documented ranges (p-siemens-v20-conventions). Status word flags come from the table's own
+    "ZSW:n" references; their polarity is not stated (p-siemens-sinamics-on-off-values). Left out: HIW at register
+    110 (normalised to P2000, c08-abb-ratio-scaling), ON/OFF registers, settings, the parameter access registers
+    40550-40559.
 themes:
 - id: validity-from-other-points
   title: Validity decided by another register or bit
@@ -2790,6 +3843,7 @@ themes:
   - c10-config-selected-unit
   - c10-register-type-profiles
   - c10-scaling-factor-register
+  - p-janitza-lovato-klemsan-lovato-power-resolution
 - id: non-linear-conversion
   title: Conversions the linear model cannot express
   decisions: D6, D9
@@ -2815,6 +3869,7 @@ themes:
   - c05-tapcon-230-avt-counter-words
   - c08-schneider-energy-decades
   - c09-smartgen-hgm6120t-split-counters
+  - p-schneider-meters-mod10k-answer
 - id: sentinels-and-saturation
   title: Sentinels beyond exact raw values
   decisions: D6 (invalid, section 6.6)
@@ -2840,6 +3895,7 @@ themes:
   - c06-flags-with-bit-field
   - c08-flags-width
   - c09-woodward-bitlist-int16
+  - p-siemens-sinamics-status-word
 - id: discovery-and-addressing
   title: Discovery, gateway unit IDs and address bases
   decisions: D3, D4, D12
@@ -3651,7 +4707,9 @@ work_items:
     download links; sma.de product page has no Modbus download; files.sma.de needs the exact file name (guesses
     returned 404).
   detail: >-
-    Maintainer to find the direct files.sma.de URL for the SB/STP register list, then map the SMA profile.
+    The Sunny Boy SB3.0-6.0-1AV-41 list was found on files.sma.de during the Proxus parity pass; no list was found
+    for STP5.0-3AV-40. The list depends on conventions stated only in SMA's technical information on the SMA Modbus
+    interface, whose publication needs SMA's written approval. Maintainer decision (2026-11-14): not mapped (p-danfoss-sma-solaredge-sma-legal-provisions).
   owner: maintainer
   class: 3
 - id: c03-solaredge-cloudflare
@@ -3902,9 +4960,9 @@ work_items:
     stable). Watermark on each page; page 2 Legal Provisions: publication requires prior written approval; "utilization
     and disclosure of its contents are prohibited unless expressly authorized".'
   detail: >-
-    Maintainer to decide whether register facts from this document may be published under MIT with attribution,
-    or to ask SMA for written permission or a public edition. Technically mappable (base and byte order stated in
-    sections 3.6.5-3.6.6; validity section 1.1 names the three models).
+    Maintainer decision (2026-11-14): content from SMA documents whose publication needs SMA's prior written approval
+    is not published. Asking SMA for written permission or a public edition is open. Technically mappable (base
+    and byte order stated in sections 3.6.5-3.6.6; validity section 1.1 names the three models).
   owner: maintainer
   class: 4
 - id: c04-victron-word-order
@@ -4949,8 +6007,10 @@ work_items:
     MG33BF02 PDF p. 188 (section 12.12.1): "(10 x parameter number) DECIMAL", example 3-12 in holding register 3120
     and 3-14 in 3410 & 3411. FC 51 MG.02.A4.02 p. 30 states 10 x PNU - 1.
   detail: >-
-    Unclear whether 3120 is the PDU address or a 1-based register number. Resolve from the FC 301/302 Programming
-    Guide or a Danfoss Modbus RTU document with a byte-level example.
+    Unclear whether 3120 is the PDU address or a 1-based register number. The FC Series Modbus RTU Operating Instructions
+    MG92B102 (2011) have a byte-level example, but are written for the FC Series as a whole. Maintainer decision
+    (2026-11-14): not accepted as evidence for FC 301/302. Needs an FC 301/302 document with a request example,
+    or Danfoss's confirmation.
   owner: vendor
   class: 8
 - id: c08-danfoss-fc300-programming-guide
@@ -4961,7 +6021,9 @@ work_items:
     Parameter sizes and conversion indexes for FC 301/302 are in the Programming Guide, not fetched.
   evidence: 'MG33BF02 PDF p. 188: "consult the product relevant programming guide".'
   detail: >-
-    Find and admit the FC 301/302 Programming Guide; then map with the resolved address base.
+    Located during the Proxus parity pass: VLT AutomationDrive FC 301/302 Programming Guide AU275636650261en-000101
+    (2022.12), https://assets.danfoss.com/documents/271671/AU275636650261en-003001.pdf. Map once c08-danfoss-fc300-address-base
+    is resolved.
   owner: maintainer
   class: 8
 - id: c08-danfoss-fc300-example-values
@@ -5963,6 +7025,1374 @@ work_items:
   detail: A sourcelib helper would cut repeated layout parsing.
   owner: tooling
   class: 10
+- id: p-abb-efb-address-base
+  kind: doc-ambiguity
+  vendor: ABB
+  models: [ACS580, ACH580, ACS880]
+  summary: >-
+    The EFB chapters give the holding register base only through ranges: 400001…465536 for a 16-bit address field.
+  evidence: >-
+    ACS580 3AXD50000016097 Rev J PDF pp.574-575 (printed 576-577) 'Register addressing': 'The address field of Modbus
+    requests for accessing holding registers is 16 bits. This allows ... addressing of 65536 holding registers',
+    '6-digit decimal addresses from 400001 to 465536. This manual uses 6-digit decimal addressing'; PDF p.571 set-up
+    table: 'holding registers in the 400001…465536 (100…65535) Modbus register range'. Same text in ACH580 Rev J
+    pp.291-292, 288 and ACS880 Rev Z pp.659, 654. No request frame example in any of the three.
+  detail: >-
+    The contracts map reference R to address R - 400001 because 65536 references for a 16-bit field leave no other
+    order-preserving assignment and the set-up table pairs 465536 with 65535 (rule 3). The same table pairs 400001
+    with 100, which fits neither base (400101 would). Proxus assumes the same base ('the address here is the reference
+    minus 400001') without a reason. Confirm that this derivation is acceptable, or ask ABB for a frame example.
+    All 20/19 points of the three contracts depend on it.
+  owner: maintainer
+  class: 8
+- id: p-abb-efb-bit-references
+  kind: doc-ambiguity
+  vendor: ABB
+  models: [ACS580, ACH580, ACS880]
+  summary: >-
+    Coil and discrete input references carry a note that can be read as one-based on the wire.
+  evidence: >-
+    ACS580 Rev J PDF pp.592, 594 (printed 594, 596) and ACH580 Rev J pp.309, 311: 'Note that the references are
+    1-based index which match the address transmitted on the wire' above the tables 000001… and 100001…. ACS880
+    Rev Z pp.670-674 prints 00001… and 10001… with no note.
+  detail: >-
+    Either reference 100001 is sent as address 1, or the sentence means the usual reference - 1. Unstated for ACS880.
+    Blocks the discrete inputs (status word bits 100001-100011, DI delayed status 100033-100038; on ACS880 10033-10048
+    in the Transparent profile) and the coils. The contracts read the same information from holding registers instead.
+    Proxus maps no coils or discrete inputs for these drives.
+  owner: maintainer
+  class: 8
+- id: p-abb-efb-negative-encoding
+  kind: doc-ambiguity
+  vendor: ABB
+  models: [ACS580, ACH580, ACS880]
+  summary: >-
+    The manuals do not state how a negative parameter value is encoded in its 16-bit or 32-bit register.
+  evidence: >-
+    ACS580 Rev J: FbEq16/FbEq32 are 'the scaling between the value shown on the panel and the integer used in communication'
+    (PDF pp.218, 495); ranges such as 01.01 -30000.00…30000.00 rpm (p.497). Signedness is stated only for fieldbus
+    words: 'EFB references ... Fieldbus actual signals (ACT1 and ACT2) are 16-bit or 32-bit signed integers' (p.574)
+    and two's complement for references and actual values (pp.587-588). ACS880 Rev Z types these parameters real32
+    (p.140) and says nothing more.
+  detail: >-
+    Rule 4: the extractor refuses a parameter whose range starts below zero unless the manual states an integer
+    type (ACS880 int16/uint16/uint32). Blocks 01.01 Motor speed used, 01.06 Output frequency, 01.10 Motor torque,
+    01.14 Output power, 01.15, 01.54 Cumulative inverter energy, 05.11 Inverter temperature and the ACS880 phase
+    currents 01.21-01.23. Proxus types them int16 (two's complement) without a stated reason. If the maintainer
+    accepts two's complement as the reading of 'integer used in communication', the signed 32-bit values (100 =
+    1 rpm, 100 = 1 Hz, 10 = 1 %, 100 = 1 kW) can replace the absolute-value parameters with a one-line change to
+    the selection tables.
+  owner: maintainer
+  class: 8
+- id: p-abb-pdf-body-crop
+  kind: tooling
+  vendor: ABB
+  models: [ACH580]
+  summary: sourcelib.pdf_pages cannot limit a page to its body; the ACH580 manual needs it.
+  evidence: >-
+    ACH580 3AXD50000027537 Rev J: every page has a thumb index of chapter numbers at x 6-22 pt or 397-413 pt; body
+    words lie in 24.0-394.7 pt (pdftotext -bbox over all 764 pages). Plain -layout output gives rows such as '3
+    58.33 Addressing ...' and '... 1=1d 6'.
+  detail: >-
+    corpus/extractors/abb_acs_firmware_efb.py has its own body_pages(): pdftotext -layout with -x/-W, guarded by
+    a -bbox pass that fails if any word outside the body is not a one- or two-digit number. Verified identical under
+    Poppler 24.02 and 26.11. Consider moving a crop option into sourcelib.pdf_pages.
+  owner: tooling
+  class: 8
+- id: p-abb-eq-current-editions
+  kind: extraction
+  vendor: ABB
+  models: [B21, B23, B24]
+  summary: >-
+    The B21 and B23/B24 sources pin Revision A of 2013; ABB publishes Revision D and Revision E.
+  evidence: >-
+    B23/B24 Revision E (2025-11-07): https://library.e.abb.com/public/216665241d8a4d17b50906705d5a9207/2CMC485003M0201_en_B23_B24_User_Manual.pdf,
+    1880058 bytes, sha256 84e7a340ae82f9765c257508e74ed976d96d93ec677ac888c9623f52310e5f88 (two fetches; the hash
+    Proxus pins). B21 Revision D: https://library.e.abb.com/public/11c8a33b227b400896aa8aa0cf8d176f/2CMC485004M0201_en_D_B21_User_Manual.pdf.pdf,
+    5680461 bytes, sha256 1dc599c15cfebdb7e270cd360c77eb43ecc9efc1d1b8e766447459940b6d5a63 (one fetch).
+  detail: >-
+    corpus/extractors/abb_b2x_manual.py now takes the revision letter and the mapping-table section number per document.
+    With the letters set to E and D, the extracted points and constraints equal the checked-in B23, B24 and B21
+    contracts except source.page. Moving the pins is a manifest and lock change (new URL, hash, revision, DOCUMENTS
+    entry) for the maintainer; the Revision A URLs still answer.
+  owner: maintainer
+  class: 1
+- id: p-abb-eq-resettable-reactive-unit
+  kind: vendor-erratum
+  vendor: ABB
+  models: [A43, A44, B23, B24]
+  summary: The resettable reactive energy registers are printed with the unit kWh.
+  evidence: >-
+    A43/A44 2CMC484001M0201 Rev E PDF p.110, B23/B24 2CMC485003M0201 Rev A p.88 and Rev E p.83, table 'Resettable
+    energy accumulators': 'Resettable reactive import 5534 4 0,01 kWh Unsigned', 'Resettable reactive export 5538
+    4 0,01 kWh Unsigned'. The non-resettable reactive rows (500C, 5010) print kvarh.
+  detail: Not mapped by us. Proxus writes kvarh with a note. Report to ABB.
+  owner: vendor
+  class: 1
+- id: p-abb-acs580-efb-table-slips
+  kind: vendor-erratum
+  vendor: ABB
+  models: [ACS580, ACH580]
+  summary: >-
+    Slips in the ACS580 Rev J EFB tables: wrong Data I/O parameter numbers and register range bounds.
+  evidence: >-
+    ACS580 Rev J PDF p.589 (printed 591): rows 400003 and 400004 both say 'The selection can be changed using parameter
+    58.102 Data I/O 2' (ACH580 Rev J p.306 and ACS880 Rev Z pp.667-668 say 58.103 and 58.104). ACS580 p.571, ACH580
+    p.288, ACS880 p.654: '400001…465536 (100…65535)', while 58.33 (ACS580 p.440) says '400101…465535'. ACS580 01.63
+    Abs output frequency: 0.00…598.00 Hz in Parameters (p.224) and 0.00…500.00 Hz in Additional parameter data (p.497);
+    01.06 likewise.
+  detail: >-
+    None changes a mapped address. The extractor requires the defaults of 58.104 and 58.105 from the parameter listing,
+    not from the table text.
+  owner: vendor
+  class: 8
+- id: p-abb-acs880-status-bit-12
+  kind: vendor-erratum
+  vendor: ABB
+  models: [ACS880]
+  summary: ACS880 Rev Z gives status word bit 12 two meanings.
+  evidence: >-
+    3AUA0000085967 Rev Z PDF p.664: the bit 11 row reads 'USER_0 Status bits that can be combined with drive logic
+    for application-specific 12 USER_1 functionality', followed by a row '12 EXT_RUN_ ENABLE 1 External Run Enable
+    signal received ... (parameter 06.31)' and '13…15 Reserved'. The discrete input table (p.672) lists 10012-10015
+    as 'User-defined (0)' to 'User-defined (3)'.
+  detail: >-
+    The contract lists bits 0 to 10 only, which the ACS580, ACH580 and ACS880 manuals define the same way.
+  owner: vendor
+  class: 8
+- id: p-abb-m4m-unit-column
+  kind: vendor-erratum
+  vendor: ABB
+  models: [M4M 20 Modbus, M4M 30 Modbus]
+  summary: The M4M workbook prints kVA for apparent energy and ° for cos phi.
+  evidence: >-
+    9AKK107492A7627 rev. F 'Mapping Table'!B9:B11 and B24:B26 (Apparent energy, unit kVA); B60:B63 (Cosphi (displacement
+    factor), unit °, resolution 1E-3).
+  detail: Rows not in our contracts. Proxus corrects both with notes. Report to ABB.
+  owner: vendor
+  class: 1
+- id: p-danfoss-sma-solaredge-fc102-register-order
+  kind: doc-ambiguity
+  vendor: Danfoss
+  models: [FC 102]
+  summary: >-
+    The FC 102 Design Guide does not state the register order of 32-bit parameters or the layout of 8-bit ones.
+  evidence: >-
+    MG11BB22 7.9.6 (PDF p. 152): "Standard data types are int16, int32, uint8, uint16 and uint32. They are stored
+    as 4x registers", written with function 10 hex "for 2 registers (32 bits)"; no statement of which register holds
+    the high-order word or where a uint8 sits. Table 7.7 lists data types 3 to 35; V2 (16-03 Status Word) is not
+    among them.
+  detail: >-
+    16-10 Power, 16-14 Motor Current, 16-36 Inv. Nom. Current, 16-90/92/94 alarm, warning and extended status words
+    (32-bit), 16-18 Motor Thermal and 16-35 Inverter Thermal (Uint8) and 16-03 Status Word (V2) are left out. Needs
+    an FC 102 document that states them.
+  owner: vendor
+  class: 8
+- id: p-danfoss-sma-solaredge-fc202-address-base
+  kind: doc-ambiguity
+  vendor: Danfoss
+  models: [FC 202]
+  summary: >-
+    The FC 202 Design Guide gives the parameter rule but no request example, so the address base is open.
+  evidence: >-
+    MG20N602 3.8.10.8 (PDF p. 87): "Holding register 40001 is addressed as register 0000"; 3.8.11 (p. 89): "(10
+    x parameter number) decimal", "The holding register 3120 holds the parameters value" for 3-12.
+  detail: >-
+    Same open question as c08-danfoss-fc300-address-base. The FC 202 Programming Guide (AU361182657213en-002101,
+    2024.06) refers to the product-specific design guide; the current FC 202 design guide (2020) no longer describes
+    Modbus RTU. MG92B102 is not accepted as evidence for this model (maintainer decision, 2026-11-14).
+  owner: vendor
+  class: 8
+- id: p-danfoss-sma-solaredge-mg11bb22-read-example
+  kind: vendor-erratum
+  vendor: Danfoss
+  models: [FC 102]
+  summary: >-
+    The HVAC Design Guide prints a wrong low address byte in its Read Holding Registers example.
+  evidence: >-
+    MG11BB22 7.10.4 (PDF p. 154): "Starting Address HI 0B (Register address 3029)", "Starting Address LO 05 (Register
+    address 3029)". 0x0B05 is 2821; 3029 is 0x0BD5.
+  detail: >-
+    The extractor requires the stated decimal address (3029 = 3030 - 1) and the consistent write example (1-00,
+    register 1000, 03 E7), not the misprinted byte.
+  owner: vendor
+  class: 8
+- id: p-danfoss-sma-solaredge-fc202-pg-attribute-misprints
+  kind: vendor-erratum
+  vendor: Danfoss
+  models: [FC 202]
+  summary: Three attribute blocks of the FC 202 Programming Guide are malformed.
+  evidence: >-
+    AU361182657213en-002101: 16-35 Inverter Thermal (PDF p. 413) prints "Conversion index: False" where the other
+    blocks print "Change during operation: False"; 16-60 Digital Input (p. 418) prints "Setup: All setup"; 16-10
+    Power [kW] (p. 410) has no Setup attribute.
+  detail: >-
+    The extractor reads default, range, the first numeric conversion index and the data type, and does not use the
+    Setup and Change-during-operation attributes.
+  owner: vendor
+  class: 8
+- id: p-danfoss-sma-solaredge-conversion-index-no-factor
+  kind: doc-ambiguity
+  vendor: Danfoss
+  models: [FC 102]
+  summary: Conversion indexes 100, 75, 74 and 67 have no factor in the conversion tables.
+  evidence: >-
+    MG11BB22 table 7.8 (PDF p. 145) lists 100, 75, 74 and 67 with an empty factor cell. FC 102 Programming Guide:
+    15-00 Operating Hours index 74, 15-02 kWh Counter index 75, 16-17 Speed [RPM] index 67, 16-34 Heatsink Temp.
+    index 100.
+  detail: >-
+    These four parameters are left out (operating hours, energy, speed and heatsink temperature are core drive values).
+    Proxus leaves them out too. Needs a Danfoss statement of the four factors.
+  owner: vendor
+  class: 8
+- id: p-danfoss-sma-solaredge-sma-legal-provisions
+  kind: source-access
+  vendor: SMA
+  models: [STP5.0-3SE-40, SB3.0-1AV-41, SB5.0-1AV-41, STP5.0-3AV-40]
+  summary: >-
+    SMA's technical information on the SMA Modbus interface requires written approval for any publication.
+  evidence: >-
+    SMA-Modbus-general-TI-en-10 page 2, Legal Provisions: "Any publication, whether in whole or in part, requires
+    prior written approval by SMA Solar Technology AG. Internal reproduction used solely for the purpose of product
+    evaluation or other proper use is allowed". No NDA watermark (unlike c04-sma-nda-terms). The parameter lists
+    carry only "Copyright 2022/2024 - SMA Solar Technology AG".
+  detail: >-
+    Maintainer decision (2026-11-14): content from documents whose publication needs SMA's written approval is not
+    published. The SMA profile stays unmapped for STP5.0-3SE-40, SB3.0-1AV-41, SB5.0-1AV-41 and STP5.0-3AV-40 until
+    SMA gives written approval or publishes the conventions without that restriction. Asking SMA is open. A scan
+    of all pinned documents found copyright or use clauses in 30 others (ABB, Vaisala and Woodward: contents not
+    to be imparted or communicated to third parties; Janitza, Schneider Electric and AutomationDirect: no reproduction
+    or publication of the document; SmartGen, Reinhausen and Kipp & Zonen: no reproduction; Danfoss MG11BB22: use
+    for operating Danfoss equipment). Maintainer decision (2026-11-14): only SMA's wording blocks publication; those
+    clauses do not.
+  owner: maintainer
+  class: 3
+- id: p-fronius-float-word-order
+  kind: doc-ambiguity
+  vendor: Fronius
+  models:
+  - Primo GEN24
+  - Symo GEN24
+  - Primo GEN24 Plus
+  - Symo GEN24 Plus
+  - Smart Meter
+  - Tauro
+  - Tauro ECO
+  - Verto (3 MPPT)
+  - Verto (4 MPPT)
+  - Verto Plus
+  summary: >-
+    No Fronius document states the register order of 32/64-bit SunSpec values, so the float maps (the default model
+    type) cannot be mapped and the new contracts cover the int+SF setting only.
+  evidence: >-
+    gen24-modbus-api-external-docs.zip 1.2.7-2: every measurement of the float inverter model (11x/113) and meter
+    model (21x) is a float32, e.g. Gen24_Primo_Symo_Inverter_Register_Map_Float_ROW.xlsx Complete Map row 29 (W,
+    registers 40092-40093) and Smart_Meter_Register_Map_Float.xlsx row 32 (W, 40098-40099); no sheet states an order.
+    Manual 034-28092026: The Modbus Protocol > General, 'individual data points may also cover several data blocks
+    (e.g., 2 registers = 32 bit value)'; General > Unavailable data records, 'float32 (range see IEEE 754): 0x7FC00000
+    (NaN)', 'in accordance with the SunSpec specification'; the worked frames in Register addresses cover a string
+    read and a one-register write. Workbook SID row (register 40001-40002): uint32 '0x53756e53 ('SunS')'.
+  detail: >-
+    Same ambiguity as c04-fronius-word-order and c03-fronius-word-order; this item records what it costs for parity
+    and what Proxus does. Unstated convention: which register of a two- or four-register value is the most significant.
+    Proxus assumes ABCD (connection.default_byte_order) for every float32, uint32, uint64 and bitfield value and
+    gives no reason in connection.notes. Blocked: like-for-like contracts from the float workbooks for all ten models,
+    that is the factory-default configuration; and in the int+SF contracts WH (acc32), Evt1/EvtVnd1/EvtVnd2 (bitfield32),
+    ActWh (acc64), module/N/DCWH (acc32), Tms (uint32) and all meter energy counters (TotWhExp, TotWhImp, acc32).
+    The ten contracts are valid only while 'SunSpec Model Type' is int + SF. If the maintainer accepts the SunSpec
+    convention (p-fronius-sunspec-spec-access) or the SID row as evidence, add the float workbooks as layouts to
+    fronius_gen24_storage_map.py (same sheet structure) and the left-out points.
+  owner: maintainer
+  class: [1, 3]
+- id: p-fronius-sunspec-spec-access
+  kind: source-access
+  vendor: Fronius
+  models:
+  - Primo GEN24
+  - Symo GEN24
+  - Primo GEN24 Plus
+  - Symo GEN24 Plus
+  - Smart Meter
+  - Tauro
+  - Tauro ECO
+  - Verto (3 MPPT)
+  - Verto (4 MPPT)
+  - Verto Plus
+  summary: >-
+    The SunSpec document that the Fronius manual links states the 32-bit register order, but sunspec.org blocks
+    the corpus client.
+  evidence: >-
+    Manual 034-28092026, Immediate Control Model (123) > Power reduction: 'Further information can be found at:
+    http://sunspec.org/wp-content/uploads/2015/06/SunSpec-Information-Models-12041.pdf'. GET of the https URL with
+    corpus-fetch/1 on 2026-11-14 (twice): HTTP 403, body 'Just a moment...', header 'cf-mitigated: challenge'; the
+    same for https://sunspec.org/ and https://sunspec.org/specifications/. An Internet Archive capture of the PDF
+    (2022-01-19, 1535953 bytes, title 'SunSpec Information Models - 12041', read for discovery only) says '32-bit
+    integers are stored using two registers in big-endian order', '64-bit integers are stored using four registers
+    in big-endian order' and 'float32 ... Not Implemented: 0x7FC00000 (NaN)'.
+  detail: >-
+    An archive mirror is not admissible, and the manual links the document for scale factors, not for data types.
+    Decide whether a SunSpec Alliance document may be evidence for a Fronius contract (the manual says unavailable
+    data follows 'the SunSpec specification' and that the device serves SunSpec models), and from which SunSpec
+    host the corpus client can fetch it. https://raw.githubusercontent.com/sunspec/models/master/README.md is fetchable
+    (HTTP 200) but states no encoding. Until then the 32/64-bit points stay unmapped.
+  owner: maintainer
+  class: [1, 3]
+- id: p-fronius-manual-scope
+  kind: model-scope
+  vendor: Fronius
+  models: [Tauro, Tauro ECO, Verto (3 MPPT), Verto (4 MPPT), Verto Plus]
+  summary: >-
+    The manual that supplies the address base and the not-available values is titled for the GEN24 and never names
+    the Tauro or the Verto.
+  evidence: >-
+    Manual 034-28092026: title 'Fronius GEN24 - Modbus TCP and RTU'; the words Tauro and Verto do not occur (HTML
+    and PDF edition 42,0410,2649). It links gen24-modbus-api-external-docs.zip (General > Register maps and QR-link/0024)
+    as its register tables; that archive holds the Tauro, Tauro ECO and Verto workbooks (_CHANGELOG.TXT 1.2.0-1
+    'added Verto register maps'). The manual's int+SF start addresses of models 120, 121, 122 and 160 (40121, 40149,
+    40181, 40253) equal the ID register numbers minus 1 in every Tauro and Verto workbook; the extractor requires
+    this. The Tauro (42,0426,0307, 040-28082026), Verto (42,0426,0531, 018-23092026) and Verto Plus (42,0426,0552,
+    018-23092026) operating instructions describe the same 'SunSpec Model Type' setting and name no Modbus manual;
+    no Tauro or Verto Modbus manual was found on manuals.fronius.com. https://www.fronius.com/en-gb/uk/solar-energy/installers-partners/technical-data/all-products/system-monitoring/open-interfaces/modbus-tcp
+    (HTTP 200, dynamic page, not pinned) lists the downloads 'Fronius GEN24, Tauro Modbus TCP & RTU Manual' and
+    'Fronius GEN24 & Tauro Modbus Register - SunSpec Maps, State Codes & Events'.
+  detail: >-
+    The five contracts are mapped on the ground that the manual's rules ('To read register 40001, use address 40000',
+    Unavailable data records, sunssf, SunSpec Operating Codes) are the rules of the register tables it links, which
+    include these workbooks; each contract says in info.description that the manual is titled for the GEN24. Confirm
+    this reading or set the five models to needs-check. device.unitId quotes the unit ID rule as the GEN24 manual's
+    statement. Pinning the Tauro and Verto operating instructions as scope evidence needs p-fronius-evidence-per-contract.
+  owner: maintainer
+  class: 3
+- id: p-fronius-verto-plus-scope
+  kind: model-scope
+  vendor: Fronius
+  models: [Verto Plus]
+  summary: >-
+    The storage map is titled for the Verto with storage configured, not for the Verto Plus, and exists for 3 MPP
+    trackers only.
+  evidence: >-
+    Verto_Inverter_Register_Map_3MPPT_Int&SF_storage_ROW.xlsx: title 'Fronius Verto Inverter Register Map with 3
+    MPPT, Integer+SF Inverter Model and storage configured for ROW use'; Complete Map row 10 (Md) examples 'Verto
+    10.0 ... Verto 24.0' and 208-240 / 480 variants; row 187 (N) '3 MPPT and 1 BATTERY => 5 repeating blocks'. The
+    archive has no 4 MPPT map with storage. Verto Plus operating instructions 42,0426,0552 (018-23092026, not pinned):
+    Verto Plus 15.0, 17.5, 20.0, 25.0, 30.0 and 33.3, each with 'Number of MPP controllers 3'.
+  detail: >-
+    Same pattern as c04-fronius-md-plus-name for the GEN24 Plus. The contract is attributed to the Verto Plus because
+    only that variant takes a battery, and info.description says the map does not use the name. Confirm the Md string
+    of a Verto Plus and that the 25.0 to 33.3 kW units serve the same five MPPT blocks. Proxus makes the same attribution
+    without a note.
+  owner: maintainer
+  class: 3
+- id: p-fronius-evidence-per-contract
+  kind: tooling
+  vendor: Fronius
+  models: [Tauro, Tauro ECO, Verto (3 MPPT), Verto (4 MPPT), Verto Plus]
+  summary: >-
+    Evidence is attached per source, so a document that concerns only some contracts of a shared source cannot be
+    added without changing the others.
+  evidence: >-
+    corpus/run.py build_contract: documentation = [link(source), *(link(item) for item in source.get("evidence",
+    []))] for every contract of the source. fronius-gen24-modbus now yields 13 contracts for five series from one
+    archive. The Tauro and Verto operating instructions (direct HTML on manuals.fronius.com, two fetches identical,
+    sha256 af61870a... and 2f582eb0...) would be scope evidence for five of them.
+  detail: >-
+    Adding them to the source would rewrite device.documentation of the three existing storage contracts, which
+    had to stay byte-identical. Allow evidence IDs per contract item (a subset of the source's evidence), so each
+    contract links only the documents its mapping relies on.
+  owner: tooling
+  class: 3
+- id: p-fronius-compare-by-point
+  kind: tooling
+  vendor: Fronius
+  models:
+  - Primo GEN24
+  - Symo GEN24
+  - Primo GEN24 Plus
+  - Symo GEN24 Plus
+  - Smart Meter
+  - Tauro
+  - Tauro ECO
+  - Verto (3 MPPT)
+  - Verto (4 MPPT)
+  - Verto Plus
+  summary: >-
+    proxus_compare.py matches by address only; a map of the same device in the other SunSpec model type needs matching
+    by model and point name.
+  evidence: >-
+    devices/fronius/primo-gen24/inverter.omb.yaml against primo-gen24-symo-gen24.yaml: 1 OK, 12 DIFF, 4 NOT-IN-PROXUS,
+    all by construction. devices/fronius/primo-gen24-plus/inverter.omb.yaml: battery_charge_status (int+SF address
+    40354) reports OK against their storage_l (the length register of model 124 in the float layout), a coincidence.
+  detail: >-
+    The staging script work/xcheck.py resolves each contract point through the vendor's float workbook (model sheet
+    and register name to the float Start number) and then compares width, type and scale-factor register; it also
+    audits every Proxus register against its vendor row. A shared tool should take an optional vendor-side translation
+    like this, and should not count an OK whose two sides are different vendor rows.
+  owner: tooling
+  class: [1, 3]
+- id: p-fronius-waval-unit
+  kind: vendor-erratum
+  vendor: Fronius
+  models:
+  - Primo GEN24
+  - Symo GEN24
+  - Primo GEN24 Plus
+  - Symo GEN24 Plus
+  - Tauro
+  - Tauro ECO
+  - Verto (3 MPPT)
+  - Verto (4 MPPT)
+  - Verto Plus
+  summary: WAval ('Amount of Watts available') is listed with unit var.
+  evidence: >-
+    Sheet status (122) of every inverter workbook, e.g. Gen24_Primo_Symo_Inverter_Register_Map_Int&SF_ROW.xlsx Complete
+    Map row 141, register 40213, WAval, uint16, Units 'var', Range of values 'not supported'; float workbook row
+    129, register 40223.
+  detail: >-
+    Not mapped (the vendor marks it not supported). Proxus transcribes the unit as given (status_waval, unit var).
+    Smaller slips in the same workbooks: 'Input ID Sting' as the description of module/N/IDStr, and 'Tauro ECO 50-3-P'
+    twice in the Tauro ECO Md examples.
+  owner: vendor
+  class: 3
+- id: p-gavazzi-eastron-sdm630mct-scan
+  kind: extraction
+  vendor: Eastron
+  models: [SDM630MCT]
+  summary: The only Eastron-hosted SDM630MCT protocol is a scan without a text layer.
+  evidence: 'https://www.eastroneurope.com/images/uploads/products/protocol/SDM630MCT_Protocol.pdf, HTTP 200, 3876310
+    bytes, sha256 c75b31f0..., identical on two fetches; 23 pages, one 1240x1754 grey JPEG each (pdfimages), no
+    fonts (pdffonts), pdftotext output empty. Title on the page image: ''Eastron SDM630MCT Smart Meter Modbus Protocol
+    Implementation V1.5''. The text PDF Proxus uses is a reseller copy of another edition: https://www.bimblesolar.com/docs/SDM630MCT-PROTOCOL-NOV-14%20(1).pdf
+    (HTTP 200, sha256 432e4eda...).'
+  detail: >-
+    Blocked: extractors read text through pdftotext only, and the reseller copy is not admissible. Options: ask
+    Eastron for the text PDF of V1.5, or decide whether OCR of a vendor scan may feed an extractor (it would need
+    a pinned OCR tool and review of every digit). The scan states the conventions (IEEE 754, most significant register
+    first by default, 3X/4X references with hex start bytes), so nothing else blocks the model.
+  owner: maintainer
+  class: 1
+- id: p-gavazzi-eastron-sdm72d-register-order
+  kind: doc-ambiguity
+  vendor: Eastron
+  models: [SDM72D-M]
+  summary: >-
+    No Eastron document states which register of a float comes first on the SDM72D-M.
+  evidence: >-
+    Eastron SDM72D-M-1 User Manual V1.4 (eastrongroup.com, sha256 57510937...): p.3 'Modbus Word order Hi/Lo byte
+    order is set automatically to normal or reverse. It cannot be configured from the set-up menu'; p.10-12 Part
+    3 gives 'Data Format: Float' with no order and no worked frame. The reseller copies Proxus cites (protocol V1.1,
+    manual V1.5) say the same.
+  detail: >-
+    Blocks all 12 input registers (30013-30017, 30053, 30073, 30075, 30343, 30385-30391, 31281, 31283), all floats.
+    The Proxus map sets no byte order (its tooling then uses ABCD) and notes 'Neither document states the float
+    word order; the user manual says the meter sets normal or reverse word order automatically'. The SDM120, SDM230
+    and SDM630 documents state most significant register first, but none of them names this meter. Decide whether
+    that family statement or an independent implementation may count (see also c01-configurable-word-order).
+  owner: maintainer
+  class: 1
+- id: p-gavazzi-eastron-sdm72d-scope
+  kind: model-scope
+  vendor: Eastron
+  models: [SDM72D-M]
+  summary: >-
+    Eastron's own site names the short-map meter SDM72D-M-1 and uses SDM72D-M for a newer multi-function meter.
+  evidence: >-
+    eastrongroup.com/download/: 'Eastron SDM72D-M-1 User Manual V1.4' (2023; kWh and W only; meter code 'SDM72D-M-1
+    = 00 84', p.12) and 'SDM72D-M user manual V1.1' (2026; voltage, current, PF, reactive power; no register list).
+    The 2017 manual V1.5 on docs.vekto.nl calls the short-map meter SDM72D-M.
+  detail: >-
+    A contract for 'SDM72D-M' from the V1.4 manual would carry a model name the pinned document does not print.
+    If the register order is settled, map it as SDM72D-M-1 and decide how the catalog names the older SDM72D-M.
+    The 2026 SDM72D-M needs its own protocol document, which is not public.
+  owner: maintainer
+  class: 1
+- id: p-gavazzi-eastron-sdm120ctm-register-order
+  kind: doc-ambiguity
+  vendor: Eastron
+  models: [SDM120CT-M]
+  summary: The SDM120CTM document shows the float register order only in a worked response.
+  evidence: >-
+    SDM120CTM Modbus Protocol Implementation V1.3 p.3: response to 'Volts 1' with 'Data, High Reg, High Byte 43',
+    'High Reg, Low Byte 66', 'Low Reg, High Byte 33', 'Low Reg, Low Byte 34', 'returns the contents of Volts 1 as
+    230.2'. No sentence like the SDM230/SDM630 'Most significant register first'.
+  detail: >-
+    0x43663334 is 230.2 only with the high register first, and the frame lists the high register first, so the contract
+    uses wordOrder big and says so in info.description; the extractor decodes the example and requires 230.2. Please
+    confirm that a labelled worked frame is enough. The pilot SDM120 contract rests on the same example in its own
+    document.
+  owner: maintainer
+  class: 1
+- id: p-gavazzi-eastron-em210-frequency
+  kind: doc-ambiguity
+  vendor: Carlo Gavazzi
+  models: [EM210]
+  summary: EM210 frequency weight is printed as 'Hz' with no factor.
+  evidence: >-
+    EM210_AV protocol V4R3 p.8 Table 2.3-1 300052 / 0033h Hz INT16 'Value weight: Hz'; p.9 Table 2.4-1 300273 /
+    0110h Hz INT32 'Value weight: Hz'; p.14 'Version 4 Revision 1: Table 2.4-1: updated frequency notes'. The EM24
+    and EM300 documents print 'Hz*10'.
+  detail: >-
+    Frequency is left out of the EM210 contract: whole hertz is what the document says, a dropped '*10' is as likely.
+    Proxus leaves it out for the same reason. A vendor answer or one reading settles it.
+  owner: vendor
+  class: 1
+- id: p-gavazzi-eastron-em300-phase-sequence
+  kind: doc-ambiguity
+  vendor: Carlo Gavazzi
+  models: [EM330, ET330, EM340, ET340]
+  summary: >-
+    EM300/ET300 phase sequence value for L1-L3-L2 is printed as "1"; sibling documents say -1.
+  evidence: >-
+    EM300/ET300 V2R17 p.9 Table 2.4-1 300051 / 0032h INT16 and p.12 Table 2.6-1 300271 / 010Eh: 'The value "1" corresponds
+    to L1-L3-L2 sequence'. EM210 p.8 'The value -1 corresponds to L1-L3-L2'; EM24-DIN p.8 'Value -1'.
+  detail: >-
+    The contracts enumerate 1 and 0 as printed. If the meter returns -1, the value decodes without a name, which
+    is not an error (section 6.5). Proxus lists only 0.
+  owner: vendor
+  class: 1
+- id: p-gavazzi-eastron-request-limits
+  kind: doc-ambiguity
+  vendor: Carlo Gavazzi
+  models: [EM111, EM112, EM210, EM330, ET330, EM340, ET340]
+  summary: >-
+    Text and frame tables give different request limits (50 or 61 registers against 20 or 11).
+  evidence: >-
+    EM100/ET100 p.3-4 and EM300/ET300 p.3-4: 'maximum 50 registers' against 'Quantity of registers 1 to 14h (1 to
+    20)'; both also have register 2004h 'Max number of words readable with a single Modbus request: Value = 50'.
+    EM210 p.3-4: 'maximum 61 registers' against '1 to 10h (1 to 11)'. EM24-DIN and EM24-IS p.3-4: 11 in both places
+    (hex printed as 10h).
+  detail: >-
+    Same pattern as c01-cg-request-limit: no maxReadRegisters where the two disagree, so a runtime falls back to
+    125, above either figure. EM24-DIN and EM24-IS get maxReadRegisters 11. Suggest deciding once whether a contract
+    should carry the lower documented figure in such cases.
+  owner: maintainer
+  class: 1
+- id: p-gavazzi-eastron-cg-errata
+  kind: vendor-erratum
+  vendor: Carlo Gavazzi
+  models: [EM111, EM112, EM24-DIN, EM24-IS, EM330, ET330, EM340, ET340]
+  summary: Misprints in rows the contracts do not use.
+  evidence: >-
+    EM300/ET300 p.12 Table 2.6-1: Modicom 300249 printed for both 00F6h and 00F8h, and 00F6h 'Run hour meter kWh
+    (-)' with weight 'Ampere*1000'; p.13 note 'Table 2.4-1 and 2.5-1 are equivalent' (means 2.6-1). EM100/ET100
+    p.12: data format 'UNIT 32' for the CT ratio. EM24-DIN/EM24-IS p.3-4: '1 to 10h (1 to 11)'.
+  detail: >-
+    Selected rows are consistent (Modicom and physical addresses agree). Extends c01-cg-errata.
+  owner: vendor
+  class: 1
+- id: p-gavazzi-eastron-word-boxes
+  kind: tooling
+  vendor: Carlo Gavazzi
+  models: [EM210, EM24-DIN, EM24-IS, EM330, ET330, EM340, ET340]
+  summary: >-
+    A Notes cell that spans several rows can only be assigned by word position; the extractor carries its own pdftotext
+    -bbox reader.
+  evidence: >-
+    EM24-DIN p.8 Table 2.3-1: one 'Value weight: Volt*10' for 0000h-000Bh, centred between the third and fourth
+    row. corpus/extractors/carlo_gavazzi_em_et_protocol.py (page_words, assign_notes) assigns a Notes line to the
+    rows whose baselines it is centred on (tolerances 1 to 2 pt against row pitches of 8.4 to 9.7 pt) and checks
+    the unit against the expected one. automationdirect_durapulse_status.py has a second private copy of the reader.
+  detail: >-
+    Extends c01-tooling-pdf-columns: move a pdf_words helper into sourcelib. Word boxes were checked on Poppler
+    26.11 only; CI (24.02) must confirm the same boxes, otherwise the extractor raises rather than guess.
+  owner: tooling
+  class: 1
+- id: p-janitza-lovato-klemsan-klemsan-cloudflare
+  kind: source-access
+  vendor: Klemsan
+  models: [KLEA 320P, KLEA 4, KLEA 6]
+  summary: >-
+    Every Klemsan-owned host answers the corpus client with a Cloudflare challenge (HTTP 403).
+  evidence: >-
+    klemsan.com.tr and www.klemsan.com.tr (/wp-content/uploads/... and the older /SF/... path) and download.klemsan.com.tr:
+    HTTP 403 "Just a moment...", header cf-mitigated: challenge. klemsan.com and www.klemsan.com redirect to klemsan.com.tr.
+    klemsan.de fails the TLS handshake; klemsan.es is a parking page; klemsan.eu, .co.uk, .fr, .it and guessed cdn./docs./files.
+    subdomains do not resolve. A web search found the manuals only on klemsan.com.tr and on third-party mirrors
+    (manualshive, manuals.plus, manuals.online), which are not admissible.
+  detail: >-
+    All three models are blocked. Ask Klemsan for a challenge-free document host, or have the maintainer decide
+    whether a manually supplied copy can be pinned. One of the three manuals (KLEA 6) is in Turkish.
+  owner: vendor
+  class: 2
+- id: p-janitza-lovato-klemsan-umg103cbm-base
+  kind: doc-ambiguity
+  vendor: Janitza electronics
+  models: [UMG 103-CBM]
+  summary: >-
+    No UMG 103-CBM document states the address base, and its list does not contain address 0.
+  evidence: >-
+    List Doc no. 2.057.005.1.f (07/2025): lowest address 8 (PDF p.14, "8 Delete MinMax-Value"); p.4 slave functions
+    03/04/06/16/23; p.5 big-endian. Manual Doc. no. 2.057.013.1.e (05/2023) PDF p.39: function list and "high before
+    low byte (Motorola format)", no request example. The manuals of the UMG 96-PA (2.061.059.4.a p.71), UMG 509-PRO
+    (2.059.011.3.a p.78), UMG 96RM (1.040.127.1.a p.62), UMG 96RM-E (1.040.129.1.b p.79) and UMG 96RM-PN (1.040.137.1.q
+    p.75) all read list address 19000 with function 03 and start address 4A 38; the UMG 103-CBM list has the same
+    19000 block and calls the other addresses "standard device addresses of the UMG series" (p.12).
+  detail: >-
+    Only the base blocks the model; the holding table follows as for the other lists. Proxus assumes zero-based
+    holding registers and gives as its reason that Janitza's UMG address lists number from register 0 and give no
+    example frame, which is not true of this list. Decide whether the request example in the manuals of sibling
+    UMG devices may count as evidence for the UMG 103-CBM, or ask Janitza. An extractor would select the 19000 block,
+    the LONG energy sums at 416-430 and the scaled SHORT rows at 200-281 (the list's "Scaling Factor" column also
+    needs its direction confirmed).
+  decision: D4
+  owner: maintainer
+  class: 1
+- id: p-janitza-lovato-klemsan-umg604pro-base-inferred
+  kind: doc-ambiguity
+  vendor: Janitza electronics
+  models: [UMG 604-PRO]
+  summary: >-
+    Same as c02-janitza-base-inferred: zero base and holding table are forced by the list, not stated.
+  evidence: >-
+    List Doc. no. 1.033.034.h PDF p.14: "0 long64 _REALTIME 2 ns Time (UTC)"; p.104: "9973 short _DIGOUT_STAT[0]
+    n Digital output 1, Status (r/w)" and "9975 short _DIGIN_STAT[0] n Digital input 1, Status (r)"; p.4 slave functions
+    03, 04, 06, 16, 23. Manual Doc. no. 1.033.059.7.a (02/2026) and its German edition have no request example.
+  detail: >-
+    Mapped under rule 3; info.description says so and the extractor requires the three rows. Add the UMG 604-PRO
+    to c02-janitza-base-inferred instead of keeping a second item. Whether function 04 serves the same addresses
+    stays unstated.
+  decision: D4
+  owner: maintainer
+  class: 2
+- id: p-janitza-lovato-klemsan-umg96rm-manual-evidence
+  kind: doc-ambiguity
+  vendor: Janitza electronics
+  models: [UMG 96RM, UMG 96RM-E, UMG 96RM-PN]
+  summary: >-
+    The UMG 96RM user manuals state what c02-janitza-base-inferred infers; pinning them as evidence would close
+    it.
+  evidence: >-
+    Each has "Example: Reading the voltage L1-N" with function 03 "Read Holding Reg." and "19000dec = 4A38hex".
+    UMG 96RM: Doc no. 1.040.127.1.a (10/2023), PDF p.62, https://assets.janitza.com/ce18jq9ih0x6/46bc4e01d587f20359d8a4/35a677c196dba253b4413007e450c497/janitza-bhb-umg96rm-en.pdf,
+    sha256 c1ab5f72491a99474093106ffc6222de59e29b5c44faa933493cf8e52cbdb25c, 3143048 bytes. UMG 96RM-E: Doc. no.
+    1.040.129.1.b (05/2024), PDF p.79, https://assets.janitza.com/ce18jq9ih0x6/9f41e319982263720da51b/055de246b1a94f52ae51db60c815adaa/janitza-bhb-umg96rme-en.pdf,
+    sha256 d694006c11034b519363cfb362342b6c04585334272565e0927f128c7f821231, 4328671 bytes. UMG 96RM-PN: Doc. no.
+    1.040.137.1.q (05/2024), PDF p.75, https://assets.janitza.com/ce18jq9ih0x6/35d0037d2662ccf6d8a199/139b8c17e10756b6b760491524f1dafd/janitza-bhb-umg96rmpn-en.pdf,
+    sha256 aba9a44ec547c2437a49ac24166d6ad2c93259f7704c3400325b729a6964fc5a, 3733998 bytes. Each fetched once with
+    the corpus client.
+  detail: >-
+    Not done here because the three existing contracts had to stay byte-identical and evidence documents are linked
+    from device.documentation. request_example in corpus/extractors/janitza_umg_address_lists.py parses this example;
+    the wording of the 96RM manuals differs slightly ("appears as follows", "Start Addr. Hi", German-style quotes
+    in the RM-E edition), so its patterns need a variant. Fetch each manual twice before pinning.
+  decision: D4
+  owner: maintainer
+  class: 2
+- id: p-janitza-lovato-klemsan-janitza-example-response
+  kind: vendor-erratum
+  vendor: Janitza electronics
+  models: [UMG 96-PA, UMG 509-PRO, UMG 96RM, UMG 96RM-E, UMG 96RM-PN]
+  summary: >-
+    The response of the manuals' read example does not fit a float read of two registers.
+  evidence: >-
+    UMG 96-PA manual 2.061.059.4.a PDF p.71 and UMG 509-PRO manual 2.059.011.3.a PDF p.78: request asks for 2 values
+    of a FLOAT; the response shows "Byte counter 06" and the data bytes "00" and "E6" with "E6hex=230dec ... The
+    voltage L1-N ... is 230 V".
+  detail: >-
+    A reply to two registers carries a byte count of 4, and 230.0 as IEEE 754 is 43 66 00 00. Only the request of
+    the example is used as evidence (function, start address, count); the response is not. Report it to Janitza.
+  owner: vendor
+  class: 2
+- id: p-janitza-lovato-klemsan-umg509pro-status-unit
+  kind: vendor-erratum
+  vendor: Janitza electronics
+  models: [UMG 509-PRO]
+  summary: The unit column of the bit-coded alarm status rows 19224 and 19225 reads "s".
+  evidence: >-
+    List 1.059.004.2.o PDF p.32-33: "19224 short RD/WR _COMP_DIFF_STATUS[0] s Alarm status for diff 1 with: Bit
+    0 = Warning, Bit 1 = Overcurrent, Bit 2 = Alarm, Bit 3 = CT not connected".
+  detail: >-
+    The contract maps 19224 as flags without a unit; the extractor requires the row text as printed.
+  owner: vendor
+  class: 2
+- id: p-janitza-lovato-klemsan-lovato-power-resolution
+  kind: question
+  vendor: Lovato Electric
+  models: [DMG110, DMG210, DMG800]
+  summary: >-
+    Power resolution switches between 1/100 W and 1/10 W on a flag register whose non-zero value the document does
+    not give.
+  evidence: >-
+    I317 I GB 02_22 PDF p.9, note 1 on the per-phase W/var/VA rows 0014H-0024H: resolution 1/100 W; above 5 MW per
+    phase "the resolution of all power measurements will be 1/10W"; address 2F70H "returns 0000h" for 1/100 W, "otherwise
+    it is working with 1/10W"; "This function is available starting from SW revision 08 (DMG700) - 09 (DMG800) -
+    06 (DMG900)". 2F70H is in no table. The equivalent power rows 003AH-003EH carry no note mark.
+  detail: >-
+    DMG800: all power rows are left out. DMG110 and DMG210: the equivalent power rows are mapped as W/100 with a
+    description, on the reading that the note's last sentence limits the function to the three named models; please
+    confirm that reading or drop the three points. The draft can express the switch only if 2F70H reads exactly
+    1: a point at 2F70H with conversion offset -2 as the exponent10 reference of the power points. If it reads any
+    other non-zero value, a scale selected by a flag is a gap. Proxus maps all power registers with a fixed 0.01
+    and a note.
+  decision: D6
+  regression: >-
+    2F70H = 0x0000, 0016H-0017H = 0x0001 0xFB00 -> 1297.92 W. 2F70H non-zero, same registers -> 12979.2 W.
+  owner: maintainer
+  class: 2
+- id: p-janitza-lovato-klemsan-lovato-4word-order
+  kind: doc-ambiguity
+  vendor: Lovato Electric
+  models: [DMG110, DMG210, DMG800]
+  summary: The register order of 4-word "Unsigned long-long" values is not shown.
+  evidence: >-
+    PDF p.4: the only worked answer is a 2-word value (00 01 FB 00 = 129792). PDF p.13-14: 1B20H-1BE4H and 1E20H
+    onward are 4 words; for the DMG110 the first-column cell of 1B20H-1B44H reads "DMG210", a mark with "07", "DMG110",
+    and the DMG110 has no 2-word counters.
+  detail: >-
+    Blocks every energy point of the DMG110 and the 4-word counters of the DMG210 (software revision 07) and DMG800
+    (09). Proxus maps them as uint64 ABCD by extension of the 2-word example. Ask Lovato, or decide whether the
+    2-word example may be extended. It is also unclear whether the "07" in the shared cell applies to the DMG110.
+  owner: maintainer
+  class: 2
+- id: p-janitza-lovato-klemsan-lovato-dmg800-port
+  kind: doc-ambiguity
+  vendor: Lovato Electric
+  models: [DMG800]
+  summary: >-
+    The protocol document groups the DMG800 with models that have a built-in port; the catalogue page says it has
+    none.
+  evidence: >-
+    PDF p.2: "The digital multimeter DMG6.., DMG700, DMG800 and DMG900 support the communication protocols Modbus
+    RTU, Modbus ASCII and Modbus TCP on the built-in port and on the expansion modules: EXP 10 10 USB, EXP 10 11
+    RS232, EXP 10 12 RS485, EXP 10 13 Ethernet". https://catalogue.lovatoelectric.com/gl_en/DMG800/snp: "Built-in
+    communication port: No".
+  detail: >-
+    The contract lists rtu, ascii and tcp with the note "Built-in port or expansion module", following the pinned
+    document. Decide whether transports should say that the DMG800 needs an expansion module.
+  owner: maintainer
+  class: 2
+- id: p-janitza-lovato-klemsan-lovato-notes-errata
+  kind: vendor-erratum
+  vendor: Lovato Electric
+  models: [DMG110, DMG210, DMG800]
+  summary: Two slips in the document's text.
+  evidence: >-
+    PDF p.14, English note 2: "The energy counters at these addresses are 4 words (4 bytes) long"; the Italian note
+    says "4 word (8 bytes)". PDF p.3: functions 03 and 04 are both named "Read input register".
+  detail: >-
+    Neither affects a mapped point. Function 03 is Read Holding Registers in the Modbus specification; the contracts
+    use the input-register table of the worked example and info.description says that function 03 reads the same
+    addresses.
+  owner: vendor
+  class: 2
+- id: p-janitza-lovato-klemsan-pdf-stdin
+  kind: tooling
+  vendor: Lovato Electric
+  models: [DMG110, DMG210, DMG800]
+  summary: >-
+    sourcelib.pdf_pages pipes the PDF to pdftotext; Poppler 26.11 cannot repair this file's damaged cross-reference
+    table from a pipe.
+  evidence: >-
+    I317IGB02_22.pdf: pdfinfo and pdftotext print "Syntax Error: Invalid XRef entry". With Poppler 26.11, `pdftotext
+    -f 13 -l 13 -layout - -` on stdin returns 49 bytes (the footer) and "Unexpected end of file in flate stream";
+    with the file path it returns 10372 bytes. Poppler 24.02 returns 10372 bytes both ways.
+  detail: >-
+    corpus/extractors/lovato_electric_dmg_modbus.py writes the verified bytes to a temporary directory and passes
+    the path. Consider doing the same in sourcelib.pdf_pages and adding a `pdf_words` helper for -bbox output: this
+    extractor and automationdirect_durapulse_status.py now each carry their own. The word boxes of pages 9-15 are
+    byte-identical under Poppler 24.02 and 26.11.
+  owner: tooling
+  class: 2
+- id: p-schneider-ion-altivar-ion-address-base
+  kind: doc-ambiguity
+  vendor: Schneider Electric
+  models: [ION7400, PM8000, ION9000]
+  summary: >-
+    The ION7400, PM8000 and ION9000 Modbus maps never say whether "Modbus Register" N is read at PDU address N or
+    N-1.
+  evidence: >-
+    Workbooks (sha256 fcacc3fe..., 35021b89..., 240a95e6... and the 004.006.000 editions in the firmware packages):
+    'Detailed Modbus Map'!B "Modbus Register", lowest value 30, e.g. Current A 3000 (B80); 'High-Level Modbus Map'
+    "Start Address" / "End Address" with Generic data 0 to 65535 and Modbus Slave Modules 0 to 65535, External Control
+    52001 to 53000 (first detailed register 52001). User manuals 7EN02-0374-10 p. 108, 7EN02-0336-12 p. 106, 7EN02-0390-10
+    p. 112: "Your meter's Modbus registers are specified differently than previous devices using ION architecture
+    ... refer to your meter's Modbus map"; ION Setup tooltip "indicates the Modbus function code and start address
+    to send" (pp. 110, 108, 114). ION Reference 7EN02-0290-16 p. 427 BaseAddr. Technical note 70072-0104-14 covers
+    only 4xxxx-style older meters. FAQ FA332210: "In some meters the registers start from Zero and others may start
+    from 1 ... Check the Modbus Register List". FAQ000222926 writes PM8000 Power Factor Total (map register 3150)
+    as "(403150-403151)".
+  detail: >-
+    The only fact blocking all three models; every point is affected. Two readings: (a) register minus one, which
+    Proxus uses, giving as reason "the workbook numbers registers like the PM5000 lists (Current A = 3000)", and
+    which the 4xxxxx notation in FAQ000222926 would also give; (b) register equals address, which the workbook's
+    own 0 to 65535 range suggests, since a one-based numbering has no register 0. Neither is stated, the two conflict,
+    and the FAQ pages are not byte-stable (per-response nonce), so they cannot be pinned. Everything else is stated
+    in the pinnable user manuals: function 3, MSW-first 32-bit values, invalid patterns. Decide whether one of the
+    hints, or corroboration by independent implementations, may count; otherwise ask Schneider for a one-line statement
+    in the readme sheet. Same question as c02-schneider-base-wordorder for the PM5000.
+  owner: maintainer
+  class: 2
+- id: p-schneider-ion-altivar-ion-int64-order
+  kind: doc-ambiguity
+  vendor: Schneider Electric
+  models: [ION7400, PM8000, ION9000]
+  summary: >-
+    The register order of the INT64 energy values is stated only for the Modbus Slave Module, not for the default
+    map.
+  evidence: >-
+    'Detailed Modbus Map' INT64 rows (100 in the ION7400 map), e.g. Active Energy Delivered (Into Load) register
+    3204, 4 registers, Wh (B134). User manual 7EN02-0374-10 p. 106 covers 16-bit and 32-bit data only. ION Reference
+    7EN02-0290-16 p. 427: "For any 64-bit format, the 64-bit equivalent to the module's input uses four consecutive
+    output registers (low address register contains highest-order word)", in the Modbus Slave Module chapter; the
+    default map is produced by Data Mapping modules (pp. 135-138), which give no formats.
+  detail: >-
+    Once the base is settled, map the FLOAT32 energies (2700 onwards, kWh) and leave the INT64 block out unless
+    the maintainer accepts the Modbus Slave Module statement for the default map. Proxus assumes ABCD.
+  owner: vendor
+  class: 2
+- id: p-schneider-ion-altivar-ion-bitmap-width
+  kind: doc-ambiguity
+  vendor: Schneider Electric
+  models: [ION7400, PM8000, ION9000]
+  summary: >-
+    BITMAP rows span two registers although the workbook defines BITMAP as a 16-bit register, and two type names
+    disagree.
+  evidence: >-
+    'Detailed Modbus Map' rows 13 to 23 (Digital Input Status Validity - Base Unit, register 2400, "# of Modbus
+    Registers" 2, BITMAP); 'Data Types'!B14 "16-bit binary register where each bit represents a specific quantity".
+    The detailed map uses the type TIMESTAMPED_FLOAT32 (53 rows, 6 registers) while 'Data Types'!A10 defines FLOAT32_TS.
+  detail: >-
+    Which register and which bit carry which input is not stated, so the digital I/O status cannot be mapped as
+    flags. Report to Schneider.
+  owner: vendor
+  class: 2
+- id: p-schneider-ion-altivar-atv61-modbus-manual-scope
+  kind: model-scope
+  vendor: Schneider Electric
+  models: [ATV61]
+  summary: >-
+    Schneider's Integrated Modbus manual names only the Altivar 71; the ATV61 contract takes function 3 from the
+    Altivar 61/71 Ethernet card manual instead.
+  evidence: >-
+    1755863 (ATV71_Modbus_integrated_EN_1755863_03.pdf, 11/2010): title page and text say Altivar 71 throughout;
+    se.com titles its page "ATV61/ATV71 Integrated Modbus manual" and FAQ FA315664 "ATV61 and ATV71 basic integrated
+    modbus setup assistance" attaches it. se.com has no separate ATV61 Integrated Modbus manual (1760647 and neighbours
+    answer 404). 1755879 title page "Altivar 61/71 Modbus TCP/IP Ethernet card", p. 34 function list with 3 as the
+    only read function.
+  detail: >-
+    The contract is evidenced for Modbus TCP through the VW3 A3 310 card and says so; for the built-in RS485 ports
+    it lists the transport with a note. Confirm that this is acceptable, or decide whether the se.com page title
+    may extend the Integrated Modbus manual to the ATV61 (the page is not byte-stable, so it cannot be pinned).
+  owner: maintainer
+  class: 8
+- id: p-schneider-ion-altivar-altivar-fc4-note
+  kind: doc-ambiguity
+  vendor: Schneider Electric
+  models: [ATV61, ATV71]
+  summary: >-
+    The Communication parameters manuals mention Modbus function 4 for the status word, which neither Modbus manual
+    lists.
+  evidence: >-
+    1760661 p. 79 and 1755861 PDF p. 85, ETA: "This parameter is available at 2 logic addresses to optimize exchanges
+    via Modbus messaging (Modbus function 4 = 16#04 Read Input Registers)". 1755863 p. 30 and 1755879 p. 34 list
+    functions 3, 6, (8,) 16, 23 and 43 only, and 1755863 says function 3 reads the parameters "regardless of type".
+  detail: >-
+    The contracts use holding registers, as both function tables say. If the drives also answer function 4 the same
+    points would be valid as input registers; ask Schneider which is meant.
+  owner: vendor
+  class: 8
+- id: p-schneider-ion-altivar-atv61-smal-smil
+  kind: vendor-erratum
+  vendor: Schneider Electric
+  models: [ATV61]
+  summary: The ATV61 workbook exchanges the names of SMAL and SMIL.
+  evidence: >-
+    atv61_communication_parameters_en_v5.8_ie29 Parameters!B304 SMAL "Velocity min amount" (16#21A1 = 8609, CANopen
+    16#6046/02) and B305 SMIL "Velocity max amount" (16#219F = 8607, 16#6046/01). Manual 1760661 p. 118: SMIL "Minimum
+    speed" at 8607, SMAL "Maximum speed" at 8609. ATV71 workbook B303 SMAL "Velocity max amount".
+  detail: >-
+    Not mapped; the 32-bit example in the contracts is SPAL, which is consistent everywhere. Proxus inherits the
+    exchanged names.
+  owner: vendor
+  class: 8
+- id: p-schneider-ion-altivar-uln-no-meas
+  kind: doc-ambiguity
+  vendor: Schneider Electric
+  models: [ATV61, ATV71]
+  summary: >-
+    The mains voltage range starts at "[No meas.] (----)" without the register value that stands for it.
+  evidence: >-
+    ATV61 Parameters!M43 and ATV71 Parameters!M45: ULN range "[No meas.] (----) ... 6553.5 V" (16#0C87 = 3207, 0.1
+    V). The Communication parameters manuals (p. 92, PDF p. 100) give no sentinel either.
+  detail: >-
+    The point is mapped without `invalid` and says so in its description. With the value known it becomes one invalid
+    entry.
+  owner: vendor
+  class: 8
+- id: p-schneider-ion-altivar-atv900-validity-note
+  kind: vendor-erratum
+  vendor: Schneider Electric
+  models: [ATV930]
+  summary: >-
+    The current ATV900 Programming Manual's validity note names "Altivar AVL" drives instead of the models.
+  evidence: >-
+    NHA80757.14 (05/2026, sha256 58d7c936...), p. 11: "This documentation is valid for the Altivar AVL drives."
+    The ATV600 manual EAV64318.14 of the same date lists the models in that sentence.
+  detail: >-
+    Model scope for the ATV930 is therefore taken from the Modbus manual NHA80939 p. 10, whose list of the drive's
+    user guides names the "Altivar Process ATV930, ATV950, ATV960, ATV980 Programming Manual NHA80757". Confirm
+    that a title in a related-documents list is enough for scope.
+  owner: maintainer
+  class: 8
+- id: p-schneider-ion-altivar-faq-workbook-identity
+  kind: source-access
+  vendor: Schneider Electric
+  models: [ATV61, ATV71]
+  summary: >-
+    The ATV61 and ATV71 workbooks exist only as FAQ attachments without any identity inside the file.
+  evidence: https://se.my.site.com/ckmContent/sfc/servlet.shepherd/document/download/069Kj00000kGiIJIA0 and .../069Kj00000kGiIKIA0
+    (HTTP 200, two identical fetches each; FAQ FA225538 lists them with dateModified 2026-10-23). No cell or drawing
+    names the drive, a document number or a version; the version is known only from the attachment name in the FAQ
+    page, which carries a per-response nonce and cannot be pinned. download.se.com offers the ATV71 list only as
+    legacy .xls (document 1755861) and the ATV61 list not at all (1760661 holds only the PDF).
+  detail: >-
+    The link to the drive is the row-by-row cross-check with the pinned Communication parameters manual. If Schneider
+    replaces an attachment the document ID changes; the corpus health run will show it. With sourcelib.xls_rows
+    the ATV71 .xls on download.se.com would be a second, document-numbered source.
+  owner: maintainer
+  class: 8
+- id: p-schneider-ion-altivar-xlsx-drawing-text
+  kind: tooling
+  vendor: Schneider Electric
+  models: [ATV61, ATV71]
+  summary: sourcelib has no reader for text boxes (drawings) in a workbook.
+  evidence: >-
+    The explanatory note of both workbooks is xl/drawings/drawing1.xml; the Instructions sheet has no cells. corpus/extractors/schneider_electric_altivar_61_71_comm_xlsx.py
+    check_workbook() reads the DrawingML paragraphs itself.
+  detail: >-
+    Move to sourcelib as xlsx_drawing_texts(data) if a second extractor needs it. The two Altivar extractors also
+    share the enumeration and bit-list parsers by copy, because extractor modules cannot import each other.
+  owner: tooling
+  class: 8
+- id: p-schneider-meters-pmc-base
+  kind: doc-ambiguity
+  vendor: Schneider Electric
+  models: [PM5110, PM5330, PM5560, PM2130, PM2230, EM6400NG]
+  summary: >-
+    No pinnable Schneider document states whether 'Register' in the PM5000, PM2000 and EM6400NG register lists is
+    the PDU address or address + 1.
+  evidence: >-
+    Searched every sheet and notes cell of PM556x_PublicModbusRegisterList (sha256 312c4859...), PM51xx_PM53xx_PMC
+    Register List v2011/v2021 (f2357b9d...) and Public_PM2xxx_PMC Register List v1001 and v1050_6 (1a7e6aee...,
+    bece4f3b...); user manuals HRB1684301-18, EAV15105-EN11, EAV15107-EN11, NHA2779002-12, NHA2778902-13 (all say
+    only 'see your meter's Modbus register list'). Lowest register number in the lists is 1, none is 0. FAQ FA332210:
+    'In some meters the registers start from Zero and others may start from 1.' Sibling statement: DOCA0005EN-16
+    p.56 and DOCA0006EN-09 p.50 define 'Register' as address + 1 for tables that use the same register numbers (30
+    Meter Name, 1637 firmware version, 3000 I1, 3204 active energy import).
+  detail: >-
+    Updates c02-schneider-base-wordorder (same verdict, now also for PM5110/PM5330 after the .xls became readable,
+    and for the PM2000 list). Blocks every point of these six models. Proxus maps them with address = register -
+    1 because 'working PM5000 clients' do; that is corroboration, not a vendor statement. Decision asked from the
+    maintainer: does Schneider's own definition 'register = address + 1' in the iEM3000 and PM3200 manuals, for
+    the same register numbering, count as evidence for the PM5000/PM2000 lists? If yes, both manuals are already
+    pinned by this group and an extractor can require the sentence and the shared anchor rows; the word order (p-schneider-meters-word-order)
+    would then still limit the contracts to 16-bit rows.
+  decision: D4
+  owner: maintainer
+  class: 2
+- id: p-schneider-meters-word-order
+  kind: doc-ambiguity
+  vendor: Schneider Electric
+  models:
+  - iEM3155
+  - iEM3255
+  - iEM3355
+  - PM3250
+  - PM3255
+  - PM5110
+  - PM5330
+  - PM5560
+  - PM2130
+  - PM2230
+  - EM6400NG
+  summary: >-
+    The register order of Float32, UInt32 and Int64 values (and the packing of UTF8 strings) is stated only on a
+    Schneider FAQ web page that cannot be pinned.
+  evidence: >-
+    Not stated in DOCA0005EN-16, DOCA0006EN-09 or any register list or user manual above. FAQ FA275749 (https://www.se.com/us/en/faqs/FA275749/,
+    product line 'PM5100, PM5300, PM5500'): 'PM5000 meters store data in the Most Significant Register format (Big
+    Endian)' for 32-bit and 64-bit registers; the page is 1373232 bytes with a different SHA-256 on each fetch.
+    FAQ FA204140 attachment 'IEEE751-floatingPoint calculator.xlsx' (https://se.my.site.com/ckmContent/sfc/servlet.shepherd/document/download/0698V00000oOsnXQAS,
+    20201 bytes, sha256 d07ef691fa6ff5909f0c8fe61e8e4f44442de345a09a270024ccb2bf1892c71d, stable): Sheet1!C6 'Register
+    1( MSW)', E6 'Register 2(LSW)', but it names no meter. FAQ FA237865 (PM5000 INT64) contradicts itself: it reads
+    the low 32 bits from register 3204 and the high 32 bits from 3206, then gives Energy = Reg 3212 x 2^48 + ...
+    + Reg 3215.
+  detail: >-
+    Updates c01-schneider-word-order and c02-schneider-base-wordorder. For iEM3155/3255/3355 and PM3250/PM3255 the
+    base is now stated, so 16-bit rows are mapped and this item blocks only the multi-register points: all currents,
+    voltages, powers, power factor, frequency (Float32), all energies (Int64 and Float32), serial number (UInt32),
+    DATETIME stamps, meter name/model (UTF8). Proxus assumes ABCD 'as for the PM5000 lists'. Options: (a) add a
+    normalisation for se.com FAQ pages and pin FA275749 as evidence for the PM5000 models (p-schneider-meters-faq-normaliser);
+    (b) accept the generic calculator workbook; (c) ask Schneider to state the order in the register lists. c01-schneider-int64-signedness
+    still holds: both manuals define Int64 as unsigned in the unit table and call the energies signed in the text;
+    the workbooks define INT64 as signed.
+  decision: D5
+  owner: maintainer
+  class: [1, 2]
+- id: p-schneider-meters-faq-normaliser
+  kind: tooling
+  vendor: Schneider Electric
+  models: [PM5110, PM5330, PM5560]
+  summary: >-
+    se.com FAQ pages differ per response only by script nonces and the Akamai mPulse blocks; a normalisation like
+    'cloudflare' would make them pinnable.
+  evidence: 'https://www.se.com/us/en/faqs/FA275749/ and /uk/en/faqs/FA237865/, HTTP 200 to corpus-fetch/1, same
+    size and different SHA-256 on two fetches. Differences: nonce="<32 hex>" on script tags and the three inline
+    scripts that start with ''(window.BOOMR_mq='', ''!function(){functi'' and ''!function(e){var n="https://s.go-mpulse.net''
+    (ak.* request fields). With the nonces blanked and those three scripts removed, both fetches of each page are
+    byte-identical (FA275749: 1367846 bytes).'
+  detail: >-
+    Needs a NORMALIZERS entry in corpus/run.py (not editable by this group). Only two fetches a few minutes apart
+    were compared; the page also carries navigation and related-article markup that Schneider may change at any
+    time, so long-term stability is unknown. The FAQ article text itself sits in the page as JSON ('answer').
+  owner: tooling
+  class: 2
+- id: p-schneider-meters-iem3000-di-status
+  kind: vendor-erratum
+  vendor: Schneider Electric
+  models: [iEM3155, iEM3255, iEM3355]
+  summary: >-
+    Digital Input Status is printed with Address 0x22C8 and Register 8906, which breaks register = address + 1.
+  evidence: >-
+    DOCA0005EN-16 p.65, table 'Digital Input (iEM3155 / iEM3255 / iEM3355)': '0x22C8 8906 R 2 Bitmap Digital Input
+    Status (only Bit 1 is used)'. 0x22C8 = 8904, so the register would be 8905; DOCA0006EN-09 p.60 prints 0x22C8
+    / 8905 for the PM3255.
+  detail: >-
+    Not mapped (two-register Bitmap). The extractor's address + 1 = register check would reject the row. Report
+    to Schneider.
+  owner: vendor
+  class: 1
+- id: p-schneider-meters-iem3000-float-energy-unit
+  kind: vendor-erratum
+  vendor: Schneider Electric
+  models: [iEM3155, iEM3255, iEM3355]
+  summary: >-
+    The unit of the Float32 energy registers 45100-45126 changed from Wh/VARh to kWh/kVARh between manual editions
+    without a change note.
+  evidence: >-
+    DOCA0005EN-07 p.50 (FAQ FA370395 attachment, page image): '45100 R 2 Float32 Wh Total Active Energy Import'.
+    DOCA0005EN-16 p.68: '0xB02B 45100 R 2 Float32 kWh Total Active Energy Import'; likewise kVARh for 45104-45110.
+    The Int64 registers (3204...) are Wh in both.
+  detail: >-
+    Matters once the float energies are mapped: take the unit from the current edition and note the change. The
+    Proxus map carries Wh from -07. Report to Schneider.
+  owner: vendor
+  class: 1
+- id: p-schneider-meters-pm3200-setup-rows
+  kind: vendor-erratum
+  vendor: Schneider Electric
+  models: [PM3250, PM3255]
+  summary: The current PM3200 manual no longer lists the meter setup registers 2004-2036.
+  evidence: >-
+    DOCA0006EN-06 p.50-51 'Meter Setup and Status': 2004 Meter Operation Timer Status, 2014 Number of Phases, 2015
+    Number of Wires, 2016 Power System Configuration, 2017 Nominal Frequency, 2024-2036 phase order, VT and CT settings.
+    DOCA0006EN-09 p.58 'Meter Setup and Status': one row, 0x6A4D / 27214 Minimum/Maximum Reset Date/Time. The 'Set
+    Wiring' command (p.53) is still there.
+  detail: >-
+    The edition that states the address base (-09) lacks these rows; the edition that has them (-06) defines 'Register
+    Address' in a way -09 contradicts. The PM3250/PM3255 contracts therefore carry no wiring, CT or VT points. Ask
+    Schneider whether the rows were dropped on purpose.
+  owner: vendor
+  class: 2
+- id: p-schneider-meters-undefined-types
+  kind: doc-ambiguity
+  vendor: Schneider Electric
+  models: [PM5560, PM2130, PM2230, EM6400NG, PM3250, PM3255]
+  summary: The lists use data types their own type tables do not define.
+  evidence: >-
+    PM2xxx list v1001 'Register List' rows 2293-2304 (registers 43600-43644, energies in Wh/VARh/VAh): INT64U; 'Data
+    Types' has INT64 only. PM556x 'Register List' rows 101, 105, 109 (Pulse Weight, 2132/2136/2140): 'FLOAT32/INT32U'.
+    All three workbooks write '4Q_FP_PF' in the register list and '4Q FP PF' in 'Data Types'!A15. DOCA0006EN-09
+    p.66 and p.68 type 27306-27312 and 27782-27788 as '4Q FP PF', which its unit table (p.50-51) does not list.
+  detail: >-
+    An extractor for these lists must normalise '4Q_FP_PF' and must leave INT64U and FLOAT32/INT32U rows out. c02-schneider-4q-pf
+    also applies to PM5110/PM5330 (25 rows), the PM2000 list (9 rows) and the PM3200 min/max power factors; Proxus
+    imports all of them as plain float32.
+  owner: vendor
+  class: 2
+- id: p-schneider-meters-mod10k-answer
+  kind: question
+  vendor: Schneider Electric
+  models: [PM5110, PM5330, PM5560]
+  summary: >-
+    Answer to c02-schneider-mod10k: none of the PM5000 or PM2000 lists uses a MOD10K format.
+  evidence: >-
+    Data types in use, read cell by cell: PM51xx/PM53xx list UTF8, INT16U, BITMAP, INT32U, DATETIME, FLOAT32, 4Q_FP_PF,
+    INT64 (36 rows); PM556x the same plus INT16 and FLOAT32/INT32U (INT64: 102 rows); PM2xxx plus INT16 and INT64U.
+    No cell of any sheet contains 'MOD10'. The 'INT64U' string the earlier byte scan found in the PM51xx/PM53xx
+    file comes from the notes of the alarm 'Record Type' rows (e.g. 'Register List'!R1142: '0x0030 INT64U 0x0031
+    INT64'), not from a data type cell.
+  detail: >-
+    c02-schneider-mod10k can be closed as 'no such format'. Energies are INT64 Wh ('Data Types'!A7, signed, N/A
+    0x8000000000000000), expressible as i64 with an invalid value once the word order is known.
+  decision: D6
+  owner: maintainer
+  class: 2
+- id: p-schneider-meters-word-boxes
+  kind: tooling
+  vendor: Schneider Electric
+  models: [iEM3155, iEM3255, iEM3355, PM3250, PM3255]
+  summary: >-
+    schneider_electric_powerlogic_manual.py carries its own 'pdftotext -bbox' reader and line grouping; it is the
+    third extractor to do so.
+  evidence: >-
+    corpus/extractors/schneider_electric_powerlogic_manual.py pages_of_words(), lines_of(); also automationdirect_durapulse_status.py
+    word_boxes() and schneider_electric_sepam_series20.py.
+  detail: >-
+    Suggest sourcelib.pdf_words(data, first, last) returning word boxes per page. The extractor depends on word-box
+    geometry (rows centred on their address to within 2.5 pt, lines 2.2 pt apart); it was run on Poppler 26.11 only,
+    so the first CI run on 24.02 should be watched.
+  owner: tooling
+  class: [1, 2]
+- id: p-schneider-meters-xls-reader-check
+  kind: tooling
+  vendor: Schneider Electric
+  models: [PM5110, PM5330, PM2130, PM2230, EM6400NG]
+  summary: >-
+    The new sourcelib.xls_rows reads all three Schneider .xls lists; c02-schneider-xls-reader is solved.
+  evidence: >-
+    PM51xx_PM53xx list: 7 worksheets, 'Register List' 2584 rows; PM2xxx v1001: 7 worksheets, 2401 rows; v1050_6:
+    2804 rows. Header rows, register numbers and the Data Types sheet read cleanly; the Proxus maps (877, 679 and
+    424 registers) match the cells read this way.
+  detail: No extractor uses it yet because the models stay needs-check.
+  owner: tooling
+  class: 2
+- id: p-siemens-pac-rs485-frames
+  kind: doc-ambiguity
+  vendor: Siemens
+  models: [SENTRON PAC3200, SENTRON PAC4200, SENTRON PAC3220, SENTRON PAC3120]
+  summary: >-
+    Four PAC meters are mapped on worked frames in the PAC RS485 expansion module manual, because their own manuals
+    state neither the meaning of "Offset" nor the register order.
+  evidence: >-
+    PAC RS485 manual A5E02091800B-01 chapter 12.1 (PDF p.75-77): FC 0x04 request 01 04 00 01 00 06 21 C8 explained
+    as "From offset 0001: voltage Va-n", answered 43 68 70 22 ... = 232.4; request 01 04 C3 51 00 10 9C 53 "From
+    offset 50001", answered with 00 00 01 90 (400) at the secondary voltage setting; device identification "PAC3200".
+    All CRCs verify. Named by: PAC3200 manual section 1.6 (PDF p.17), PAC4200 manual appendix A.2 (PDF p.146), PAC3120/PAC3220
+    manual section 2.5 (PDF p.31, for the PAC3220 with expansion module).
+  detail: >-
+    Supersedes c02-siemens-word-order for the PAC3120 and PAC3220. Please confirm three steps of the reasoning:
+    (1) a captured exchange with its explanation counts as the vendor's statement (the extractor checks CRC, address
+    bytes against the stated offset, and that only big/big reproduces the stated values and documented ranges);
+    (2) frames captured from a PAC3200 apply to the PAC4200 and PAC3220, whose manuals name this module manual for
+    Modbus RTU; (3) the PAC3120, which has a built-in RS485 port and is not covered by the module manual, follows
+    from the single table its manual shares with the PAC3220. If (3) is refused, the PAC3120 goes back to needs-check;
+    if (2) is refused, so do the PAC4200 and PAC3220.
+  decision: D4, D5
+  owner: maintainer
+  class: 2
+- id: p-siemens-pac2200-conventions
+  kind: doc-ambiguity
+  vendor: Siemens
+  models: [SENTRON PAC2200, SENTRON PAC2200CLP]
+  summary: >-
+    The PAC2200 manuals state neither the offset base nor the register order of Float, Unsigned long and Double,
+    and no Siemens document that names these models does; both stay unmapped.
+  evidence: >-
+    Updates c02-siemens-word-order. PAC2200 manual L1V30415167B-06: table A-3 (PDF p.107-111) starts at offset 1
+    (Voltage UL1-N, Float, 2 registers); no worked FC 0x03/0x04 frame. Hints in the same manual: A.1.6 (PDF p.127)
+    names the registers of the daily, monthly and annual profile counters 0x010A, 0x010C, 0x010E, one more than
+    their offsets 265, 267, 269 (PDF p.108), which fits offsets being zero-based addresses and "Modbus register"
+    a one-based number; the FC 0x64 example (PDF p.128-129) prints unsigned long 00 00 2C E2, float 41 90 D1 A4
+    and double 41 41 B4 EB 44 67 2E 00 most significant byte first, and calls the object ID "unsigned long big endian".
+    PAC2200CLP manual L1V30820585B-04: same content (PDF p.103-104, 129, 131). Sibling evidence: the PAC RS485 manual's
+    PAC3200 frames (p-siemens-pac-rs485-frames).
+  detail: >-
+    Blocks every point: all measured variables are Float, Unsigned long or Double. Proxus maps both models with
+    the offset sent unchanged and byte order ABCD; its notes give as reason "the convention of this repository's
+    PAC3200 map; the manual has no example frame to settle it", and its PAC3200 map cites mbmd's working PAC2200
+    driver. Decide whether the PAC3200 frames in the PAC RS485 manual (same vendor, same table layout: offset 1
+    voltage L1-N, 205 device status, 50001 connection type, 60006 tariff switch) may count for the PAC2200 family,
+    alone or together with the hints above and the independent mbmd driver. If yes, the extractor siemens_sentron_pac_manual
+    needs one more manual profile per document and two contracts follow; the float energy copies at 2801-2883 carry
+    swapped units in the manual (p-siemens-pac-table-errata) and the doubles stay out (p-siemens-pac-double-order).
+    Otherwise ask Siemens for a worked FC 0x03/0x04 frame.
+  decision: D4, D5
+  owner: maintainer
+  class: 2
+- id: p-siemens-pac-double-order
+  kind: doc-ambiguity
+  vendor: Siemens
+  models:
+  - SENTRON PAC3200
+  - SENTRON PAC4200
+  - SENTRON PAC3120
+  - SENTRON PAC3220
+  - SENTRON PAC2200
+  - SENTRON PAC2200CLP
+  summary: >-
+    No Siemens document shows the register order of a Double read with function code 0x03 or 0x04.
+  evidence: >-
+    PAC3200 manual table 3-6 (PDF p.45): offsets 801-837, 4 registers, Double, Wh/varh/VAh. PAC4200 table A-12 (PDF
+    p.160), PAC3120/PAC3220 offsets 801-957 (PDF p.118-119). The PAC RS485 manual's examples cover Float and Unsigned
+    long only. The PAC2200 manual's FC 0x64 response (PDF p.129) prints a double as 41 41 B4 EB 44 67 2E 00, most
+    significant byte first, but that is a different function code and device.
+  detail: >-
+    The double-format energy counters are left out of all four contracts. PAC4200, PAC3120 and PAC3220 get energy
+    from the float copies (2801 ...); the PAC3200 has none, so its contract has no energy point. Proxus reads the
+    doubles as float64 ABCD. Ask Siemens for a worked frame, or decide whether the Float and Unsigned long order
+    of the same table may be extended to Double. A Siemens FAQ (entry 79161565) is cited by third parties for the
+    conversion; its page is a JavaScript application the corpus client cannot read.
+  decision: D5
+  owner: vendor
+  class: 2
+- id: p-siemens-pac-digital-io-masks
+  kind: vendor-erratum
+  vendor: Siemens
+  models: [SENTRON PAC4200]
+  summary: >-
+    The PAC4200 manual has the same nibble-position bit masks as c02-siemens-bitmask-erratum.
+  evidence: >-
+    PAC4200 manual A5E02316180B-05 tables A-3 to A-5 (PDF p.154-155): DO 0.1 and DI 0.1, byte 3, bit 1, mask 0x00000010;
+    bits 2 and 3 with 0x00000100 and 0x00001000. Table A-8 on PDF p.156 uses true bit masks.
+  detail: >-
+    Extends c02-siemens-bitmask-erratum to the PAC4200. The digital input and output status words (207, 209, 231-237)
+    are not mapped; the extractor takes flags only from the device status table and requires every mask to equal
+    its byte and bit columns.
+  owner: vendor
+  class: 2
+- id: p-siemens-pac-rs485-byte-count
+  kind: vendor-erratum
+  vendor: Siemens
+  models: [SENTRON PAC3200]
+  summary: >-
+    The PAC RS485 manual prints a response byte count in decimal inside a hexadecimal frame.
+  evidence: >-
+    A5E02091800B-01 table 12-4 (PDF p.76): response "01 04 32 ..." to a request for 16 registers; the CRC 00 6D
+    verifies only with byte count 0x20 (decimal 32).
+  detail: >-
+    The extractor accepts the printed count only when it equals the data length in decimal and the CRC verifies
+    with the real count. No effect on the contracts.
+  owner: vendor
+  class: 2
+- id: p-siemens-pac-table-errata
+  kind: vendor-erratum
+  vendor: Siemens
+  models:
+  - SENTRON PAC3200
+  - SENTRON PAC4200
+  - SENTRON PAC3120
+  - SENTRON PAC3220
+  - SENTRON PAC2200
+  - SENTRON PAC2200CLP
+  summary: Unit, name and format slips in the measured-variable tables of the PAC manuals.
+  evidence: >-
+    "Minimum total power factor" (offset 201) has the unit var in the PAC3200 (PDF p.44), PAC4200 (p.150) and PAC3120/PAC3220
+    (p.116) manuals. PAC3120/PAC3220, both editions: per-phase active energy export in varh and reactive energy
+    import in Wh (offsets 849-861, 889-901, 929-941, PDF p.118-119), "Maximum frequency" (129) without unit, "Counter
+    limit value changes" (221) as float. PAC3200: format of offset 221 is "-". PAC4200: "Reactive power L1 (Q1)"
+    printed for 285, 287 and 289 (p.152); "Maximum 3-Phase Average Voltage L-L" (135) with unit A (p.149). PAC2200:
+    float energy copies 2805-2811 and following with varh for active export and Wh for reactive import (PDF p.110-111).
+  detail: >-
+    None of these rows is in a contract. Report to Siemens; keep them out until corrected.
+  owner: vendor
+  class: 2
+- id: p-siemens-g120-conventions
+  kind: doc-ambiguity
+  vendor: Siemens
+  models: [SINAMICS G120C]
+  summary: >-
+    The G120 fieldbus manual gives the address base only through example frames, and neither the scaling direction
+    nor a data type for its Modbus registers.
+  evidence: >-
+    A5E34229197B AG: table 5-20 (PDF p.147) 00 6D for register 40110; table 5-23 (p.149) 00 63 for 40100; table
+    5-26 (p.150) 0258 h for 40601. Tables 5-13 to 5-17 (p.143-145): column "Scaling" 1/10/100/1000 with ranges such
+    as 0 ... 327.67 (factor 100) and -327.68 ... 327.67.
+  detail: >-
+    Mapped (rule 3). The extractor parses both frames, requires every selected range to fit 16 bits after multiplying
+    by the factor and at least one to end exactly at 32767, and takes i16 for ranges with a negative bound, u16
+    otherwise. Confirm that a documented range may decide signedness; the DURApulse contracts left such registers
+    out because their list has no ranges.
+  decision: D4, D6
+  owner: maintainer
+  class: 8
+- id: p-siemens-v20-conventions
+  kind: doc-ambiguity
+  vendor: Siemens
+  models: [SINAMICS V20]
+  summary: >-
+    The V20 manual has no worked frame; the address base follows from its two register-number columns.
+  evidence: >-
+    A5E34559884-009 section 7.2 mapping table (PDF p.177-180): "Register No. Inverter" 0 next to "MODBUS" 40001,
+    and MODBUS = Inverter + 40001 on every row. "Parameter scaling" (p.181) states that parameters are multiplied
+    by the scaling factor.
+  detail: >-
+    Mapped (rule 3): the list contains register 0 paired with 40001, so the inverter number is the zero-based address.
+    Signedness from the documented ranges as for the G120C. Confirm.
+  decision: D4, D6
+  owner: maintainer
+  class: 8
+- id: p-siemens-sinamics-on-off-values
+  kind: doc-ambiguity
+  vendor: Siemens
+  models: [SINAMICS G120C, SINAMICS V20]
+  summary: >-
+    The SINAMICS Modbus tables give ON/OFF texts for single-bit registers without saying which text is 1.
+  evidence: >-
+    G120 tables 5-13 and 5-14 (PDF p.143-144): "ON/OFF text" HIGH LOW for DI/DO, HAND AUTO for control priority.
+    V20 mapping table (PDF p.178-179): FWD REV, STOP RUN (ZSW:2), MAX NO, SERIAL LOCAL, ON OFF, READY OFF, FAULT
+    OFF, WARN OK, HIGH LOW, HAND AUTO. "Stop/run STOP RUN ZSW:2" puts the stopped text first although status word
+    bit 2 is the running state.
+  detail: >-
+    Digital inputs and outputs, control priority and the single-bit status registers are left out of both contracts.
+    The V20 status word carries the eight bits the table assigns ("ZSW:n") as flags named after the row (stop_run,
+    forward_reverse, control_mode, ...) with both texts in the description. Proxus assumes the first text is 1,
+    except for Stop/run, which it leaves without values. Ask Siemens, or accept the assumption per register where
+    the text makes it obvious (FAULT/OFF).
+  decision: D7
+  owner: vendor
+  class: 8
+- id: p-siemens-sinamics-status-word
+  kind: question
+  vendor: Siemens
+  models: [SINAMICS G120C, SINAMICS V20]
+  summary: >-
+    Should a status word whose bits are a configurable interconnection carry flags in a contract?
+  evidence: >-
+    G120 manual table 5-12 (PDF p.142): register 40110 "Status word, Process data 1"; the bit table "Status word
+    1 (ZSW1)" is in the USS section 5.3 (PDF p.132) with a column "Signal interconnection in the converter" (p2080[n]).
+    V20 manual: register 40110 "ZSW, PZD 1" (PDF p.179); r2018/P2019 are BICO parameters.
+  detail: >-
+    The G120C contract maps the status word as a plain u16 and points to the USS section in its description; the
+    V20 contract adds the flags the Modbus table itself references. Both hold for the default interconnection only.
+    Decide whether to add the ZSW1 bits to the G120C, drop the V20 flags, or keep the difference.
+  decision: D7
+  owner: maintainer
+  class: 8
+- id: p-siemens-sios-landing-pages
+  kind: source-access
+  vendor: Siemens
+  models:
+  - SENTRON PAC3200
+  - SENTRON PAC4200
+  - SENTRON PAC2200
+  - SENTRON PAC2200CLP
+  summary: >-
+    Siemens Industry Online Support entry pages cannot be read by the corpus client; only the cache PDF URLs work.
+  evidence: https://support.industry.siemens.com/cs/ww/en/view/26504150 and .../34261595 return HTTP 200 with a
+    1796-byte JavaScript shell (probes 048, 050). The PDFs are at https://cache.industry.siemens.com/dl/files/<last
+    three digits>/<entry id>/att_<n>/v<m>/<file>; the attachment number cannot be derived and was found by web search.
+    https://support.industry.siemens.com/cs/attachments/<entry id>/<file name> redirects to the cache URL when the
+    file name is known (seen for entries 109779762, 40614428).
+  detail: >-
+    Record the entry page as landing_url and the cache URL as download URL. Other Siemens documents read for discovery
+    and not pinned: LOGO! application example 109779762 (PAC3200: "start address [Register 2] ... for the voltage
+    value UL1-N", one-based register numbers) and S7-1200 Set22 example 40614428 (register 40066 for the total active
+    power at offset 65); both agree with the RS485 manual. FAQ 79161565 could not be read.
+  owner: maintainer
+  class: 2
+- id: p-siemens-frame-helpers
+  kind: tooling
+  vendor: Siemens
+  models: [SENTRON PAC3200, SENTRON PAC4200, SENTRON PAC3120, SENTRON PAC3220]
+  summary: The Modbus RTU CRC helper now exists in two extractors.
+  evidence: >-
+    corpus/extractors/siemens_sentron_pac_manual.py crc16() and captured(); corpus/extractors/abb_m4m_modbus_map.py
+    crc16().
+  detail: >-
+    Move crc16 (and perhaps a "worked frame" check: CRC, function code, address bytes against a stated number) into
+    sourcelib when it is next changed, and let both extractors import it.
+  owner: tooling
+  class: 2
 - id: x-undefined-scale-marks
   kind: doc-ambiguity
   class: [5, 9]

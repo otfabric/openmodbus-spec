@@ -1,0 +1,233 @@
+openmodbus: 0.1.0
+info:
+  id: carlo-gavazzi/em112/telemetry
+  title: Carlo Gavazzi EM112 telemetry
+  version: 0.1.0
+  description: Read-only subset of the EM100/ET100 series Modbus RTU map (Table 2.4-1)
+    for the EM112. Function codes 03 and 04 return the same values; the points use
+    the input-register (function 04) table. 32-bit values are least significant word
+    first. The document gives 7FFFFFFFh (wire order FFFF 7FFF) as the overflow value
+    of a 32-bit variable; the voltage, current and power points list it as invalid.
+    The identification code at 000Bh lies inside W dmd (000Ah-000Bh) and is left out.
+    The additional energy totalizers at 0400h and 0500h exist only from firmware b.10
+    (meters made from 2020) and are left out. The document gives two request limits
+    (50 registers in the text, 20 in the frame tables); none is set here.
+  attribution: Derived from Carlo Gavazzi's EM100 Series and ET100 Series Communication
+    Protocol.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: carlo-gavazzi-em100-et100-protocol
+device:
+  manufacturer: Carlo Gavazzi
+  model: EM112
+  family: EM100 Series
+  classes:
+  - energy_meter
+  transports:
+  - type: rtu
+  documentation:
+  - title: EM100 Series and ET100 Series Communication Protocol
+    url: https://www.gavazziautomation.com/fileadmin/images/PIM/OTHERSTUFF/COMPRO/1-phase%20Modbus%20serial%20protocol%20EM%20and%20ET-rev.2.14.pdf
+    revision: Version 2 Revision 14
+defaults:
+  table: input_register
+  access: r
+points:
+- id: voltage
+  address: 0
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V
+  invalid:
+  - 2147483647
+  aliases:
+  - V L-N
+  source:
+    address: 0000h
+    page: 8
+    reference: Table 2.4-1; 300001
+- id: current
+  address: 2
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -3
+  unit: A
+  invalid:
+  - 2147483647
+  aliases:
+  - A
+  source:
+    address: 0002h
+    page: 8
+    reference: Table 2.4-1; 300003
+- id: active_power
+  address: 4
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: W
+  invalid:
+  - 2147483647
+  aliases:
+  - W
+  source:
+    address: 0004h
+    page: 8
+    reference: Table 2.4-1; 300005
+- id: apparent_power
+  address: 6
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: V.A
+  invalid:
+  - 2147483647
+  aliases:
+  - VA
+  source:
+    address: 0006h
+    page: 8
+    reference: Table 2.4-1; 300007
+- id: reactive_power
+  address: 8
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  description: 'Vendor unit: var'
+  invalid:
+  - 2147483647
+  aliases:
+  - var
+  source:
+    address: 0008h
+    page: 8
+    reference: Table 2.4-1; 300009
+- id: active_power_demand
+  address: 10
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: W
+  aliases:
+  - W dmd
+  source:
+    address: 000Ah
+    page: 8
+    reference: Table 2.4-1; 300011
+- id: active_power_demand_peak
+  address: 12
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: W
+  aliases:
+  - W dmd peak
+  source:
+    address: 000Ch
+    page: 8
+    reference: Table 2.4-1; 300013
+- id: power_factor
+  address: 14
+  type: i16
+  conversion:
+    exponent10: -3
+  aliases:
+  - PF
+  source:
+    address: 000Eh
+    page: 8
+    reference: Table 2.4-1; 300015
+- id: frequency
+  address: 15
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: Hz
+  aliases:
+  - Hz
+  source:
+    address: 000Fh
+    page: 8
+    reference: Table 2.4-1; 300016
+- id: import_active_energy
+  address: 16
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: kW.h
+  aliases:
+  - kWh (+) TOT
+  source:
+    address: 0010h
+    page: 8
+    reference: Table 2.4-1; 300017
+- id: import_reactive_energy
+  address: 18
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  description: 'Vendor unit: kvarh'
+  aliases:
+  - Kvarh (+) TOT
+  source:
+    address: 0012h
+    page: 8
+    reference: Table 2.4-1; 300019
+- id: export_active_energy
+  address: 32
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  unit: kW.h
+  aliases:
+  - kWh (-) TOT
+  source:
+    address: 0020h
+    page: 8
+    reference: Table 2.4-1; 300033
+- id: export_reactive_energy
+  address: 34
+  type: i32
+  wordOrder: little
+  conversion:
+    exponent10: -1
+  description: 'Vendor unit: kvarh'
+  aliases:
+  - kvarh (-) TOT
+  source:
+    address: 0022h
+    page: 8
+    reference: Table 2.4-1; 300035
+- id: firmware_version_code
+  address: 770
+  type: u16
+  description: 'Vendor: Value=0: Version "A", =1: Version "B", etc.'
+  stability: constant
+  aliases:
+  - Version code
+  source:
+    address: 0302h
+    page: 11
+    reference: Table 2.5-1; 300771
+- id: firmware_revision_code
+  address: 771
+  type: u16
+  description: 'Vendor: Value=0: Revision "0" etc.'
+  stability: constant
+  aliases:
+  - Revision code
+  source:
+    address: 0303h
+    page: 11
+    reference: Table 2.5-1; 300772

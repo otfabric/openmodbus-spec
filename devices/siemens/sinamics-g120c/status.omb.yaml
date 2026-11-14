@@ -1,0 +1,251 @@
+openmodbus: 0.1.0
+info:
+  id: siemens/sinamics-g120c/status
+  title: Siemens SINAMICS G120C drive status and actual values
+  version: 0.1.0
+  description: 'Read-only subset of the Modbus RTU register tables 5-12 to 5-15 for
+    the G120C USS/MB (table 5-1), firmware V4.7 SP13: status word, speed, frequency,
+    voltage, current, torque, power, energy, analog input and output, fault and alarm
+    numbers. Registers are holding registers read with FC 03. Register 4xxxx is sent
+    as address xxxx - 1: the manual''s read example sends 00 6D for register 40110.
+    A scaled register holds the value multiplied by the scaling factor; the manual
+    does not say so, but its ranges at factor 100 end at 327.67. The tables state
+    no data type: a register whose documented range has a negative bound is decoded
+    as signed, any other as unsigned, which gives the same value over the documented
+    range. The main actual value (40111) is left out because the tables give it no
+    unit, range or data type, and the registers with ON/OFF texts because the manual
+    does not state their values. The status word carries the converter''s process
+    data 1; its bits depend on the interconnection in the converter.
+
+    '
+  attribution: Derived from Siemens' SINAMICS G120, G120P, G120C, G120D, G110M, G115D
+    Fieldbuses Function Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: siemens-g120-fieldbus-manual
+device:
+  manufacturer: Siemens
+  family: SINAMICS G120
+  model: SINAMICS G120C
+  classes:
+  - drive
+  transports:
+  - type: rtu
+    notes: G120C USS/MB on RS485; select Modbus RTU with p2030 = 2.
+  documentation:
+  - title: SINAMICS G120, G120P, G120C, G120D, G110M, G115D Fieldbuses Function Manual
+    url: https://cache.industry.siemens.com/dl/files/930/109791930/att_1049446/v1/G120_fieldbus_fct_man_1120_en-US.pdf
+    revision: A5E34229197B AG, 11/2020, FW V4.7 SP13
+defaults:
+  table: holding_register
+  access: r
+points:
+- id: status_word
+  address: 109
+  type: u16
+  aliases:
+  - Status word
+  description: Process data 1 sent by the converter. The manual gives the bits of
+    status word 1 in its USS section; the signals are interconnected in the converter
+    (p2080).
+  source:
+    address: '40110'
+    page: 142
+    reference: Table 5-12, Status word
+- id: analog_output_0
+  address: 219
+  type: i16
+  conversion:
+    exponent10: -2
+  unit: '%'
+  aliases:
+  - AO 0
+  description: Converter parameter r0774.0; documented range -100.0 to 100.0.
+  source:
+    address: '40220'
+    page: 143
+    reference: Table 5-13, AO 0
+- id: analog_input_0
+  address: 259
+  type: i16
+  conversion:
+    exponent10: -2
+  unit: '%'
+  aliases:
+  - AI 0
+  description: Converter parameter r0755 [0]; documented range -300.0 to 300.0.
+  source:
+    address: '40260'
+    page: 143
+    reference: Table 5-13, AI 0
+- id: rated_power
+  address: 319
+  type: u16
+  conversion:
+    exponent10: -2
+  unit: kW
+  aliases:
+  - Rated power
+  description: Converter parameter r0206; documented range 0 to 327.67.
+  source:
+    address: '40320'
+    page: 143
+    reference: Table 5-14, Rated power
+- id: reference_speed
+  address: 323
+  type: u16
+  unit: /min
+  aliases:
+  - Reference speed
+  description: Converter parameter p2000; documented range 6 to 32767.
+  source:
+    address: '40324'
+    page: 143
+    reference: Table 5-14, Reference speed
+- id: speed_setpoint
+  address: 339
+  type: i16
+  unit: /min
+  aliases:
+  - Speed setpoint
+  description: Converter parameter r0020; documented range -16250 to 16250.
+  source:
+    address: '40340'
+    page: 143
+    reference: Table 5-14, Speed setpoint
+- id: speed
+  address: 340
+  type: i16
+  unit: /min
+  aliases:
+  - Actual speed value
+  description: Converter parameter r0022; documented range -16250 to 16250.
+  source:
+    address: '40341'
+    page: 143
+    reference: Table 5-14, Actual speed value
+- id: output_frequency
+  address: 341
+  type: i16
+  conversion:
+    exponent10: -2
+  unit: Hz
+  aliases:
+  - Output frequency
+  description: Converter parameter r0024; documented range -327.68 to 327.67.
+  source:
+    address: '40342'
+    page: 143
+    reference: Table 5-14, Output frequency
+- id: output_voltage
+  address: 342
+  type: u16
+  unit: V
+  aliases:
+  - Output voltage
+  description: Converter parameter r0025; documented range 0 to 32767.
+  source:
+    address: '40343'
+    page: 143
+    reference: Table 5-14, Output voltage
+- id: dc_link_voltage
+  address: 343
+  type: u16
+  unit: V
+  aliases:
+  - DC link voltage
+  description: Converter parameter r0026; documented range 0 to 32767.
+  source:
+    address: '40344'
+    page: 144
+    reference: Table 5-14, DC link voltage
+- id: output_current
+  address: 344
+  type: u16
+  conversion:
+    exponent10: -2
+  unit: A
+  aliases:
+  - Current actual value
+  description: Converter parameter r0027; documented range 0 to 163.83.
+  source:
+    address: '40345'
+    page: 144
+    reference: Table 5-14, Current actual value
+- id: torque
+  address: 345
+  type: i16
+  conversion:
+    exponent10: -2
+  unit: N.m
+  aliases:
+  - Actual torque value
+  description: Converter parameter r0031; documented range -325.00 to 325.00.
+  source:
+    address: '40346'
+    page: 144
+    reference: Table 5-14, Actual torque value
+- id: active_power
+  address: 346
+  type: u16
+  conversion:
+    exponent10: -2
+  unit: kW
+  aliases:
+  - Actual active power
+  description: Converter parameter r0032; documented range 0 to 327.67.
+  source:
+    address: '40347'
+    page: 144
+    reference: Table 5-14, Actual active power
+- id: energy_consumption
+  address: 347
+  type: u16
+  unit: kW.h
+  aliases:
+  - Energy consumption
+  description: Converter parameter r0039; documented range 0 to 32767.
+  source:
+    address: '40348'
+    page: 144
+    reference: Table 5-14, Energy consumption
+- id: fault_number
+  address: 399
+  type: u16
+  aliases:
+  - Failure number, index 0
+  description: Converter parameter r0947 [0]; documented range 0 to 32767.
+  source:
+    address: '40400'
+    page: 144
+    reference: Table 5-15, Failure number, index 0
+- id: alarm_number
+  address: 407
+  type: u16
+  aliases:
+  - Alarm number
+  description: Converter parameter r2110 [0]; documented range 0 to 32767.
+  source:
+    address: '40408'
+    page: 144
+    reference: Table 5-15, Alarm number
+- id: alarm_code
+  address: 408
+  type: u16
+  aliases:
+  - Actual alarm code
+  description: Converter parameter r2132; documented range 0 to 32767.
+  source:
+    address: '40409'
+    page: 144
+    reference: Table 5-15, Actual alarm code
+- id: parameter_error_code
+  address: 498
+  type: u16
+  aliases:
+  - PRM ERROR code
+  description: No converter parameter; documented range 0 to 255.
+  source:
+    address: '40499'
+    page: 144
+    reference: Table 5-15, PRM ERROR code

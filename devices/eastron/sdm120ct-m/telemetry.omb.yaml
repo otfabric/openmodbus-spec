@@ -1,0 +1,169 @@
+openmodbus: 0.1.0
+info:
+  id: eastron/sdm120ct-m/telemetry
+  title: Eastron SDM120CT-M telemetry
+  version: 0.1.0
+  description: Subset of the Modbus RTU input registers for the SDM120CT-M, which
+    the document writes SDM120CTM. Read each selected value as a complete two-register
+    float. The register order is taken from the document's worked response, which
+    sends the high register first (Volts 1 = 230.2 as 43 66 33 34).
+  attribution: Derived from Eastron's SDM120CTM Smart Meter Modbus Protocol Implementation.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: eastron-sdm120ctm-modbus
+device:
+  manufacturer: Eastron
+  model: SDM120CT-M
+  classes:
+  - energy_meter
+  transports:
+  - type: rtu
+  documentation:
+  - title: SDM120CTM Smart Meter Modbus Protocol Implementation
+    url: https://www.eastroneurope.com/images/uploads/products/protocol/SDM120CT_Modbus_protocol.pdf
+    revision: '1.3'
+defaults:
+  table: input_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+points:
+- id: voltage
+  address: 0
+  type: f32
+  unit: V
+  aliases:
+  - Voltage
+  source:
+    address: '30001'
+    page: 5
+    reference: Input register map
+- id: current
+  address: 6
+  type: f32
+  unit: A
+  aliases:
+  - Current
+  source:
+    address: '30007'
+    page: 5
+    reference: Input register map
+- id: active_power
+  address: 12
+  type: f32
+  unit: W
+  aliases:
+  - Active power
+  source:
+    address: '30013'
+    page: 5
+    reference: Input register map
+- id: apparent_power
+  address: 18
+  type: f32
+  unit: V.A
+  aliases:
+  - Apparent power
+  source:
+    address: '30019'
+    page: 5
+    reference: Input register map
+- id: reactive_power
+  address: 24
+  type: f32
+  description: 'Vendor unit: VAr.'
+  aliases:
+  - Reactive power
+  source:
+    address: '30025'
+    page: 5
+    reference: Input register map
+- id: power_factor
+  address: 30
+  type: f32
+  aliases:
+  - Power factor
+  source:
+    address: '30031'
+    page: 5
+    reference: Input register map
+- id: frequency
+  address: 70
+  type: f32
+  unit: Hz
+  aliases:
+  - Frequency
+  source:
+    address: '30071'
+    page: 5
+    reference: Input register map
+- id: import_active_energy
+  address: 72
+  type: f32
+  unit: kW.h
+  aliases:
+  - Import active energy
+  source:
+    address: '30073'
+    page: 5
+    reference: Input register map
+- id: export_active_energy
+  address: 74
+  type: f32
+  unit: kW.h
+  aliases:
+  - Export active energy
+  source:
+    address: '30075'
+    page: 5
+    reference: Input register map
+- id: import_reactive_energy
+  address: 76
+  type: f32
+  description: 'Vendor unit: kvarh.'
+  aliases:
+  - Import reactive energy
+  source:
+    address: '30077'
+    page: 5
+    reference: Input register map
+- id: export_reactive_energy
+  address: 78
+  type: f32
+  description: 'Vendor unit: kvarh.'
+  aliases:
+  - Export reactive energy
+  source:
+    address: '30079'
+    page: 5
+    reference: Input register map
+- id: current_demand
+  address: 258
+  type: f32
+  unit: A
+  aliases:
+  - current demand.
+  source:
+    address: '30259'
+    page: 6
+    reference: Input register map
+- id: total_active_energy
+  address: 342
+  type: f32
+  unit: kW.h
+  aliases:
+  - Total active energy
+  source:
+    address: '30343'
+    page: 6
+    reference: Input register map
+- id: total_reactive_energy
+  address: 344
+  type: f32
+  description: 'Vendor unit: Kvarh.'
+  aliases:
+  - Total reactive energy
+  source:
+    address: '30345'
+    page: 6
+    reference: Input register map

@@ -1,0 +1,263 @@
+openmodbus: 0.1.0
+info:
+  id: janitza/umg-96-pa/telemetry
+  title: Janitza UMG 96-PA telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the UMG 96-PA address list, firmware 3.54 or later,
+    read from the workbook in the vendor''s archive. Floats and doubles return big-endian
+    data at the listed addresses (the list mirrors them in little-endian at address
+    + 32768) and include the transformer ratios; the two 16-bit short values do not.
+    The list states neither the address base nor the register table; both come from
+    the user manual''s request example, which reads list address 19000 with function
+    03 and the start address bytes 4A 38.
+
+    '
+  attribution: Derived from Janitza's UMG 96-PA, UMG 96-PAMID+ Modbus-address list
+    and Formulary.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: janitza-umg96pa-modbus
+device:
+  manufacturer: Janitza electronics
+  family: UMG 96-PA
+  model: UMG 96-PA
+  classes:
+  - power_meter
+  transports:
+  - type: rtu
+    notes: RS-485.
+  documentation:
+  - title: UMG 96-PA, UMG 96-PAMID+ Modbus-address list and Formulary (from firmware
+      3.54)
+    url: https://assets.janitza.com/ce18jq9ih0x6/75730e79d6b9bb7b43018d/f90faad4edfd24d91b2db81eee1a4791/janitza-mal-umg96pa-fw3-en.zip
+    revision: Doc. no. 2.061.029.3.e, 12/2025; workbook Doc. No. 2.061.164.1.a
+  - title: UMG 96-PA, UMG 96-PAMID+ (as of firmware 3.54) User manual and technical
+      data
+    url: https://www.janitza.com/en-us/products/umg-96-pa/downloads
+    revision: Doc no. 2.061.059.4.a, 11/2025
+defaults:
+  table: holding_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+points:
+- id: serial_number
+  address: 911
+  type: u32
+  aliases:
+  - Serial number
+  source:
+    address: '911'
+    page: 104
+    reference: Sheet1(EN)!C3134, Other parameters
+- id: cos_phi_total
+  address: 1050
+  type: f32
+  aliases:
+  - 'Measured value (float): cos(ϕ) sum'
+  source:
+    address: '1050'
+    page: 14
+    reference: Sheet1(EN)!C90, Measured values
+- id: active_energy_import
+  address: 6012
+  type: f64
+  unit: W.h
+  aliases:
+  - Active Energy sum, consumed
+  source:
+    address: '6012'
+    page: 39
+    reference: Sheet1(EN)!C892, Energy values
+- id: active_energy_export
+  address: 6156
+  type: f64
+  unit: W.h
+  aliases:
+  - Active Energy sum, delivered
+  source:
+    address: '6156'
+    page: 40
+    reference: Sheet1(EN)!C928, Energy values
+- id: voltage_l1_n_secondary
+  address: 11000
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: V
+  description: 16-bit value without the voltage transformer ratio.
+  aliases:
+  - 'Measured value (short): voltage L1-N'
+  source:
+    address: '11000'
+    page: 15
+    reference: Sheet1(EN)!C140, Measured values
+- id: current_l1_secondary
+  address: 11006
+  type: i16
+  conversion:
+    exponent10: -3
+  unit: A
+  description: 16-bit value without the current transformer ratio.
+  aliases:
+  - 'Measured value (short): current L1'
+  source:
+    address: '11006'
+    page: 15
+    reference: Sheet1(EN)!C146, Measured values
+- id: voltage_l1_n
+  address: 19000
+  type: f32
+  unit: V
+  aliases:
+  - Voltage L1-N
+  source:
+    address: '19000'
+    page: 12
+    reference: Sheet1(EN)!C2, Frequently required measured values
+- id: voltage_l2_n
+  address: 19002
+  type: f32
+  unit: V
+  aliases:
+  - Voltage L2-N
+  source:
+    address: '19002'
+    page: 12
+    reference: Sheet1(EN)!C3, Frequently required measured values
+- id: voltage_l3_n
+  address: 19004
+  type: f32
+  unit: V
+  aliases:
+  - Voltage L3-N
+  source:
+    address: '19004'
+    page: 12
+    reference: Sheet1(EN)!C4, Frequently required measured values
+- id: voltage_l1_l2
+  address: 19006
+  type: f32
+  unit: V
+  aliases:
+  - Voltage L1-L2
+  source:
+    address: '19006'
+    page: 12
+    reference: Sheet1(EN)!C5, Frequently required measured values
+- id: current_l1
+  address: 19012
+  type: f32
+  unit: A
+  aliases:
+  - Current, L1
+  source:
+    address: '19012'
+    page: 12
+    reference: Sheet1(EN)!C8, Frequently required measured values
+- id: current_l2
+  address: 19014
+  type: f32
+  unit: A
+  aliases:
+  - Current, L2
+  source:
+    address: '19014'
+    page: 12
+    reference: Sheet1(EN)!C9, Frequently required measured values
+- id: current_l3
+  address: 19016
+  type: f32
+  unit: A
+  aliases:
+  - Current, L3
+  source:
+    address: '19016'
+    page: 12
+    reference: Sheet1(EN)!C10, Frequently required measured values
+- id: active_power_total
+  address: 19026
+  type: f32
+  unit: W
+  aliases:
+  - Sum, Psum3=P1+P2+P3
+  source:
+    address: '19026'
+    page: 12
+    reference: Sheet1(EN)!C15, Frequently required measured values
+- id: apparent_power_total
+  address: 19034
+  type: f32
+  unit: V.A
+  aliases:
+  - Sum, Ssum3=S1+S2+S3
+  source:
+    address: '19034'
+    page: 12
+    reference: Sheet1(EN)!C19, Frequently required measured values
+- id: reactive_power_total
+  address: 19042
+  type: f32
+  description: 'Vendor unit: var.'
+  aliases:
+  - Sum, Qsum3=Q1+Q2+Q3
+  source:
+    address: '19042'
+    page: 12
+    reference: Sheet1(EN)!C23, Frequently required measured values
+- id: frequency
+  address: 19050
+  type: f32
+  unit: Hz
+  aliases:
+  - Measured frequency
+  source:
+    address: '19050'
+    page: 12
+    reference: Sheet1(EN)!C27, Frequently required measured values
+- id: voltage_thd_l1_n
+  address: 19110
+  type: f32
+  unit: '%'
+  aliases:
+  - Harmonic, THD,U L1-N
+  source:
+    address: '19110'
+    page: 13
+    reference: Sheet1(EN)!C57, Frequently required measured values
+- id: current_thd_l1
+  address: 19116
+  type: f32
+  unit: '%'
+  aliases:
+  - Harmonic, THD,I L1
+  source:
+    address: '19116'
+    page: 13
+    reference: Sheet1(EN)!C60, Frequently required measured values
+- id: device_type
+  address: 20047
+  type: u16
+  enum:
+    values:
+    - value: 19
+      name: umg_96_pa
+      label: UMG 96-PA
+    - value: 30
+      name: umg_96_pa_mid_plus
+      label: UMG 96-PA-MID+
+    - value: 32
+      name: umg_96_pq_l
+      label: UMG 96-PQ-L
+    - value: 34
+      name: umg_96_pq_l_it
+      label: UMG 96-PQ-L (IT)
+    - value: 38
+      name: umg_96_pq_l_lp
+      label: UMG 96-PQ-L-LP
+  aliases:
+  - Device type ID
+  source:
+    address: '20047'
+    page: 104
+    reference: Sheet1(EN)!C3139, Other parameters

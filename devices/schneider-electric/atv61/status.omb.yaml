@@ -1,0 +1,553 @@
+openmodbus: 0.1.0
+info:
+  id: schneider-electric/atv61/status
+  title: Schneider Electric Altivar 61 drive status and actual values
+  version: 0.1.0
+  description: 'Read-only subset of the Altivar 61 communication parameters workbook
+    that Schneider FAQ FA225538 attaches: CiA402 status word, drive state, last fault,
+    actual values and one 32-bit CiA402 setting. The workbook names no drive; the
+    Altivar 61 Communication parameters manual (1760661, software V5.8) describes
+    the same parameters at the same logic addresses and gives the unit of the motor
+    current. Parameters are read with Read Holding Registers (function 3), the only
+    read function that the Altivar 61/71 Modbus TCP/IP Ethernet card manual (1755879)
+    lists. The Integrated Modbus manual (1755863) for the built-in serial ports names
+    only the Altivar 71 and is not used here. A 32-bit parameter has its low-order
+    word at the lower address: the workbook marks the two addresses lsb and msb. The
+    output frequency scale assumes bit 9 of the extended control word CMI is 0. Motor
+    torque, operating times and consumption have no fixed unit in the workbook and
+    are left out.
+
+    '
+  attribution: Derived from Schneider Electric's Altivar 61 communication parameters
+    workbook (FAQ FA225538).
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: schneider-electric-atv61-comm
+device:
+  manufacturer: Schneider Electric
+  family: Altivar
+  model: ATV61
+  classes:
+  - drive
+  transports:
+  - type: tcp
+    notes: With the VW3 A3 310 Modbus TCP/IP Ethernet card (manual 1755879); the drive's
+      parameters are served on unit ID 0.
+  - type: rtu
+    notes: Built-in Modbus ports (RS485). The manual that lists their Modbus functions
+      (1755863) names only the Altivar 71.
+  documentation:
+  - title: Altivar 61 communication parameters workbook
+    url: https://www.se.com/us/en/faqs/FA225538/
+    revision: atv61_communication_parameters_en_v5.8_ie29 (attachment of FAQ FA225538,
+      saved 2023-06-08)
+  - title: Altivar 61 Communication parameters User's manual
+    url: https://www.se.com/us/en/download/document/1760661/
+    revision: 1760661, Software V5.8, 02/2013
+  - title: Altivar 61/71 Modbus TCP/IP Ethernet card User manual (VW3 A3 310)
+    url: https://www.se.com/us/en/download/document/1755879/
+    revision: 1755879, 11/2009
+defaults:
+  table: holding_register
+  access: r
+constraints:
+  maxReadRegisters: 63
+points:
+- id: status_word
+  label: Status word
+  aliases:
+  - ETA
+  address: 3201
+  type: u16
+  flags:
+    flags:
+    - bit: 0
+      name: ready_to_switch_on
+      label: Ready to switch on, power section line supply pending
+    - bit: 1
+      name: switched_on
+      label: Switched on, ready
+    - bit: 2
+      name: operation_enabled
+      label: Operation enabled, running
+    - bit: 3
+      name: fault
+      label: Fault
+      description: 'Fault = 0: No fault = 1: Fault'
+    - bit: 4
+      name: voltage_enabled
+      label: Voltage enabled, power section line supply present
+      description: 'Voltage enabled, power section line supply present = 0: Power
+        section line supply absent = 1: Power section line supply present When the
+        drive is powered by the power section only, this bit is always at 1.'
+    - bit: 6
+      name: switch_on_disabled
+      label: Switched on disabled, power section line supply locked.
+    - bit: 7
+      name: warning
+      label: Warning, alarm
+      description: 'Warning, alarm = 0: No alarm = 1: Alarm'
+    - bit: 9
+      name: remote
+      label: Remote, command or reference via the network
+      description: 'Remote, command or reference via the network = 0: Command or reference
+        via the terminals = 1: Command or reference via the network'
+    - bit: 10
+      name: target_reached
+      label: Target reached, reference reached
+      description: 'Target reached, reference reached = 0: The reference is not reached
+        = 1: The reference has been reached When the drive is in speed mode, this
+        is the speed reference. When the torque function is activated, refer to the
+        description of this function (see the programming manual). When the drive
+        stops, the reference has been reached.'
+    - bit: 11
+      name: internal_limit_active
+      label: Internal limit active, reference outside limits
+      description: 'Internal limit active, reference outside limits = 0: The reference
+        is within the limits = 1: The reference is not within the limits When the
+        drive is in speed mode, the limits are defined by the "Low speed (LSP)" and
+        "High speed (HSP)" parameters. When the torque function is activated, refer
+        to the description of this function (see the programming manual).'
+    - bit: 14
+      name: stop_key
+      label: Stop key, STOP via stop key
+      description: 'Stop key, STOP via stop key = 0: STOP key not pressed = 1: Stop
+        triggered by the STOP key on the graphic display terminal'
+    - bit: 15
+      name: reverse_rotation
+      label: Direction, direction of rotation
+      description: 'Direction, direction of rotation = 0: Forward rotation at output
+        = 1: Reverse rotation at output'
+  description: Bit meanings for the CiA402 profile. Read here next to the output frequency;
+    the workbook lists the same word at 8603, next to the output speed.
+  source:
+    address: 16#219B = 8603 (speed) 16#0C81 = 3201 (frequency)
+    reference: Parameters!A10:M10; Registers!A129:D167
+- id: output_frequency
+  label: Output frequency
+  aliases:
+  - RFR
+  address: 3202
+  type: i16
+  conversion:
+    exponent10: -1
+  unit: Hz
+  description: 0.1 Hz while bit 9 of the extended control word CMI is 0. With CMI
+    bit 9 at 1 the drive reports a standardised value where 32767 corresponds to [Max
+    frequency] (tFr); this contract does not describe that mode.
+  source:
+    address: 16#0C82 = 3202
+    reference: Parameters!A27:M27; Registers!C69:D72
+- id: motor_current
+  label: Motor current
+  aliases:
+  - LCR
+  address: 3204
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: A
+  description: The workbook gives no unit; 0.1 A is the unit in the Altivar 61 Communication
+    parameters manual.
+  source:
+    address: 16#0C84 = 3204
+    reference: Parameters!A29:M29
+- id: mains_voltage
+  label: Mains voltage
+  aliases:
+  - ULN
+  address: 3207
+  type: u16
+  conversion:
+    exponent10: -1
+  unit: V
+  description: The workbook's range starts at [No meas.] (----); it does not give
+    the register value that stands for it.
+  source:
+    address: 16#0C87 = 3207
+    reference: Parameters!A43:M43
+- id: motor_voltage
+  label: Motor voltage
+  aliases:
+  - UOP
+  address: 3208
+  type: u16
+  unit: V
+  source:
+    address: 16#0C88 = 3208
+    reference: Parameters!A30:M30
+- id: drive_thermal_state
+  label: Drive thermal state
+  aliases:
+  - THD
+  address: 3209
+  type: u16
+  unit: '%'
+  source:
+    address: 16#0C89 = 3209
+    reference: Parameters!A44:M44
+- id: motor_power
+  label: Motor power
+  aliases:
+  - OPR
+  address: 3211
+  type: i16
+  unit: '%'
+  source:
+    address: 16#0C8B = 3211
+    reference: Parameters!A31:M31
+- id: drive_state
+  label: Drive state
+  aliases:
+  - HMIS
+  address: 3240
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: tun
+      label: Auto-tuning
+    - value: 1
+      name: dcb
+      label: In DC inject.
+    - value: 2
+      name: rdy
+      label: Ready
+    - value: 3
+      name: nst
+      label: Freewheel
+    - value: 4
+      name: run
+      label: Drv running
+    - value: 5
+      name: acc
+      label: In accel.
+    - value: 6
+      name: dec
+      label: In decel.
+    - value: 7
+      name: cli
+      label: Current lim.
+    - value: 8
+      name: fst
+      label: Fast stop
+    - value: 9
+      name: flu
+      label: Mot. fluxing
+    - value: 11
+      name: nlp
+      label: no mains V.
+    - value: 12
+      name: pra
+      label: Active PWR
+    - value: 13
+      name: ctl
+      label: control.stop
+    - value: 14
+      name: obr
+      label: Dec. adapt.
+    - value: 15
+      name: soc
+      label: Output cut
+    - value: 17
+      name: usa
+      label: UnderV. al.
+    - value: 18
+      name: tc
+      label: In mfg. test
+    - value: 19
+      name: st
+      label: in autotest
+    - value: 20
+      name: fa
+      label: autotest err
+    - value: 21
+      name: 'yes'
+      label: Autotest OK
+    - value: 22
+      name: ep
+      label: eeprom test
+    - value: 23
+      name: flt
+      label: In fault
+    - value: 24
+      name: frf
+      label: Fallback Sp.
+    - value: 25
+      name: dcp
+      label: DCP
+  source:
+    address: 16#0CA8 = 3240
+    reference: Parameters!A11:M11; Enumerations!A239:D262
+- id: last_fault
+  label: Altivar fault code
+  aliases:
+  - LFT
+  address: 7121
+  type: u16
+  enum:
+    values:
+    - value: 0
+      name: nof
+      label: No fault
+    - value: 1
+      name: inf
+      label: Calibration error
+    - value: 2
+      name: eef1
+      label: Control Eeprom
+    - value: 3
+      name: cff
+      label: Incorrect config.
+    - value: 4
+      name: cfi
+      label: Invalid config.
+    - value: 5
+      name: slf1
+      label: Modbus com.
+    - value: 6
+      name: ilf
+      label: int. com.link
+    - value: 7
+      name: cnf
+      label: Com. network
+    - value: 8
+      name: epf1
+      label: External flt-LI/Bit
+    - value: 9
+      name: ocf
+      label: Overcurrent
+    - value: 10
+      name: crf
+      label: Precharge
+    - value: 11
+      name: spf
+      label: Speed fdback loss
+    - value: 13
+      name: lff2
+      label: AI2 4-20mA loss
+    - value: 14
+      name: ptf1
+      label: PTC1 probe
+    - value: 15
+      name: otf1
+      label: PTC1 overheat
+    - value: 16
+      name: ohf
+      label: Drive overheat
+    - value: 17
+      name: olf
+      label: Motor overload
+    - value: 18
+      name: obf
+      label: Overbraking
+    - value: 19
+      name: osf
+      label: Mains overvoltage
+    - value: 20
+      name: opf1
+      label: 1 output phase loss
+    - value: 21
+      name: phf
+      label: Input phase loss
+    - value: 22
+      name: usf
+      label: Undervoltage
+    - value: 23
+      name: scf1
+      label: Motor short circuit
+    - value: 24
+      name: sof
+      label: Overspeed
+    - value: 25
+      name: tnf
+      label: Auto-tuning
+    - value: 26
+      name: inf1
+      label: Rating error
+    - value: 27
+      name: inf2
+      label: PWR Calib.
+    - value: 28
+      name: inf3
+      label: Int.serial link
+    - value: 29
+      name: inf4
+      label: Int.Mfg area
+    - value: 30
+      name: eef2
+      label: Power Eeprom
+    - value: 31
+      name: scf2
+      label: Impedant sh. circuit
+    - value: 32
+      name: scf3
+      label: Ground short circuit
+    - value: 33
+      name: opf2
+      label: 3out ph loss
+    - value: 34
+      name: cof
+      label: CAN com.
+    - value: 37
+      name: inf7
+      label: Internal-hard init.
+    - value: 38
+      name: epf2
+      label: External fault com.
+    - value: 39
+      name: apf
+      label: Application fault
+    - value: 40
+      name: inf8
+      label: Internal-ctrl supply
+    - value: 42
+      name: slf2
+      label: PC com.
+    - value: 44
+      name: ssf
+      label: Torque/current lim
+    - value: 45
+      name: slf3
+      label: HMI com.
+    - value: 46
+      name: prf
+      label: Power removal
+    - value: 47
+      name: ptf2
+      label: PTC2 probe
+    - value: 48
+      name: otf2
+      label: PTC2 overheat
+    - value: 49
+      name: ptfl
+      label: LI6=PTC probe
+    - value: 50
+      name: otfl
+      label: PTC fault
+    - value: 51
+      name: inf9
+      label: Internal- I measure
+    - value: 52
+      name: infa
+      label: Internal-mains circuit
+    - value: 53
+      name: infb
+      label: Internal- th. sensor
+    - value: 54
+      name: tjf
+      label: IGBT overheat
+    - value: 55
+      name: scf4
+      label: IGBT short circuit
+    - value: 56
+      name: scf5
+      label: Motor short circuit
+    - value: 58
+      name: fcf1
+      label: Out. contact. stuck
+    - value: 59
+      name: fcf2
+      label: Out. contact. open.
+    - value: 60
+      name: infc
+      label: Int. T meas.
+    - value: 61
+      name: ai2f
+      label: AI2 input
+    - value: 62
+      name: enf
+      label: Encoder
+    - value: 63
+      name: crf2
+      label: Thyr. soft charge
+    - value: 64
+      name: lcf
+      label: input contactor
+    - value: 65
+      name: buf
+      label: DB unit sh. circuit
+    - value: 66
+      name: dcf
+      label: Diff. I fault
+    - value: 67
+      name: hdf
+      label: IGBT desaturation
+    - value: 68
+      name: inf6
+      label: Internal-option
+    - value: 69
+      name: infe
+      label: internal- CPU
+    - value: 70
+      name: bof
+      label: BR overload
+    - value: 71
+      name: lff3
+      label: AI3 4-20mA loss
+    - value: 72
+      name: lff4
+      label: AI4 4-20mA loss
+    - value: 73
+      name: hcf
+      label: Cards pairing
+    - value: 74
+      name: nff
+      label: No Flow Flt
+    - value: 75
+      name: prtf
+      label: Power Ident
+    - value: 99
+      name: csf
+      label: Ch.sw. fault
+    - value: 100
+      name: ulf
+      label: Pr.Underload.Flt
+    - value: 101
+      name: olc
+      label: Proc.Overload Flt
+    - value: 102
+      name: spif
+      label: PI Feedback
+    - value: 103
+      name: fd1
+      label: Damper stuck
+    - value: 104
+      name: fd2
+      label: Damper open.
+  source:
+    address: 16#1BD1 = 7121
+    reference: Parameters!A78:M78; Enumerations!A278:D353
+- id: output_speed
+  label: Output velocity
+  aliases:
+  - RFRD
+  address: 8604
+  type: i16
+  unit: /min
+  source:
+    address: 16#219C = 8604
+    reference: Parameters!A26:M26
+- id: acceleration_delta_speed
+  label: Acceleration delta speed
+  aliases:
+  - SPAL
+  address: 8611
+  type: u32
+  wordOrder: little
+  unit: /min
+  description: 'Low-order word at 8611, high-order word at 8612. Workbook access R/W:
+    the drive also accepts writes.'
+  source:
+    address: 16#21A3 = 8611 (lsb) 16#21A4 = 8612 (msb)
+    reference: Parameters!A306:M306
+- id: motor_thermal_state
+  label: Motor thermal state
+  aliases:
+  - THR
+  address: 9630
+  type: u16
+  unit: '%'
+  source:
+    address: 16#259E = 9630
+    reference: Parameters!A45:M45

@@ -1,0 +1,365 @@
+openmodbus: 0.1.0
+info:
+  id: siemens/pac4200/telemetry
+  title: Siemens SENTRON PAC4200 telemetry
+  version: 0.1.0
+  description: 'Read-only subset of the measured variables without a time stamp (table
+    A-1) and of the tariff-specific energy values in float format (table A-14): voltages,
+    currents, power, power factor, frequency, device status, active tariff and tariff
+    1 energy. Function codes 0x03 and 0x04 read the same values; the points use the
+    input-register (0x04) table. The manual does not say what an "Offset" is on the
+    wire or how multi-register values are ordered: the offset is taken as the PDU
+    address, and Float and Unsigned long values as most significant word first, because
+    the PAC RS485 expansion module manual, which this manual names for Modbus RTU,
+    prints a captured exchange (from a PAC3200) that reads "offset 0001: voltage Va-n"
+    at start address 00 01 and returns 43 68 70 22 for 232.4 V. The energy values
+    in Double format (table A-12) are left out: no Siemens document shows the register
+    order of a Double. A read that starts or ends inside a multi-register value returns
+    an error code.
+
+    '
+  attribution: Derived from Siemens' SENTRON PAC4200 Power Monitoring Device System
+    Manual.
+  source: integrator
+  verification: documented
+  x-otfabric-corpus-source: siemens-pac4200-manual
+device:
+  manufacturer: Siemens
+  family: SENTRON PAC
+  model: PAC4200
+  classes:
+  - power_meter
+  transports:
+  - type: tcp
+  - type: rtu
+    notes: With the PAC RS485 expansion module.
+  documentation:
+  - title: SENTRON PAC4200 Power Monitoring Device System Manual
+    url: https://cache.industry.siemens.com/dl/files/595/34261595/att_951630/v1/manual_pac4200_en-US_en-US.pdf
+    revision: A5E02316180B-05, 05/2019
+  - title: SENTRON Expansion Module PAC RS485 Manual
+    url: https://support.industry.siemens.com/cs/ww/en/view/28865965
+    revision: A5E02091800B-01, 02/2008
+defaults:
+  table: input_register
+  access: r
+  wordOrder: big
+  byteOrder: big
+points:
+- id: voltage_l1_n
+  address: 1
+  type: f32
+  unit: V
+  aliases:
+  - Voltage L1-N
+  source:
+    address: '1'
+    page: 147
+    reference: 'Table A- 1 Measured variables available without a time stamp: Voltage
+      L1-N'
+- id: voltage_l2_n
+  address: 3
+  type: f32
+  unit: V
+  aliases:
+  - Voltage L2-N
+  source:
+    address: '3'
+    page: 147
+    reference: 'Table A- 1 Measured variables available without a time stamp: Voltage
+      L2-N'
+- id: voltage_l3_n
+  address: 5
+  type: f32
+  unit: V
+  aliases:
+  - Voltage L3-N
+  source:
+    address: '5'
+    page: 147
+    reference: 'Table A- 1 Measured variables available without a time stamp: Voltage
+      L3-N'
+- id: voltage_l1_l2
+  address: 7
+  type: f32
+  unit: V
+  aliases:
+  - Voltage L1-L2
+  source:
+    address: '7'
+    page: 147
+    reference: 'Table A- 1 Measured variables available without a time stamp: Voltage
+      L1-L2'
+- id: current_l1
+  address: 13
+  type: f32
+  unit: A
+  aliases:
+  - Current L1
+  source:
+    address: '13'
+    page: 147
+    reference: 'Table A- 1 Measured variables available without a time stamp: Current
+      L1'
+- id: current_l2
+  address: 15
+  type: f32
+  unit: A
+  aliases:
+  - Current L2
+  source:
+    address: '15'
+    page: 147
+    reference: 'Table A- 1 Measured variables available without a time stamp: Current
+      L2'
+- id: current_l3
+  address: 17
+  type: f32
+  unit: A
+  aliases:
+  - Current L3
+  source:
+    address: '17'
+    page: 147
+    reference: 'Table A- 1 Measured variables available without a time stamp: Current
+      L3'
+- id: frequency
+  address: 55
+  type: f32
+  unit: Hz
+  aliases:
+  - Line Frequency
+  source:
+    address: '55'
+    page: 148
+    reference: 'Table A- 1 Measured variables available without a time stamp: Line
+      Frequency'
+- id: apparent_power_total
+  address: 63
+  type: f32
+  unit: V.A
+  aliases:
+  - Total Apparent Power
+  source:
+    address: '63'
+    page: 148
+    reference: 'Table A- 1 Measured variables available without a time stamp: Total
+      Apparent Power'
+- id: active_power_total
+  address: 65
+  type: f32
+  unit: W
+  aliases:
+  - Total Active Power
+  source:
+    address: '65'
+    page: 148
+    reference: 'Table A- 1 Measured variables available without a time stamp: Total
+      Active Power'
+- id: reactive_power_total
+  address: 67
+  type: f32
+  aliases:
+  - Total Reactive Power (Qn)
+  description: 'Vendor unit: VAR.'
+  source:
+    address: '67'
+    page: 148
+    reference: 'Table A- 1 Measured variables available without a time stamp: Total
+      Reactive Power (Qn)'
+- id: power_factor_total
+  address: 69
+  type: f32
+  aliases:
+  - Total Power Factor
+  source:
+    address: '69'
+    page: 148
+    reference: 'Table A- 1 Measured variables available without a time stamp: Total
+      Power Factor'
+- id: device_status
+  address: 205
+  type: u32
+  aliases:
+  - PMD Diagnostics and Status
+  flags:
+    flags:
+    - bit: 0
+      name: slot_1_parameters_changed
+      label: Bit 0 Slot 1 Parameters changed
+      description: Byte 3, bit 0, mask 0x00000001; type saving.
+    - bit: 1
+      name: slot_1_im_data_changed
+      label: Bit 1 Slot 1 IMDATA changed
+      description: Byte 3, bit 1, mask 0x00000002; type saving.
+    - bit: 2
+      name: slot_1_firmware_update_active
+      label: Bit 2 Slot 1 Firmware update active
+      description: Byte 3, bit 2, mask 0x00000004; type saving.
+    - bit: 3
+      name: firmware_data_block_available
+      label: Bit 3 Firmware data block available
+      description: Byte 3, bit 3, mask 0x00000008; type saving.
+    - bit: 4
+      name: bootloader_update_flag
+      label: Bit 4 Bootloader update flag
+      description: Byte 3, bit 4, mask 0x00000010; type saving.
+    - bit: 5
+      name: slot_2_firmware_update_active
+      label: Bit 5 Slot 2 Firmware update active
+      description: Byte 3, bit 5, mask 0x00000020; type saving.
+    - bit: 6
+      name: slot_2_parameters_changed
+      label: Bit 6 Slot 2 Parameters changed
+      description: Byte 3, bit 6, mask 0x00000040; type saving.
+    - bit: 7
+      name: slot_2_im_data_changed
+      label: Bit 7 Slot 2 IMDATA changed
+      description: Byte 3, bit 7, mask 0x00000080; type saving.
+    - bit: 8
+      name: configuration_changed_stored
+      label: Basic configuration changed
+      description: Byte 2, bit 0, mask 0x00000100; type saving.
+    - bit: 9
+      name: limit_violation_stored
+      label: Upper or lower limit violation
+      description: Byte 2, bit 1, mask 0x00000200; type saving.
+    - bit: 10
+      name: pulse_rate_exceeded_stored
+      label: Maximum pulse rate exceeded
+      description: Byte 2, bit 2, mask 0x00000400; type saving.
+    - bit: 11
+      name: device_restarted_stored
+      label: Device has rebooted
+      description: Byte 2, bit 3, mask 0x00000800; type saving.
+    - bit: 12
+      name: energy_counters_reset_stored
+      label: Energy counters reset
+      description: Byte 2, bit 4, mask 0x00001000; type saving.
+    - bit: 13
+      name: power_quality_stored
+      label: Power quality
+      description: Byte 2, bit 5, mask 0x00002000; type saving.
+    - bit: 16
+      name: module_slot_1
+      label: Module slot 1
+      description: Byte 1, bit 0, mask 0x00010000; type Status.
+    - bit: 17
+      name: pulse_rate_exceeded
+      label: Maximum pulse rate exceeded
+      description: Byte 1, bit 1, mask 0x00020000; type Status.
+    - bit: 18
+      name: module_slot_2
+      label: Module slot 2
+      description: Byte 1, bit 2, mask 0x00040000; type Status.
+    - bit: 20
+      name: process_counter_active
+      label: Process counter active
+      description: Byte 1, bit 4, mask 0x00100000; type Status.
+    - bit: 24
+      name: no_synchronization_pulse
+      label: No synchronization pulse
+      description: Byte 0, bit 0, mask 0x01000000; type Status.
+    - bit: 25
+      name: configuration_menu_active
+      label: Device Configuration menu is active
+      description: Byte 0, bit 1, mask 0x02000000; type Status.
+    - bit: 26
+      name: voltage_out_of_range
+      label: Voltage out of range
+      description: Byte 0, bit 2, mask 0x04000000; type Status.
+    - bit: 27
+      name: current_out_of_range
+      label: Current out of range
+      description: Byte 0, bit 3, mask 0x08000000; type Status.
+    - bit: 28
+      name: device_time_undefined
+      label: Device time undefined
+      description: Byte 0, bit 4, mask 0x10000000; type Status.
+    - bit: 30
+      name: hardware_write_protection
+      label: Hardware write protection is active
+      description: Byte 0, bit 6, mask 0x40000000; type Status.
+  description: Bits as listed in the device status table on page 156.
+  source:
+    address: '205'
+    page: 150
+    reference: 'Table A- 1 Measured variables available without a time stamp: PMD
+      Diagnostics and Status'
+- id: active_tariff
+  address: 211
+  type: u32
+  aliases:
+  - Active Tariff
+  enum:
+    values:
+    - value: 0
+      name: tariff_1
+      label: Tariff 1
+    - value: 1
+      name: tariff_2
+      label: Tariff 2
+  source:
+    address: '211'
+    page: 150
+    reference: 'Table A- 1 Measured variables available without a time stamp: Active
+      Tariff'
+- id: current_n
+  address: 295
+  type: f32
+  unit: A
+  aliases:
+  - Neutral Current
+  source:
+    address: '295'
+    page: 152
+    reference: 'Table A- 1 Measured variables available without a time stamp: Neutral
+      Current'
+- id: active_energy_import_tariff_1
+  address: 2801
+  type: f32
+  unit: W.h
+  aliases:
+  - Active Energy Import Tariff 1
+  description: Float copy of the energy value in double format (table A-12).
+  source:
+    address: '2801'
+    page: 161
+    reference: 'Table A- 14 Available tariff-specific measured variables: Active Energy
+      Import Tariff 1'
+- id: active_energy_export_tariff_1
+  address: 2805
+  type: f32
+  unit: W.h
+  aliases:
+  - Active Energy Export Tariff 1
+  description: Float copy of the energy value in double format (table A-12).
+  source:
+    address: '2805'
+    page: 161
+    reference: 'Table A- 14 Available tariff-specific measured variables: Active Energy
+      Export Tariff 1'
+- id: reactive_energy_import_tariff_1
+  address: 2809
+  type: f32
+  aliases:
+  - Reactive Energy Import Tariff 1
+  description: 'Float copy of the energy value in double format (table A-12). Vendor
+    unit: VARh.'
+  source:
+    address: '2809'
+    page: 161
+    reference: 'Table A- 14 Available tariff-specific measured variables: Reactive
+      Energy Import Tariff 1'
+- id: apparent_energy_tariff_1
+  address: 2817
+  type: f32
+  unit: V.A.h
+  aliases:
+  - Apparent Energy Tariff 1
+  description: Float copy of the energy value in double format (table A-12).
+  source:
+    address: '2817'
+    page: 161
+    reference: 'Table A- 14 Available tariff-specific measured variables: Apparent
+      Energy Tariff 1'
