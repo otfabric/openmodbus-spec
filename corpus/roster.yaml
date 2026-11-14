@@ -6008,6 +6008,24 @@ work_items:
   - c09-smartgen-pdf-raw-text
   - c10-pdf-table-helpers
   owner: tooling
+- id: x-poppler-layout-version
+  kind: tooling
+  class: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  vendor: several
+  summary: >-
+    Most PDF extractors parse pdftotext -layout text, whose spacing and glyph order change between Poppler versions;
+    CI uses the runner image's poppler-utils.
+  evidence: >-
+    DURApulse GS4 p. 312 (2100h error codes): Poppler 26.11 gives "91~98: <BEL>reserved", Ubuntu 24.04's Poppler
+    24.02 gives "r<BEL> eserved" and "U<BEL> phase", so the first CI run of the full corpus failed on this source
+    only.
+  detail: >-
+    The GS4 error-code list now reads pdftotext -bbox word boxes, joining touching boxes, and gives identical output
+    on both versions. All 61 sources verify on Ubuntu 24.04 (Python 3.12, Poppler 24.02) and locally (Python 3.15,
+    Poppler 26.11). An ubuntu-latest image upgrade can still change the layout text: pin the corpus jobs to ubuntu-24.04,
+    or move layout-sensitive tables to word boxes in sourcelib.
+  related: [c08-sourcelib-pdf-control-chars, x-sourcelib-pdf-tables]
+  owner: tooling
 - id: x-extractor-variants
   kind: tooling
   class: [6, 8, 10]

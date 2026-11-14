@@ -5,7 +5,9 @@ as a 40001-based decimal reference and in octal; all three must agree. The manua
 puts the hexadecimal address (2102H) in the request, so the hexadecimal column is the PDU address.
 Values are holding registers read with function 03H.
 """
+from html import unescape
 import re
+import subprocess
 
 from sourcelib import pdf_pages, require
 
@@ -69,6 +71,9 @@ GS4_STATUS = {
                                                 ("11", "reverse", "REV")]),
 }
 IDENTIFIER = re.compile(r"[a-z][a-z0-9]*(_[a-z0-9]+)*")
+WORD = re.compile(r'<word xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="([\d.]+)">(.*?)</word>', re.S)
+LINE = 2.0  # points: word boxes whose tops differ by less are on one line
+TOUCH = 0.5  # points: boxes closer than this are one word; a space is about 2.5 pt
 
 
 def clean(text):
@@ -233,24 +238,57 @@ def extract_gs2x(data, selector):
     return {"points": sorted(points, key=lambda point: (point["address"], point.get("mask", 0)))}
 
 
-def error_codes(page):
-    """The two-column 'Status Monitor 1 Error Codes' list of GS4 status address 2100h."""
-    lines = page.splitlines()
-    left_rows = [index for index, line in enumerate(lines) if re.search(r"\s0: No Error\s*$", clean(line))]
-    right_rows = [index for index, line in enumerate(lines) if "40: Motor auto tune error (AuE)" in clean(line)]
-    require(len(left_rows) == 1 and len(right_rows) == 1, "GS4 2100h: error code columns not found")
-    left = lines[left_rows[0]].index("0: ")
-    right = lines[right_rows[0]].index("40: ")
-    start = right_rows[0]
-    end = [index for index, line in enumerate(lines) if "(table continued next page)" in line]
-    require(end and end[0] > start, "GS4 2100h: end of error code list missing")
+def word_boxes(data, page):
+    """(xMin, yMin, xMax, yMax, text) per word of one page from 'pdftotext -bbox', BEL characters removed."""
+    command = ["pdftotext", "-f", str(page), "-l", str(page), "-bbox", "-enc", "UTF-8", "-", "-"]
+    result = subprocess.run(command, input=data, capture_output=True, check=True, timeout=120)
+    words = []
+    for x0, y0, x1, y1, text in WORD.findall(result.stdout.decode("utf-8")):
+        text = clean(unescape(text))
+        if text.strip():
+            words.append((float(x0), float(y0), float(x1), float(y1), text))
+    require(words, f"GS4 PDF page {page}: no words")
+    return words
+
+
+def box_lines(words):
+    """Line texts, top to bottom. Touching word boxes are one word; a gap between boxes is a space.
+
+    The GS4 text layer puts a BEL glyph at the start of each error description. Poppler versions
+    order that glyph and the first letter differently in their text output, but not their boxes.
+    """
+    rows = []
+    for word in sorted(words, key=lambda w: (w[1], w[0])):
+        if rows and abs(word[1] - rows[-1][0]) <= LINE:
+            rows[-1][1].append(word)
+        else:
+            rows.append((word[1], [word]))
+    texts = []
+    for _, row in rows:
+        row.sort(key=lambda w: w[0])
+        text = row[0][4]
+        for previous, word in zip(row, row[1:]):
+            text += ("" if word[0] - previous[2] <= TOUCH else " ") + word[4]
+        texts.append(text)
+    return texts
+
+
+def error_codes(data, page):
+    """The two-column 'Status Monitor 1 Error Codes' list of GS4 status address 2100h, read from word boxes."""
+    words = word_boxes(data, page)
+    left = [w for w in words if w[4] == "0:" and any(v[4] == "No" and abs(v[1] - w[1]) <= LINE for v in words)]
+    right = [w for w in words if w[4] == "40:" and any(v[4] == "Motor" and abs(v[1] - w[1]) <= LINE for v in words)]
+    address = [w for w in words if w[4] == "2100"]
+    end = [w for w in words if w[4] == "(table"]
+    require(len(left) == 1 and len(right) == 1 and len(address) == 1, "GS4 2100h: error code columns not found")
+    top = min(left[0][1], right[0][1]) - LINE
+    require(len(end) == 1 and end[0][1] > top, "GS4 2100h: end of error code list missing")
+    bounds = ((left[0][0], right[0][0]), (right[0][0], address[0][0]))
     columns = ([], [])
-    for line in lines[start:end[0]]:
-        line = re.sub(r"\s+2100\s+48449\s+20400\s*$", "", line)
-        require(len(line) <= right - 1 or not line[right - 2].strip(), f"GS4 2100h: columns overlap in {line!r}")
-        for column, text in enumerate((clean(line[left - 1:right - 1]).strip(), clean(line[right - 1:]).strip())):
-            if not text:
-                continue
+    for column, (low, high) in enumerate(bounds):
+        boxes = [w for w in words if top <= w[1] < end[0][1] - LINE and low - 1 <= w[0] < high - 1]
+        require(all(w[2] < high - 1 for w in boxes), f"GS4 2100h: column {column + 1} overlaps the next")
+        for text in box_lines(boxes):
             match = re.fullmatch(r"(\d+)(?:~(\d+))?: (.+)", text)
             if match:
                 columns[column].append([int(match.group(1)), int(match.group(2) or match.group(1)),
@@ -315,7 +353,7 @@ def extract_gs4(data):
     row_2100 = [index for index, hex_text, _ in rows if hex_text == "2100"]
     require(len(row_2100) == 1 and "Error Codes" in lines[row_2100[0]], "GS4 2100h: address row missing")
     points.append({"id": "error_code", "label": "Status Monitor 1 error code", "address": 0x2100, "type": "u16",
-                   "enum": {"values": error_codes(pages[0])},
+                   "enum": {"values": error_codes(data, first)},
                    "source": source("2100", first, "Status Addresses (Read Only), Status Monitor 1")})
     points += gs4_status_bits([clean(line) for line in pages[1].splitlines()], last)
     found = set()

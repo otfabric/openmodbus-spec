@@ -12,7 +12,7 @@ Spec-gap candidates are inputs to the maintainer's decisions in [PROPOSAL.md](..
 | Vendor errata | 38 |
 | Model scope | 12 |
 | Source access | 13 |
-| Tooling | 17 |
+| Tooling | 18 |
 
 ## Themes
 
@@ -1713,6 +1713,14 @@ Index bases for count arrays, odd-length strings, time-tagged event records, and
 - **Evidence:** c01-tooling-pdf-columns, c03-layout-table-rows, c04-tooling-pdf-wrapped-cells, c05-tooling-column-helpers, c06-sourcelib-pdf-word-boxes, c07-sourcelib-layout-helpers, c09-deif-pdf-word-boxes, c09-smartgen-pdf-raw-text, c10-pdf-table-helpers.
 - **Detail:** Move the shared patterns (column split by header positions, wrapped-cell joining, pdftotext -bbox word boxes, raw mode) into sourcelib once two extractors use the same one, and keep extractor output byte-identical.
 - **Related:** `c01-tooling-pdf-columns`, `c03-layout-table-rows`, `c04-tooling-pdf-wrapped-cells`, `c05-tooling-column-helpers`, `c06-sourcelib-pdf-word-boxes`, `c07-sourcelib-layout-helpers`, `c09-deif-pdf-word-boxes`, `c09-smartgen-pdf-raw-text`, `c10-pdf-table-helpers`
+
+### `x-poppler-layout-version`: Most PDF extractors parse pdftotext -layout text, whose spacing and glyph order change between Poppler versions; CI uses the runner image's poppler-utils.
+
+- **Classes 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, vendor:** several
+- **Owner:** tooling
+- **Evidence:** DURApulse GS4 p. 312 (2100h error codes): Poppler 26.11 gives "91~98: <BEL>reserved", Ubuntu 24.04's Poppler 24.02 gives "r<BEL> eserved" and "U<BEL> phase", so the first CI run of the full corpus failed on this source only.
+- **Detail:** The GS4 error-code list now reads pdftotext -bbox word boxes, joining touching boxes, and gives identical output on both versions. All 61 sources verify on Ubuntu 24.04 (Python 3.12, Poppler 24.02) and locally (Python 3.15, Poppler 26.11). An ubuntu-latest image upgrade can still change the layout text: pin the corpus jobs to ubuntu-24.04, or move layout-sensitive tables to word boxes in sourcelib.
+- **Related:** `c08-sourcelib-pdf-control-chars`, `x-sourcelib-pdf-tables`
 
 ### `x-extractor-variants`: run.py builds one variant-free contract from one source; configuration-dependent layouts and adapter-plus-drive manuals cannot be generated.
 
